@@ -5,14 +5,14 @@ const bodyParser = require("body-parser");
 const sequelize = require("./config/koneksi");
 const Users = require("./models/users");
 
-// dotenv for call value in file .env
-dotenv.config();
 const app = express();
 
+dotenv.config();
 app.use(express.json());
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cookieParser());
+
 
 // this for call all router from router.js
 app.use("/api", require("./routes/router"));
@@ -28,9 +28,6 @@ sequelize.authenticate()
 // app.get("/", (req, res) => {
 //   res.json({ msg: "Hello World!" });
 // });
-
-app.listen(process.env.PORT, async () => {
-  console.log("server up and running on port " + process.env.PORT);
-});
-
-module.exports = app;
+app.listen(process.env.PORT, () => {
+    console.log(`Server berhasil di running di port ${process.env.PORT}`);
+})
