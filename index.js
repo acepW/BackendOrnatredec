@@ -20,7 +20,7 @@ app.use("/api", require("./routes/router"));
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-    await Users.sync({alter:true});
+    // await Users.sync({alter:true});
 })
 .catch(err => console.log('Error: ' + err));
 
