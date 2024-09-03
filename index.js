@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const express = require("express");
 const dotenv = require("dotenv");
 const cosrs = require('cors')
@@ -5,15 +6,30 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const sequelize = require("./config/koneksi");
 const Users = require("./models/users");
+=======
+const express = require('express');
+const dotenv = require('dotenv');
+const authRoutes = require('./routes/authRoutes');
+const sequelize = require("./models/Users")
+const db = require('./config/database');
+const cors = require('cors')
+dotenv.config();
+>>>>>>> fe25bd391adf8f9771bffa3c9b41bd3952163fbd
 
 const app = express();
 
-dotenv.config();
+// Middleware
 app.use(express.json());
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use((
+    cors({
+        credentials : true,
+        origin : true
+    })
+))
+// Routes
+app.use('/api/auth', authRoutes);
 
+<<<<<<< HEAD
 app.use(
     cosrs({
         Credential : true,
@@ -21,21 +37,12 @@ app.use(
     })
 )
 
+=======
+sequelize.sync({ force: true })
+  .then(() => {
+    console.log('Database & tables created!');
+  });
+>>>>>>> fe25bd391adf8f9771bffa3c9b41bd3952163fbd
 
-// this for call all router from router.js
-app.use("/api", require("./routes/router"));
-
-sequelize.authenticate()
-.then(async () => {
-    console.log('Connection success');
-    // await Users.sync({alter:true});
-})
-.catch(err => console.log('Error: ' + err));
-
-// // this for show message if we access port
-// app.get("/", (req, res) => {
-//   res.json({ msg: "Hello World!" });
-// });
-app.listen(process.env.PORT, () => {
-    console.log(`Server berhasil di running di port ${process.env.PORT}`);
-})
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

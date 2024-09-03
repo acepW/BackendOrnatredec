@@ -1,35 +1,41 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const db = require('../config/koneksi');
+const bcrypt = require('bcryptjs');
+const sequelize = require('../config/database'); // Import konfigurasi database
 
-const Users = db.define('user',{
-    id : {
-        type : DataTypes.INTEGER,
-        primaryKey : true,
-        autoIncrement : true,
+const User = sequelize.define('User', {
+  username: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  role: {
+    type: DataTypes.ENUM('user', 'admin', 'super admin'),
+    allowNull: false,
+    defaultValue: 'user',
+  },
+  alamat: {
+    type: DataTypes.STRING, // Alamat disimpan sebagai string
+    allowNull: true, // Alamat bisa tidak diisi
+  },
+  fotoProfil: {
+    type: DataTypes.STRING, // URL untuk foto profil
+    allowNull: true, // Foto profil bisa tidak diisi
+  },
+}, {
+  hooks: {
+    beforeCreate: async (user) => {
+      user.password = await bcrypt.hash(user.password, 10);
     },
-    username : {
-        type : DataTypes.STRING,
-        allowNull : false
-    },
-    email : {
-        type : DataTypes.STRING,
-        allowNull : false
-    },
-    password : {
-        type : DataTypes.STRING,
-        allowNull : false
-    },
-    no_telp : {
-        type : DataTypes.STRING,
-        allowNull : false
-    },
-    alamat : {
-        type : DataTypes.STRING,
-        allowNull : true
-    },
-},{
-    freezeTableName : true,
-    timestamps : true
-})
+  },
+});
 
-module.exports = Users;
+// Method untuk memvalidasi password
+User.prototype.validatePassword = async function(password) {
+  return bcrypt.compare(password, this.password);
+};
+
+module.exports = User;
