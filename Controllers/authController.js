@@ -1,31 +1,49 @@
 const db = require('../config/database');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+const User = require('../models/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 // Register User
-exports.register = async (req, res) => {
-  const { username, password, role } = req.body;
+const register= async (req, res) => {
+  const { username, email, password, no_hp, role } = req.body;
 
   try {
+    const userEmail = await User.findOne({ where: { email } });
+    if (userEmail) {
+        return res.status(409).json({ message: 'Email already exists' });
+    }
+
+    const userUsername = await User.findOne({ where: { username } });
+    if (userUsername) {
+        return res.status(409).json({ message: 'username already exists' });
+    }
+
+    const userNohp = await User.findOne({ where: { no_hp } });
+    if (userNohp) {
+        return res.status(409).json({ message: 'No Phone already exists' });
+    }
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create the user in the database
-    const user = await User.create({
+    const userr = await User.create({
       username,
+      email,
       password: hashedPassword,
-      role,
+      no_hp,
+      role
     });
 
-    res.status(201).json({ success: true, message: 'User registered successfully', user });
+    res.status(201).json({ success: true, message: 'User registered successfully', userr });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+
 // Login User
-exports.login = async (req, res) => {
+const login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
@@ -45,7 +63,7 @@ exports.login = async (req, res) => {
     // Generate JWT
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      process.env.JWT_SECRET,
+      process.env.SECRET_KEY,
       { expiresIn: '1h' }
     );
 
@@ -54,3 +72,18 @@ exports.login = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+const getUser = async (req, res) => {
+  try {
+    const user = await User.findAll({});
+    res.json(user)
+  } catch (error) {
+    res.status(500).json({message: error.message})
+  }
+}
+
+module.exports = {
+  login,
+  register,
+  getUser
+}

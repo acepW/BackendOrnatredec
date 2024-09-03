@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-exports.protect = (roles = []) => {
+protect = (roles = []) => {
   return (req, res, next) => {
     let token;
     if (
@@ -12,11 +12,11 @@ exports.protect = (roles = []) => {
     }
 
     if (!token) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+      return res.status(401).json({ success: false, message: 'Login dulu guys' });
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.SECRET_KEY);
       req.user = decoded;
 
       if (roles.length && !roles.includes(req.user.role)) {
@@ -25,7 +25,9 @@ exports.protect = (roles = []) => {
 
       next();
     } catch (error) {
-      res.status(401).json({ success: false, message: 'Not authorized' });
+      res.status(401).json({ success: false, message: 'Token tidak valid' });
     }
   };
 };
+
+module.exports = protect;

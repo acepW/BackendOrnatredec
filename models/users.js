@@ -8,12 +8,20 @@ const User = sequelize.define('User', {
     allowNull: false,
     unique: true,
   },
+  email : {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   password: {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  no_hp : {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   role: {
-    type: DataTypes.ENUM('user', 'admin', 'super admin'),
+    type: DataTypes.ENUM('user', 'admin', 'super admin', 'kasir'),
     allowNull: false,
     defaultValue: 'user',
   },
@@ -25,6 +33,9 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING, // URL untuk foto profil
     allowNull: true, // Foto profil bisa tidak diisi
   },
+},{
+  freezeTableName : true,
+  timestamps : true
 }, {
   hooks: {
     beforeCreate: async (user) => {
