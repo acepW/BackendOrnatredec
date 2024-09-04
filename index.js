@@ -22,7 +22,7 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api', routes);
-
+ 
 
 
 sequelize.authenticate()
