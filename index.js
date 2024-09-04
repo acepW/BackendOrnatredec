@@ -3,14 +3,16 @@ const dotenv = require('dotenv')
 const sequelize = require('./config/koneksi');
 const Users = require('./models/users');
 const cookieParser = require('cookie-parser');
+const path = require("path");
+const Produk = require("./models/produk");
+const Usia = require("./models/usia");
+const Pot = require("./models/pot");
 
 const app = express();
 
 dotenv.config();
 app.use(express.json());
 app.use(cookieParser());
-// app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(bodyParser.json());
 
 
 // this for call all router from router.js
