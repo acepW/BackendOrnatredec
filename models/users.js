@@ -17,14 +17,6 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 'user',
   },
-  alamat: {
-    type: DataTypes.STRING, // Alamat disimpan sebagai string
-    allowNull: true, // Alamat bisa tidak diisi
-  },
-  fotoProfil: {
-    type: DataTypes.STRING, // URL untuk foto profil
-    allowNull: true, // Foto profil bisa tidak diisi
-  },
 }, {
   hooks: {
     beforeCreate: async (user) => {

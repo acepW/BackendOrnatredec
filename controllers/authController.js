@@ -1,6 +1,6 @@
 const db = require('../config/database');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+const User = require('../models/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 // Register User
@@ -24,33 +24,59 @@ exports.register = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
-// Login User
 exports.login = async (req, res) => {
   const { username, password } = req.body;
-
+  
   try {
-    // Find the user by username
     const user = await User.findOne({ where: { username } });
     
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Compare the password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid credentialsss' });
     }
 
-    // Generate JWT
+    // Generate JWT and Refresh Token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '15m' } // Token akses kadaluarsa dalam 15 menit
+    );
+    const refreshToken = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: '7d' } // Refresh token kadaluarsa dalam 7 hari
     );
 
-    res.status(200).json({ success: true, token });
+    // Set token akses dan refresh token
+    res.cookie('jwt', token, { httpOnly: true, maxAge: 900000 }); // 15 menit
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 }); // 7 hari
+
+    res.status(200).json({ success: true, message: 'Login successful' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+};
+
+exports.refreshToken = (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) return res.sendStatus(401);
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+
+    const newAccessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+    res.cookie('jwt', newAccessToken, { httpOnly: true, maxAge: 900000 }); // 15 menit
+    res.status(200).json({ success: true, message: 'Token refreshed' });
+  });
+};
+
+exports.logout = (req, res) => {
+  res.cookie('jwt', '', { maxAge: 1 }); // Set cookie 'jwt' dengan masa berlaku sangat pendek untuk menghapusnya
+  res.status(200).json({ success: true, message: 'Logout successful' });
 };
