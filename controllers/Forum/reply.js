@@ -47,18 +47,44 @@ const Reply = require('../../models/Forum/reply');
                 res.status(500).json({ message: "maaf kamu tidak bisa mengedit reply" });
             }
     
-           const reply = await Reply.update({
+            await Reply.update({
             desc : desc
            },{
             where : {id : id}
            }
         )
-            res.json(reply)
+        const updatedReply = await Reply.findByPk(id);
+            res.json(updatedReply)
         } catch (error) {
             res.status(500).json({ message: "Terjadi kesalahan saat mengedit reply." });
         }
     }
+
+    const deleteReply = async (req, res) => {
+        const id = parseInt(req.params.id);
+        const userID = req.user.id;
+        try {
+            const replyIduser = await Reply.findByPk(id);
+            
+            if (!replyIduser) {
+                return res.status(404).json({ message: "reply tidak ditemukan." });
+            }
+    
+            if (replyIduser.userId !== userID) {
+                res.status(500).json({ message: "maaf kamu tidak bisa mengedit reply" });
+            }
+    
+            await Reply.destroy({where: {id:id} })
+            res.status(200).json({ message: "Delete successful" });
+        } catch (error) {
+            res.status(500).json({
+                message: error.message
+            });
+        }
+    };
+
     module.exports = {
         createReply,
-        editReply
+        editReply,
+        deleteReply
     }

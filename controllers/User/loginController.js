@@ -52,7 +52,7 @@ const login = async (req, res) => {
     );
 
     // Set token akses dan refresh token
-    res.cookie('jwt', token, { httpOnly: true, maxAge: 900000 }); // 15 menit
+    res.cookie('token', token, { httpOnly: true, maxAge: 900000 }); // 15 menit
     res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 }); // 7 hari
 
     res.status(200).json({ success: true, message: 'Login successful' });
@@ -71,13 +71,13 @@ const refreshToken = (req, res) => {
 
     const newAccessToken = jwt.sign({ id: user.id, role: user.role }, process.env.SECRET_KEY, { expiresIn: '15m' });
 
-    res.cookie('jwt', newAccessToken, { httpOnly: true, maxAge: 900000 }); // 15 menit
+    res.cookie('token', newAccessToken, { httpOnly: true, maxAge: 900000 }); // 15 menit
     res.status(200).json({ success: true, message: 'Token refreshed' });
   });
 };
 
 const logout = (req, res) => {
-  res.cookie('jwt', '', { maxAge: 1 }); // Set cookie 'jwt' dengan masa berlaku sangat pendek untuk menghapusnya
+  res.cookie('token', '', { maxAge: 1 }); // Set cookie 'jwt' dengan masa berlaku sangat pendek untuk menghapusnya
   res.status(200).json({ success: true, message: 'Logout successful' });
 };
 

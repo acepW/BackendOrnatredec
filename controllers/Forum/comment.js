@@ -59,18 +59,44 @@ const editComment = async (req, res) => {
         if (commentIduser.userId !== userID) {
             res.status(500).json({ message: "maaf kamu tidak bisa mengedit komen" });
         }
-
-       const comment = await Comment.update({
+        
+        await Comment.update({
         desc : desc
        },{
         where : {id : id}
        }
     )
-        res.json(comment)
+
+    const updatedComment = await Comment.findByPk(id);
+
+        res.json(updatedComment)
     } catch (error) {
         res.status(500).json({ message: "Terjadi kesalahan saat mengedit comment." });
     }
 }
+
+const deletePost = async (req, res) => {
+    const id = parseInt(req.params.id);
+    const userID = req.user.id;
+    try {
+        const commentIduser = await Comment.findByPk(id);
+        
+        if (!commentIduser) {
+            return res.status(404).json({ message: "Komentar tidak ditemukan." });
+        }
+
+        if (commentIduser.userId !== userID) {
+            res.status(500).json({ message: "maaf kamu tidak bisa mengedit komen" });
+        }
+
+        await Comment.destroy({where: {id:id} })
+        res.status(200).json({ message: "Delete successful" });
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
 
     module.exports = {
         CreateComment,

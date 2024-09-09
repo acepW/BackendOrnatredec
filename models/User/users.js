@@ -1,7 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const sequelize = require('../../config/database'); // Import konfigurasi database
-
 const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,

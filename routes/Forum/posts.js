@@ -7,5 +7,6 @@ router.post('/post', protect(['user']), ControllerPost.upload.single('file'), Co
 router.get('/semua', protect(['user']), ControllerPost.getPost);
 router.get('/satu', protect(['user']), ControllerPost.getOnePost);
 router.put('/post/:id', protect(['user']),ControllerPost.upload.single('file'), ControllerPost.editPostingan);
+router.delete('/delete/:id', protect(['user']),ControllerPost.deletePost);
 
 module.exports = router;

@@ -58,21 +58,21 @@ const PostUlasan = async (req, res) => {
 
 const editPostingan = async (req, res) => {
     const id = req.params.id
-    const {desc} = req.body
+    const {desc, judul} = req.body
     const userID = req.user.id;
     const url = req.file ? `/uploads/${req.file.filename}` : null; 
     try {
         const postIduser = await Post.findByPk(id);
         
         if (!postIduser) {
-            return res.status(404).json({ message: "Komentar tidak ditemukan." });
+            return res.status(404).json({ message: "postingan tidak ditemukan." });
         }
 
         if (postIduser.userId !== userID) {
-            res.status(500).json({ message: "maaf kamu tidak bisa mengedit komen" });
+            res.status(404).json({ message: "maaf kamu tidak bisa mengedit postingan" });
         }
 
-       const post = await Post.update({
+       await Post.update({
         judul : judul,
         desc : desc,
         img : url
@@ -80,7 +80,10 @@ const editPostingan = async (req, res) => {
         where : {id : id}
        }
     )
-        res.json(post)
+
+    const updatedPost = await Post.findByPk(id);
+
+        res.json(updatedPost)
     } catch (error) {
         res.status(500).json({ message: "Terjadi kesalahan saat mengedit comment." });
     }
@@ -88,25 +91,25 @@ const editPostingan = async (req, res) => {
 
 const getPost = async (req, res) => {
     try {
-        const Post = await post.findAll({
+        const post = await Post.findAll({
             include: [
                 { 
                     model: User, 
-                    attributes: ['name'] 
+                    attributes: ['username'] 
                 },
                 { 
                     model: Comment, 
                     include: [
-                        { model: User, attributes: ['name'] },
+                        { model: User, attributes: ['username'] },
                         { 
                             model: Reply, 
-                            include: [{ model: User, attributes: ['name'] }]
+                            include: [{ model: User, attributes: ['username'] }]
                         }
                     ]
                 }
             ]
         });
-        res.json({ Post });
+        res.json({ post });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -141,10 +144,24 @@ const getOnePost = async (req, res) => {
 
 }
 
+const deletePost = async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        await Post.destroy({where: {id:id} })
+        res.status(200).json({ message: "Delete successful" });
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
+
+
 module.exports = {
     PostUlasan,
     upload,
     getPost,
     getOnePost,
-    editPostingan
+    editPostingan,
+    deletePost
 };

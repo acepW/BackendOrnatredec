@@ -15,7 +15,11 @@ const Variasi = db.define("variasi", {
            model: Produk,
            key: "id"
                 }
-            },
+     },
+    foto_variasi : {
+        type: DataTypes.STRING,
+        allowNull :false
+    },
     nama_variasi: {
         type: DataTypes.STRING,
         allowNull :false
