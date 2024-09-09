@@ -25,6 +25,7 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 'user',
   },
+<<<<<<< HEAD:models/User/users.js
   alamat: {
     type: DataTypes.STRING, // Alamat disimpan sebagai string
     allowNull: true, // Alamat bisa tidak diisi
@@ -36,6 +37,8 @@ const User = sequelize.define('User', {
 },{
   freezeTableName : true,
   timestamps : true
+=======
+>>>>>>> eb65d94cefe5edffd1dc05341d98d0381b59c58e:models/users.js
 }, {
   hooks: {
     beforeCreate: async (user) => {
