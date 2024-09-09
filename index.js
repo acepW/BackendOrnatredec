@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require('cors')
@@ -6,20 +5,16 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const sequelize = require("./config/database");
 const routes = require('./routes/router');
-const Users = require("./models/users");
-=======
-const express = require('express');
-const dotenv = require('dotenv')
-const sequelize = require('./config/koneksi');
-const Users = require('./models/users');
-const cookieParser = require('cookie-parser');
+const Users = require("./models/User/users");
+const Produk = require('./models/Produk/produk');
+const Usia = require('./models/Produk/usia');
+const Variasi = require('./models/Produk/variasi');
 const path = require("path");
-const Produk = require("./models/produk");
-const Usia = require("./models/usia");
-const Pot = require("./models/pot");
-
-const app = express();
->>>>>>> 5a3f5b356f9fd3a030aeb3c4382ad68e7756fd97
+const Comments = require("./models/Forum/comments");
+const Posts = require("./models/Forum/posts");
+const Reply = require("./models/Forum/reply");
+const Views = require("./models/Forum/view");
+const Post = require("./models/Forum/posts");
 
 dotenv.config();
 const app = express();
@@ -33,16 +28,15 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api', routes);
  
-
-
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-    // await sequelize.sync({alter: true});
+    //  await Post.sync({alter: true});
 })
 .catch(err => console.log('Error: ' + err));
 

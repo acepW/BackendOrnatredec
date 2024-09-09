@@ -3,7 +3,7 @@ const {
     createUsia,
     getAllUsia,
     getUsiaById
-} = require("../controllers/usia");
+} = require("../../controllers/Produk/usia");
 
 const router = express.Router();
 

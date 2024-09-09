@@ -1,6 +1,6 @@
-const db = require('../config/database');
+const db = require('../../config/database');
 const bcrypt = require('bcryptjs');
-const User = require('../models/users');
+const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -63,12 +63,13 @@ const login = async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, role: user.role },       
       process.env.SECRET_KEY,
       { expiresIn: '1h' }
     );
 
-    res.status(200).json({ success: true, token });
+    res.cookie('token', token, { httpOnly: true, secure: true });
+    res.json({message : "Login berhasil"})
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

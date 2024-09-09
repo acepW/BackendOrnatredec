@@ -1,12 +1,17 @@
 const router = require("express").Router();
 
-<<<<<<< HEAD
-router.use("/", require("./loginRoutes"));
-=======
-router.use("/", require("./autentikasi"));
-router.use("/", require("./pot"));
-router.use("/", require("./produk"));
-router.use("/", require("./usia"));
->>>>>>> 5a3f5b356f9fd3a030aeb3c4382ad68e7756fd97
+//User
+router.use("/", require("./User/loginRoutes"));
+
+//Produk
+router.use("/", require("./Produk/pot"));
+router.use("/", require("./Produk/produk"));
+router.use("/", require("./Produk/usia"));
+
+//Forum
+router.use("/", require("./Forum/comments"));
+router.use("/", require("./Forum/posts"));
+router.use("/", require("./Forum/view"));
+router.use("/", require("./Forum/reply"))
 
 module.exports = router;

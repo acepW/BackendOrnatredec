@@ -3,7 +3,7 @@ const {
     createPot,
     getAllPot,
     getPotById
-} = require("../controllers/pot");
+} = require("../../controllers/Produk/pot");
 
 const router = express.Router();
 

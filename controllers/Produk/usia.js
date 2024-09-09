@@ -1,12 +1,13 @@
-const Usia = require("../models/usia");
+const Usia = require("../../models/Produk/usia");
 
 const createUsia = async(req, res) => {
-    const {usia_produk, stok} = req.body;
+    const {usia_produk, stok, harga} = req.body;
 
     try {
         const usia = await Usia.create({
             usia_produk,
-            stok
+            stok,
+            harga
         });
         res.status(200).json(usia);
     } catch (error) {

@@ -1,4 +1,4 @@
-const Pot = require("../models/pot");
+const Pot = require("../../models/Produk/variasi");
 
 const createPot = async(req, res) => {
     const {warna_pot, stok} = req.body;
