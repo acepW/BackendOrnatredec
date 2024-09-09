@@ -1,14 +1,6 @@
 const express = require('express');
-<<<<<<< HEAD:routes/User/loginRoutes.js
-const { register, login, getUser } = require('../../controllers/User/loginController');
+const { register, login, logout, refreshToken } = require('../../controllers/User/loginController');
 const  protect  = require('../../middlewares/authMiddleware');
-//const User = require("../../models/User/users")
-=======
-const { register, login, logout, refreshToken } = require('../controllers/authController');
-const { protect } = require('../middlewares/authMiddleware');
-const User = require("../models/users")
->>>>>>> eb65d94cefe5edffd1dc05341d98d0381b59c58e:routes/authRoutes.js
-
 const router = express.Router();
 
 // Register User
@@ -16,7 +8,7 @@ router.post('/register', register);
 
 // Login User
 router.post('/login', login);
-router.get('/userr', getUser);
+// router.get('/userr', getUser);
 
 // Logout User
 router.post('/logout', logout);

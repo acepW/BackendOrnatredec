@@ -3,89 +3,87 @@ const bcrypt = require('bcryptjs');
 const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-
 // Register User
-const register= async (req, res) => {
-  const { username, email, password, no_hp, role } = req.body;
+const register = async (req, res) => {
+  const { username, password, role } = req.body;
 
   try {
-    const userEmail = await User.findOne({ where: { email } });
-    if (userEmail) {
-        return res.status(409).json({ message: 'Email already exists' });
-    }
-
-    const userUsername = await User.findOne({ where: { username } });
-    if (userUsername) {
-        return res.status(409).json({ message: 'username already exists' });
-    }
-
-    const userNohp = await User.findOne({ where: { no_hp } });
-    if (userNohp) {
-        return res.status(409).json({ message: 'No Phone already exists' });
-    }
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create the user in the database
-    const userr = await User.create({
+    const user = await User.create({
       username,
-      email,
       password: hashedPassword,
-      no_hp,
-      role
+      role,
     });
 
-    res.status(201).json({ success: true, message: 'User registered successfully', userr });
+    res.status(201).json({ success: true, message: 'User registered successfully', user });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
 };
-
-
-// Login User
 const login = async (req, res) => {
   const { username, password } = req.body;
-
+  
   try {
-    // Find the user by username
     const user = await User.findOne({ where: { username } });
     
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Compare the password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'Invalid credentialsss' });
     }
 
-    // Generate JWT
+    // Generate JWT and Refresh Token
     const token = jwt.sign(
-      { id: user.id, role: user.role },       
+      { id: user.id, role: user.role },
       process.env.SECRET_KEY,
-      { expiresIn: '1h' }
+      { expiresIn: '15m' } // Token akses kadaluarsa dalam 15 menit
+    );
+    const refreshToken = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: '7d' } // Refresh token kadaluarsa dalam 7 hari
     );
 
-    res.cookie('token', token, { httpOnly: true, secure: true });
-    res.json({message : "Login berhasil"})
+    // Set token akses dan refresh token
+    res.cookie('jwt', token, { httpOnly: true, maxAge: 900000 }); // 15 menit
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 }); // 7 hari
+
+    res.status(200).json({ success: true, message: 'Login successful' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-const getUser = async (req, res) => {
-  try {
-    const user = await User.findAll({});
-    res.json(user)
-  } catch (error) {
-    res.status(500).json({message: error.message})
-  }
-}
+const refreshToken = (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) return res.sendStatus(401);
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+
+    const newAccessToken = jwt.sign({ id: user.id, role: user.role }, process.env.SECRET_KEY, { expiresIn: '15m' });
+
+    res.cookie('jwt', newAccessToken, { httpOnly: true, maxAge: 900000 }); // 15 menit
+    res.status(200).json({ success: true, message: 'Token refreshed' });
+  });
+};
+
+const logout = (req, res) => {
+  res.cookie('jwt', '', { maxAge: 1 }); // Set cookie 'jwt' dengan masa berlaku sangat pendek untuk menghapusnya
+  res.status(200).json({ success: true, message: 'Logout successful' });
+};
 
 module.exports = {
-  login,
   register,
-  getUser
+  login,
+  refreshToken,
+  logout
 }
