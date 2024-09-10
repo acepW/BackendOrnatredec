@@ -75,9 +75,10 @@ const editComment = async (req, res) => {
     }
 }
 
-const deletePost = async (req, res) => {
+const deleteComment = async (req, res) => {
     const id = parseInt(req.params.id);
     const userID = req.user.id;
+    const roleUser = req.user.role;
     try {
         const commentIduser = await Comment.findByPk(id);
         
@@ -85,7 +86,7 @@ const deletePost = async (req, res) => {
             return res.status(404).json({ message: "Komentar tidak ditemukan." });
         }
 
-        if (commentIduser.userId !== userID) {
+        if (commentIduser.userId !== userID || roleUser !== 'admin') {
             res.status(500).json({ message: "maaf kamu tidak bisa mengedit komen" });
         }
 
@@ -101,5 +102,6 @@ const deletePost = async (req, res) => {
     module.exports = {
         CreateComment,
         GetComment,
-        editComment
+        editComment,
+        deleteComment
     }

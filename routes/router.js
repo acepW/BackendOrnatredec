@@ -4,7 +4,7 @@ const router = require("express").Router();
 router.use("/", require("./User/loginRoutes"));
 
 //Produk
-router.use("/", require("./Produk/pot"));
+router.use("/", require("./Produk/variasi"));
 router.use("/", require("./Produk/produk"));
 router.use("/", require("./Produk/usia"));
 
