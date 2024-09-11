@@ -57,7 +57,7 @@ const editComment = async (req, res) => {
         }
 
         if (commentIduser.userId !== userID) {
-            res.status(500).json({ message: "maaf kamu tidak bisa mengedit komen" });
+            res.status(505).json({ message: "maaf kamu tidak bisa mengedit komen" });
         }
         
         await Comment.update({
@@ -78,21 +78,26 @@ const editComment = async (req, res) => {
 const deleteComment = async (req, res) => {
     const id = parseInt(req.params.id);
     const userID = req.user.id;
-    // const roleUser = req.user.role;
+    const userRole = req.user.role;
+
     try {
         const commentIduser = await Comment.findByPk(id);
-        const postId = commentIduser.postId;
+
         if (!commentIduser) {
-            return res.status(404).json({ message: "Komentar tidak ditemukan." });
+            return res.status(403).json({ message: "Komentar tidak ditemukan." });
         }
 
-        if (commentIduser.userId !== userID) {
-            res.status(500).json({ message: "maaf kamu tidak bisa menghapus komen" });
-        } 
-       
+        const postId = commentIduser.postId;
+
+        if (userRole !== 'super admin' && commentIduser.userId !== userID) {
+            return res.status(404).json({ message: "Maaf, kamu tidak bisa menghapus komen ini." });
+        }
+
+        await Comment.destroy({ where: { id: id } });
+        await Reply.destroy({where: {commentId: id} })
+
         const commentCount = await Comment.count({ where: { postId: postId } });
         const replyCount = await Reply.count({ where: { postId: postId } });
-
         const jumlahTanggapan = commentCount + replyCount;
 
         await Post.update(
@@ -100,11 +105,12 @@ const deleteComment = async (req, res) => {
             { where: { id: postId } }
         );
 
-        res.status(200).json({message : "delete berhasil"})
+        res.status(200).json({ message: "Hapus berhasil" });
     } catch (error) {
-        res.status(500).json({ message: error.message});
+        res.status(500).json({ message: error.message });
     }
 };
+
 
     module.exports = {
         CreateComment,

@@ -117,6 +117,118 @@ const getPost = async (req, res) => {
     }
 };
 
+const getPostKategoriTanaman = async (req, res) => {
+   const kategori = 'tanaman';
+    try {
+        const post = await Post.findAll({
+            where : {kategori_forum : kategori},
+            include: [
+                { 
+                    model: User, 
+                    attributes: ['username'] 
+                },
+                { 
+                    model: Comment, 
+                    include: [
+                        { model: User, attributes: ['username'] },
+                        { 
+                            model: Reply, 
+                            include: [{ model: User, attributes: ['username'] }]
+                        }
+                    ]
+                }
+            ]
+        });
+        res.json({ post });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getPostKategoriIkan = async (req, res) => {
+    const kategori = 'ikan';
+    try {
+        const post = await Post.findAll({
+            where : {kategori_forum : kategori},
+            include: [
+                { 
+                    model: User, 
+                    attributes: ['username'] 
+                },
+                { 
+                    model: Comment, 
+                    include: [
+                        { model: User, attributes: ['username'] },
+                        { 
+                            model: Reply, 
+                            include: [{ model: User, attributes: ['username'] }]
+                        }
+                    ]
+                }
+            ]
+        });
+        res.json({ post });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getPostKategoriBurung = async (req, res) => {
+    const kategori = 'burung';
+    try {
+        const post = await Post.findAll({
+            where : {kategori_forum : kategori},
+            include: [
+                { 
+                    model: User, 
+                    attributes: ['username'] 
+                },
+                { 
+                    model: Comment, 
+                    include: [
+                        { model: User, attributes: ['username'] },
+                        { 
+                            model: Reply, 
+                            include: [{ model: User, attributes: ['username'] }]
+                        }
+                    ]
+                }
+            ]
+        });
+        res.json({ post });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const filterKategori = async (req, res) => {
+    const kategori = req.query.kategori
+    try {
+        const post = await Post.findAll({
+            where : {kategori_forum : kategori},
+            include: [
+                { 
+                    model: User, 
+                    attributes: ['username'] 
+                },
+                { 
+                    model: Comment, 
+                    include: [
+                        { model: User, attributes: ['username'] },
+                        { 
+                            model: Reply, 
+                            include: [{ model: User, attributes: ['username'] }]
+                        }
+                    ]
+                }
+            ]
+        });
+        res.json({ post });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const getOnePost = async (req, res) => {
     const id = req.params;
     try {
@@ -149,17 +261,22 @@ const getOnePost = async (req, res) => {
 const deletePost = async (req, res) => {
     const id = parseInt(req.params.id);
     const userID = req.user.id;
+    const userRole = req.user.role;
     try {
-        const commentIduser = await Comment.findByPk(id);
+        const post = await Post.findByPk(id);
         
-        if (!commentIduser) {
+        if (!post) {
             return res.status(404).json({ message: "Komentar tidak ditemukan." });
         }
 
-        if (commentIduser.userId !== userID) {
-            res.status(500).json({ message: "maaf kamu tidak bisa mengedit komen" });
+        if (userRole !== 'super admin' && post.userId !== userID) {
+            return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus komen ini." });
         }
+
         await Post.destroy({where: {id:id} })
+        await Comment.destroy({where: {postId: id} })
+        await Reply.destroy({where: {postId: id} })
+
         res.status(200).json({ message: "Delete successful" });
     } catch (error) {
         res.status(500).json({
@@ -175,5 +292,9 @@ module.exports = {
     getPost,
     getOnePost,
     editPostingan,
-    deletePost
+    deletePost,
+    getPostKategoriBurung,
+    getPostKategoriIkan,
+    getPostKategoriTanaman,
+    filterKategori
 };

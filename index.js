@@ -15,6 +15,7 @@ const Posts = require("./models/Forum/posts");
 const Reply = require("./models/Forum/reply");
 const Views = require("./models/Forum/view");
 const Post = require("./models/Forum/posts");
+const User = require("./models/User/users");
 
 dotenv.config();
 const app = express();

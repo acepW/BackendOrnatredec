@@ -7,6 +7,11 @@ const Reply = require('../../models/Forum/reply');
         const {id} = req.user
         try {
             const comment = await Comment.findOne({ where: { id: commentId } });
+
+            if (!comment) {
+                return res.status(403).json({ message: "Komentar tidak ditemukan." });
+            }
+
             const postId = comment.postId;
             const reply = await Reply.create({
                 userId : id,
@@ -44,7 +49,7 @@ const Reply = require('../../models/Forum/reply');
             }
     
             if (replyIduser.userId !== userID) {
-                res.status(500).json({ message: "maaf kamu tidak bisa mengedit reply" });
+                res.status(403).json({ message: "maaf kamu tidak bisa mengedit reply" });
             }
     
             await Reply.update({
@@ -63,18 +68,31 @@ const Reply = require('../../models/Forum/reply');
     const deleteReply = async (req, res) => {
         const id = parseInt(req.params.id);
         const userID = req.user.id;
+        const userRole = req.user.role;
+
         try {
             const replyIduser = await Reply.findByPk(id);
-            
+
             if (!replyIduser) {
-                return res.status(404).json({ message: "reply tidak ditemukan." });
+                return res.status(404).json({ message: "Reply tidak ditemukan." });
             }
-    
-            if (replyIduser.userId !== userID) {
-                res.status(500).json({ message: "maaf kamu tidak bisa mengedit reply" });
+
+            const postId = replyIduser.postId;
+
+            if (userRole !== 'super admin' && replyIduser.userId !== userID) {
+                return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus reply ini." });
             }
     
             await Reply.destroy({where: {id:id} })
+            const commentCount = await Comment.count({ where: { postId: postId } });
+            const replyCount = await Reply.count({ where: { postId: postId } });
+            const jumlahTanggapan = commentCount + replyCount;
+    
+            await Post.update(
+                { jumlahTanggapan: jumlahTanggapan },
+                { where: { id: postId } }
+            );
+
             res.status(200).json({ message: "Delete successful" });
         } catch (error) {
             res.status(500).json({

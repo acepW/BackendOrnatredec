@@ -7,11 +7,8 @@ require('dotenv').config();
 
 
 const register = async (req, res) => {
-<<<<<<< HEAD
+
   const { username, email, password, no_hp, role } = req.body;
-=======
-  const { username, email, password, no_hp, role, alamat, fotoProfil } = req.body;
->>>>>>> 96df886e2acf005865161edf1564c934595bc04e
 
   try {
     const UserEmail = await User.findOne({ where: { email } });
@@ -38,13 +35,7 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       no_hp,
-<<<<<<< HEAD
-      role,
-=======
-      role: role || 'user', // Default role as 'user' if not provided
-      alamat: alamat || null, // Optional alamat
-      fotoProfil: fotoProfil || null, // Optional fotoProfil
->>>>>>> 96df886e2acf005865161edf1564c934595bc04e
+      role
     });
 
     res.status(201).json({ success: true, message: 'User registered successfully', user });
@@ -53,10 +44,6 @@ const register = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 96df886e2acf005865161edf1564c934595bc04e
 const login = async (req, res) => {
   const { username, password } = req.body;
   
@@ -78,13 +65,8 @@ const token = jwt.sign(
 );
 
 // Set token akses tanpa refresh token
-res.cookie('token', token, { httpOnly: true }); // No expiration on token
+res.cookie('token', token, { httpOnly: true }); 
 
-<<<<<<< HEAD
-    // Set token akses dan refresh token
-    res.cookie('token', token, { httpOnly: true, maxAge: 900000 }); // 15 menit
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 }); // 7 hari
-    console.log(user.role); // Cek output di console
 
     res.status(200).json({ success: true, message: 'Login successful' });
   } catch (error) {
@@ -92,35 +74,18 @@ res.cookie('token', token, { httpOnly: true }); // No expiration on token
   }
 };
 
-const refreshToken = (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
-
-  if (!refreshToken) return res.sendStatus(401);
-
-  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-
-    const newAccessToken = jwt.sign({ id: user.id, role: user.role }, process.env.SECRET_KEY, { expiresIn: '15m' });
-
-    res.cookie('token', newAccessToken, { httpOnly: true, maxAge: 900000 }); // 15 menit
-    res.status(200).json({ success: true, message: 'Token refreshed' });
-  });
-=======
-res.status(200).json({ success: true, message: 'Login successful' });
-} catch (error) {
-  res.status(500).json({ success: false, message: error.message });
-}
->>>>>>> 96df886e2acf005865161edf1564c934595bc04e
-};
 
 const logout = (req, res) => {
-  res.cookie('token', '', { maxAge: 1 }); // Set cookie 'jwt' dengan masa berlaku sangat pendek untuk menghapusnya
-  res.status(200).json({ success: true, message: 'Logout successful' });
-};
+  try {
+      res.clearCookie('token', {httpOnly: true});
+      res.status(200).json({message: 'logout berhasil'});
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
+}
 
 module.exports = {
   register,
   login,
-  refreshToken,
   logout
 }

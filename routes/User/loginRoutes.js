@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, logout, refreshToken } = require('../../controllers/User/loginController');
+const { register, login, logout } = require('../../controllers/User/loginController');
 const  protect  = require('../../middlewares/authMiddleware');
 const router = express.Router();
 
@@ -11,10 +11,8 @@ router.post('/login', login);
 // router.get('/userr', getUser);
 
 // Logout User
-router.post('/logout', logout);
+router.delete('/logout', logout);
 
-// Refresh Token
-router.post('/refresh-token', refreshToken);
 
 router.get('/admin', protect(['admin']), (req, res) => {
   res.status(200).json({ success: true, message: 'Welcome Admin' });

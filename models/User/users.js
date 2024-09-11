@@ -22,7 +22,6 @@ const User = sequelize.define('User', {
   role: {
     type: DataTypes.ENUM('user', 'admin', 'super admin', 'kasir'),
     allowNull: false,
-    defaultValue: 'user',
   },
   alamat: {
     type: DataTypes.STRING, // Alamat disimpan sebagai string

@@ -115,113 +115,84 @@ const createProduk = async (req, res) => {
 
 
 const editProduk = async (req, res) => {
-//   const id = parseInt(req.params.id);
-//   upload.single('foto_produk')(req, res, async (err) => {
-//     if (err) {
-//       return res.status(400).json({ message: err });
-//     }
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ message: err.message });
+    }
+    const id = req.params.id
+    const {
+      judul_produk,
+      deskripsi_produk,
+      harga,
+      variasi,
+      usia,
+      kategori_produk,
+    } = req.body;
 
-//     const {
-//       judul_produk,
-//       deskripsi_produk,
-//       harga,
-//       variasi,
-//       usia,
-//       kategori_produk,
-//     } = req.body;
+    try {
+      let jumlahStok = 0;
 
-//     try {
-//       // const pot = await Pot.findByPk(id_pot);
-//       // const usia = await Usia.findByPk(id_usia);
+      const newProduk = await Produk.update(
+        {where : {id : id}},
+        {
+        judul_produk,
+        deskripsi_produk,
+        foto_produk: req.files['foto_produk'] ? req.files['foto_produk'][0].filename : null,
+        harga,
+        jumlah: jumlahStok,
+        kategori_produk,
+      });
 
-//       // if (pot.stok < jumlah) {
-//       //   return res.status(400).json({ message: `Stok dengan varian ${pot.warna_pot} tidak mencukupi` });
-//       // }
+      // Validasi variasi
+      const variasiArray = variasi ? JSON.parse(variasi) : [];
+      if (Array.isArray(variasiArray)) {
+        for (let index = 0; index < variasiArray.length; index++) {
+         await Variasi.update({
+            id_produk: newProduk.id,
+            nama_variasi: variasiArray[index].nama_variasi,
+            stok: variasiArray[index].stok,
+            foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][index].filename : null
+          },
+          {where : {id : variasiArray[index].id}}
+        );
+        }
+      }
 
-//       // if (usia.stok < jumlah) {
-//       //   return res.status(400).json({ message: `Stok dengan usia ${usia.usia_produk} tidak mencukupi` });
-//       // }
-//       let jumlahStok = 0;
+      // Validasi usia
+      const usiaArray = usia ? JSON.parse(usia) : [];
+      if (Array.isArray(usiaArray)) {
+        for (let index = 0; index < usiaArray.length; index++) {
+          await Usia.update({
+            id_produk: newProduk.id,
+            usia_produk: usiaArray[index].usia_produk,
+            stok: usiaArray[index].stok,
+            harga: usiaArray[index].harga,
+            hargaSetelah: parseInt(newProduk.harga) + parseInt(usiaArray[index].harga),
+          }
+        );
 
-//       const newProduk = await Produk.update({
-//         judul_produk,
-//         deskripsi_produk,
-//         foto_produk: req.file ? req.file.filename : null, // Menyimpan nama file saja
-//         harga,
-//         jumlah : jumlahStok,
-//         kategori_produk
-//       },
-//       {where: { id: id }}
-//     );
+          jumlahStok += parseInt(usiaArray[index].stok);
+        }
+      }
 
+      await newProduk.update({
+        jumlah: jumlahStok,
+      });
 
-//       for (let index = 0; index < pot.length; index++) {
-//        await Variasi.update({
-//           id_produk: newProduk.id, 
-          
-//           nama_variasi:variasi[index].nama_variasi, 
-//           stok:variasi[index].stok
-//       },
-//        { where: { id: variasi[index].id } }
-//     )
-//       }
-      
+      // Set foto URL
+      if (newProduk && newProduk.foto_produk) {
+        newProduk.foto_produk = `/uploads/${newProduk.foto_produk}`;
+      }
 
-//       for (let index = 0; index < usia.length; index++) {
-//         await Usia.update({
-//             id_produk: newProduk.id,
-//             usia_produk:usia[index].usia_produk,
-//             stok:usia[index].stok, 
-//             harga:usia[index].harga,
-//             hargaSetelah: parseInt(newProduk.harga) + parseInt(usia[index].harga),
-//           },
-//            { where: { id: pot[index].id } }
-//         )
-        
-//         jumlahStok += usia[index].stok
-//       }
+     
 
-//       await newProduk.update({
-//          jumlah: jumlahStok,
-//          });
-//       // await Pot.update(
-//       //   { stok: pot.stok - jumlah },
-//       //   { where: { id: id_pot } }
-//       // );
-
-//       // await Usia.update(
-//       //   { stok: usia.stok - jumlah },
-//       //   { where: { id: id_usia } }
-//       // );
-
-//       // const produk = await Produk.findOne({
-//       //   where: { id: newProduk.id },
-//       //   include: [
-//       //     {
-//       //       model: Pot,
-//       //       attributes: ['warna_pot'],
-//       //     },
-//       //     {
-//       //       model: Usia,
-//       //       as: 'usia',
-//       //       attributes: ['usia_produk'],
-//       //     },
-//       //   ],
-//       // });
-
-//       // Mengembalikan URL lengkap untuk akses gambar
-//       if (newProduk && newProduk.foto_newProduk) {
-//         newProduk.foto_Produk = `http://localhost:8000/uploads/${newProduk.foto_produk}`;
-//       }
-
-//       res.status(200).json(newProduk);
-//     } catch (error) {
-//       console.log(error);
-//       res.status(500).json({ message: "Terjadi kesalahan saat membuat produk." });
-//     }
-//   } ) ;
-// };
-}
+      res.status(200).json(newProduk);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Terjadi kesalahan saat membuat produk." });
+    }
+  });
+};
 
 const getProduk = async (req, res) => {
   try {
