@@ -4,8 +4,10 @@ const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 // Register User
+
+
 const register = async (req, res) => {
-  const { username, password, role } = req.body;
+  const { username, email, password, no_hp, role, alamat, fotoProfil } = req.body;
 
   try {
     // Hash the password
@@ -15,8 +17,12 @@ const register = async (req, res) => {
     // Create the user in the database
     const user = await User.create({
       username,
+      email,
       password: hashedPassword,
-      role,
+      no_hp,
+      role: role || 'user', // Default role as 'user' if not provided
+      alamat: alamat || null, // Optional alamat
+      fotoProfil: fotoProfil || null, // Optional fotoProfil
     });
 
     res.status(201).json({ success: true, message: 'User registered successfully', user });
@@ -24,6 +30,8 @@ const register = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+
 const login = async (req, res) => {
   const { username, password } = req.body;
   
@@ -38,42 +46,19 @@ const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid credentialsss' });
     }
+// Generate JWT without expiration
+const token = jwt.sign(
+  { id: user.id, role: user.role },
+  process.env.SECRET_KEY // No expiration time
+);
 
-    // Generate JWT and Refresh Token
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.SECRET_KEY,
-      { expiresIn: '15m' } // Token akses kadaluarsa dalam 15 menit
-    );
-    const refreshToken = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: '7d' } // Refresh token kadaluarsa dalam 7 hari
-    );
+// Set token akses tanpa refresh token
+res.cookie('token', token, { httpOnly: true }); // No expiration on token
 
-    // Set token akses dan refresh token
-    res.cookie('token', token, { httpOnly: true, maxAge: 900000 }); // 15 menit
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 }); // 7 hari
-
-    res.status(200).json({ success: true, message: 'Login successful' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-const refreshToken = (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
-
-  if (!refreshToken) return res.sendStatus(401);
-
-  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-
-    const newAccessToken = jwt.sign({ id: user.id, role: user.role }, process.env.SECRET_KEY, { expiresIn: '15m' });
-
-    res.cookie('token', newAccessToken, { httpOnly: true, maxAge: 900000 }); // 15 menit
-    res.status(200).json({ success: true, message: 'Token refreshed' });
-  });
+res.status(200).json({ success: true, message: 'Login successful' });
+} catch (error) {
+  res.status(500).json({ success: false, message: error.message });
+}
 };
 
 const logout = (req, res) => {
