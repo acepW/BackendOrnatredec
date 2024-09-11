@@ -28,7 +28,7 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api', routes);
@@ -36,7 +36,7 @@ app.use('/api', routes);
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-      // await sequelize.sync();
+      // await Post.sync();
 })
 .catch(err => console.log('Error: ' + err));
 

@@ -36,8 +36,8 @@ const upload = multer({
     fileFilter: fileFilter 
 });
 
-const PostUlasan = async (req, res) => {
-    const { judul, desc } = req.body;
+const PostUlasanForum = async (req, res) => {
+    const { judul, desc, kategori_forum } = req.body;
     const { id } = req.user;
     const url = req.file ? `/uploads/${req.file.filename}` : null; 
     let jumlahTanggapan = 0;
@@ -47,7 +47,8 @@ const PostUlasan = async (req, res) => {
             judul : judul,
             desc: desc,
             img: url,
-            jumlahTanggapan
+            jumlahTanggapan,
+            kategori_forum : kategori_forum
         });
 
         res.json(post);
@@ -58,7 +59,7 @@ const PostUlasan = async (req, res) => {
 
 const editPostingan = async (req, res) => {
     const id = req.params.id
-    const {desc, judul} = req.body
+    const {desc, judul, kategori_forum} = req.body
     const userID = req.user.id;
     const url = req.file ? `/uploads/${req.file.filename}` : null; 
     try {
@@ -75,6 +76,7 @@ const editPostingan = async (req, res) => {
        await Post.update({
         judul : judul,
         desc : desc,
+        kategori_forum : kategori_forum,
         img : url
        },{
         where : {id : id}
@@ -168,7 +170,7 @@ const deletePost = async (req, res) => {
 
 
 module.exports = {
-    PostUlasan,
+    PostUlasanForum,
     upload,
     getPost,
     getOnePost,

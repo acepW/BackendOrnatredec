@@ -28,6 +28,10 @@ const Post = db.define('post',{
             key : 'id'
         }
     },
+    kategori_forum : {
+        type : DataTypes.ENUM('tanaman', 'ikan', 'burung'),
+        allowNull : false
+    },
     jumlahTanggapan : {
         type : DataTypes.INTEGER,
         allowNull : false,

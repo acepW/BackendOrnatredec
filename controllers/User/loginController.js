@@ -48,12 +48,12 @@ const login = async (req, res) => {
     const user = await User.findOne({ where: { username } });
     
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return res.status(401).json({ success: false, message: 'username tidak ditemukan' });
     }
 
     const isMatch = bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentialsss' });
+      return res.status(401).json({ success: false, message: 'password salah' });
     }
 
     // Generate JWT and Refresh Token
@@ -71,6 +71,7 @@ const login = async (req, res) => {
     // Set token akses dan refresh token
     res.cookie('token', token, { httpOnly: true, maxAge: 900000 }); // 15 menit
     res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 }); // 7 hari
+    console.log(user.role); // Cek output di console
 
     res.status(200).json({ success: true, message: 'Login successful' });
   } catch (error) {

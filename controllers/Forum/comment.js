@@ -78,24 +78,31 @@ const editComment = async (req, res) => {
 const deleteComment = async (req, res) => {
     const id = parseInt(req.params.id);
     const userID = req.user.id;
-    const roleUser = req.user.role;
+    // const roleUser = req.user.role;
     try {
         const commentIduser = await Comment.findByPk(id);
-        
+        const postId = commentIduser.postId;
         if (!commentIduser) {
             return res.status(404).json({ message: "Komentar tidak ditemukan." });
         }
 
-        if (commentIduser.userId !== userID || roleUser !== 'admin') {
-            res.status(500).json({ message: "maaf kamu tidak bisa mengedit komen" });
-        }
+        if (commentIduser.userId !== userID) {
+            res.status(500).json({ message: "maaf kamu tidak bisa menghapus komen" });
+        } 
+       
+        const commentCount = await Comment.count({ where: { postId: postId } });
+        const replyCount = await Reply.count({ where: { postId: postId } });
 
-        await Comment.destroy({where: {id:id} })
-        res.status(200).json({ message: "Delete successful" });
+        const jumlahTanggapan = commentCount + replyCount;
+
+        await Post.update(
+            { jumlahTanggapan: jumlahTanggapan },
+            { where: { id: postId } }
+        );
+
+        res.status(200).json({message : "delete berhasil"})
     } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
+        res.status(500).json({ message: error.message});
     }
 };
 

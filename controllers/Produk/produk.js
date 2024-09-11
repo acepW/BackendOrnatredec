@@ -67,7 +67,7 @@ const createProduk = async (req, res) => {
       const variasiArray = variasi ? JSON.parse(variasi) : [];
       if (Array.isArray(variasiArray)) {
         for (let index = 0; index < variasiArray.length; index++) {
-         const newVariasi =  await Variasi.create({
+         await Variasi.create({
             id_produk: newProduk.id,
             nama_variasi: variasiArray[index].nama_variasi,
             stok: variasiArray[index].stok,
