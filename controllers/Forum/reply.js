@@ -59,6 +59,7 @@ const Reply = require('../../models/Forum/reply');
            }
         )
         const updatedReply = await Reply.findByPk(id);
+        
             res.json(updatedReply)
         } catch (error) {
             res.status(500).json({ message: "Terjadi kesalahan saat mengedit reply." });

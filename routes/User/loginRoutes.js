@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, logout } = require('../../controllers/User/loginController');
+const { register, login, logout, getUser } = require('../../controllers/User/loginController');
 const  protect  = require('../../middlewares/authMiddleware');
 const router = express.Router();
 
@@ -12,6 +12,9 @@ router.post('/login', login);
 
 // Logout User
 router.delete('/logout', logout);
+
+//get user
+router.get('/getUser', getUser)
 
 
 router.get('/admin', protect(['admin']), (req, res) => {
