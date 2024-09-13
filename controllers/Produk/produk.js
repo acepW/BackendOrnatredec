@@ -64,8 +64,7 @@ const createProduk = async (req, res) => {
       });
 
       // Validasi variasi
-      const variasiArray = variasi ? JSON.parse(variasi) : [];
-      if (Array.isArray(variasiArray)) {
+      const variasiArray = JSON.parse(variasi);
         for (let index = 0; index < variasiArray.length; index++) {
          await Variasi.create({
             id_produk: newProduk.id,
@@ -74,11 +73,9 @@ const createProduk = async (req, res) => {
             foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][index].filename : null
           });
         }
-      }
 
       // Validasi usia
-      const usiaArray = usia ? JSON.parse(usia) : [];
-      if (Array.isArray(usiaArray)) {
+      const usiaArray = JSON.parse(variasi);
         for (let index = 0; index < usiaArray.length; index++) {
           await Usia.create({
             id_produk: newProduk.id,
@@ -91,7 +88,6 @@ const createProduk = async (req, res) => {
 
           jumlahStok += parseInt(usiaArray[index].stok);
         }
-      }
 
       await newProduk.update({
         jumlah: jumlahStok,
