@@ -3,11 +3,13 @@ const bcrypt = require('bcryptjs');
 const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-
 // Register User
 const register = async (req, res) => {
-
   const { username, email, password, no_hp, role } = req.body;
+
+  // Ambil file yang diupload
+  const photoProfile = req.files?.photoProfile ? req.files.photoProfile[0].filename : null;
+  const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
 
   try {
     const UserEmail = await User.findOne({ where: { email } });
@@ -22,7 +24,7 @@ const register = async (req, res) => {
 
     const UserNophone = await User.findOne({ where: { no_hp } });
     if (UserNophone) {
-        return res.status(409).json({ message: 'No pon already exists' });
+        return res.status(409).json({ message: 'No phone already exists' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -34,7 +36,9 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       no_hp,
-      role
+      role,
+      photoProfile,           // Tambahkan foto profil
+      backgroundProfile       // Tambahkan background profil
     });
 
     res.status(201).json({ success: true, message: 'User registered successfully', user });
