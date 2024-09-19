@@ -2,13 +2,6 @@ const express = require('express');
 const { register, login, logout, getUser, TotalUser, getUserMe } = require('../../controllers/User/loginController');
 const  protect  = require('../../middlewares/authMiddleware');
 const router = express.Router();
-const {upload}= require ('../../middlewares/Multer')
-
-router.post('/register', upload.fields([
-  { name: 'photoProfile', maxCount: 1 },
-  { name: 'backgroundProfile', maxCount: 1 }
-]), register);
-
 
 // Login User
 router.post('/login', login);

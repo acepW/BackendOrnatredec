@@ -37,6 +37,7 @@ const register = async (req, res) => {
       password: hashedPassword,
       no_hp,
       role,
+      alamat,
       photoProfile,           // Tambahkan foto profil
       backgroundProfile       // Tambahkan background profil
     });
