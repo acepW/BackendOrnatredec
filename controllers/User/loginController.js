@@ -29,7 +29,7 @@ const register = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
+    let alamat = null;
     // Create the user in the database
     const user = await User.create({
       username,

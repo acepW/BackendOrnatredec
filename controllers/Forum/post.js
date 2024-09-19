@@ -42,6 +42,7 @@ const PostUlasanForum = async (req, res) => {
     const { id } = req.user;
     const url = req.file ? `/uploads/${req.file.filename}` : null; 
     let jumlahTanggapan = 0;
+    let jumlahView = 0
     try {
         const post = await Post.create({
             userId: id,
@@ -50,6 +51,7 @@ const PostUlasanForum = async (req, res) => {
             img: url,
             jumlahTanggapan,
             kategori_forum : kategori_forum,
+            jumlahView
         });
 
         res.json(post);
@@ -264,7 +266,7 @@ const getOnePost = async (req, res) => {
             ]
         });
     
-            const view = await findOne({where : {userId : id, postId : idPost}})
+            const view = await View.findOne({where : {userId : id, postId : idPost}})
     
             if (!view) {
                 await View.create({
@@ -272,6 +274,14 @@ const getOnePost = async (req, res) => {
                     postId : idPost,
                 })
             }
+
+            jumlahview = await View.count({where : {postId : idPost}})
+
+            await Post.update({
+                jumlahView : jumlahview
+            }, {
+                where :  {id : idPost}
+            })
             
             res.json({ post });
     } catch (error) {
