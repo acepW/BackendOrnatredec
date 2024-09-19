@@ -27,11 +27,11 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING, // Alamat disimpan sebagai string
     allowNull: true, // Alamat bisa tidak diisi
   },
-  photoProfile: {
+  fotoProfil: {
     type: DataTypes.STRING, // URL untuk foto profil
     allowNull: true, // Foto profil bisa tidak diisi
   },
-  backgroundProfile : {
+  background_fotoProfil: {
     type: DataTypes.STRING, // URL untuk background foto profil
     allowNull: true, // Foto profil bisa tidak diisi
   },

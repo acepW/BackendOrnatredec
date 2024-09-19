@@ -1,4 +1,3 @@
-
 const router = require("express").Router();
 
 //User
@@ -18,8 +17,5 @@ router.use("/", require("./Forum/reply"));
 
 //olah data
 router.use("/", require("./olah data/olahDataTentangTotal"));
-
-router.use("/", require("./Forum/reply"))
-router.use("/", require("./User/editUser"));
 
 module.exports = router;
