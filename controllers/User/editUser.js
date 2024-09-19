@@ -1,4 +1,7 @@
+const User = require('../../models/User/users'); 
+
 // Fungsi Update User
+
 const updateUser = async (req, res) => {
     const { username, email, no_hp, role } = req.body;
     const userId = req.params.id; // Ambil ID dari URL
