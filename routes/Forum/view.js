@@ -4,6 +4,6 @@ const controllerView = require('../../controllers/Forum/view')
 const protect = require('../../middlewares/authMiddleware');
 
 
-router.get('/get/view', protect(['super admin', 'user']), controllerView);
+router.get('/get/:id', protect(['super admin', 'user']), controllerView);
 
 module.exports = router;

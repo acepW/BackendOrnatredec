@@ -3,7 +3,7 @@ const path = require('path');
 const Produk = require("../../models/Produk/produk");
 const Usia = require('../../models/Produk/usia');
 const Variasi = require('../../models/Produk/variasi');
-const { isArray } = require('util');
+const subVariasi = require('../../models/Produk/subVariasi');
 
 // Konfigurasi Multer untuk penyimpanan file
 const storage = multer.diskStorage({
@@ -46,8 +46,8 @@ const createProduk = async (req, res) => {
       judul_produk,
       deskripsi_produk,
       harga,
-      variasi,
       usia,
+      variasi,
       kategori_produk,
     } = req.body;
 
@@ -63,19 +63,8 @@ const createProduk = async (req, res) => {
         kategori_produk,
       });
 
-      // Validasi variasi
-      const variasiArray = JSON.parse(variasi);
-        for (let index = 0; index < variasiArray.length; index++) {
-         await Variasi.create({
-            id_produk: newProduk.id,
-            nama_variasi: variasiArray[index].nama_variasi,
-            stok: variasiArray[index].stok,
-            foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][index].filename : null
-          });
-        }
-
       // Validasi usia
-      const usiaArray = JSON.parse(variasi);
+      const usiaArray = usia ? JSON.parse(usia) : [];
         for (let index = 0; index < usiaArray.length; index++) {
           await Usia.create({
             id_produk: newProduk.id,
@@ -88,11 +77,30 @@ const createProduk = async (req, res) => {
 
           jumlahStok += parseInt(usiaArray[index].stok);
         }
+      
 
       await newProduk.update({
         jumlah: jumlahStok,
       });
 
+       const variasiArray = variasi ? JSON.parse(variasi) : [];
+       for (let index = 0; index < variasiArray.length; index++) {
+        const newVariasi = await Variasi.create({
+           id_produk: newProduk.id,
+           nama_variasi: variasiArray[index].nama_variasi,
+         });
+
+            const subVariasiArray = variasiArray[index].sub_variasi || [];
+            for (let i = 0; i < subVariasiArray.length; i++) {
+             await subVariasi.create({
+              id_produk: newProduk.id,
+              id_variasi: newVariasi.id,
+              nama_variasi: subVariasiArray[i].nama_variasi,
+              stok: subVariasiArray[i].stok,
+              foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][i].filename : null
+      });
+    }
+  }
       // Set foto URL
       if (newProduk && newProduk.foto_produk) {
         newProduk.foto_produk = `/uploads/${newProduk.foto_produk}`;
@@ -115,14 +123,7 @@ const editProduk = async (req, res) => {
     }
 
     const { id } = req.params;
-    const {
-      judul_produk,
-      deskripsi_produk,
-      harga,
-      variasi,
-      usia,
-      kategori_produk,
-    } = req.body;
+    const { judul_produk, deskripsi_produk, harga, variasi, usia, kategori_produk } = req.body;
 
     try {
       let jumlahStok = 0;
@@ -143,19 +144,6 @@ const editProduk = async (req, res) => {
         where: { id: id }
       });
 
-      if (variasi) {
-        const variasiArray = JSON.parse(variasi);
-        await Variasi.destroy({ where: { id_produk: id } });
-        for (let index = 0; index < variasiArray.length; index++) {
-            await Variasi.create({
-                id_produk: id,
-                nama_variasi: variasiArray[index].nama_variasi,
-                stok: variasiArray[index].stok,
-                foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][index].filename : null,
-            });
-        }
-    }
-
       if (usia) {
         const usiaArray = JSON.parse(usia);
         await Usia.destroy({ where: { id_produk: id } });
@@ -166,9 +154,7 @@ const editProduk = async (req, res) => {
             stok: usiaArray[index].stok,
             harga: usiaArray[index].harga,
             hargaSetelah: parseInt(produk.harga) + parseInt(usiaArray[index].harga),
-          }
-        );
-
+          });
           jumlahStok += parseInt(usiaArray[index].stok);
         }
       }
@@ -178,6 +164,29 @@ const editProduk = async (req, res) => {
       }, {
         where: { id: id }
       });
+
+      if (variasi) {
+        const variasiArray = JSON.parse(variasi);
+        await Variasi.destroy({ where: { id_produk: id } });
+        for (let index = 0; index < variasiArray.length; index++) {
+          const newVariasi = await Variasi.create({
+            id_produk: id,
+            nama_variasi: variasiArray[index].nama_variasi,
+          });
+
+          const subVariasiArray = variasiArray[index].sub_variasi || [];
+          await subVariasi.destroy({ where: { id_produk: id } });
+          for (let i = 0; i < subVariasiArray.length; i++) {
+            await subVariasi.create({
+              id_produk: id,
+              id_variasi: newVariasi.id,
+              nama_variasi: subVariasiArray[i].nama_variasi,
+              stok: subVariasiArray[i].stok,
+              foto_variasi: req.files['foto_variasi'] && req.files['foto_variasi'][i] ? req.files['foto_variasi'][i].filename : null
+            });
+          }
+        }
+      }
 
       const updatedProduk = await Produk.findByPk(id);
 
@@ -192,30 +201,33 @@ const editProduk = async (req, res) => {
     }
   });
 };
-
-
-
+;
 
 const getProduk = async (req, res) => {
   try {
     const produk = await Produk.findAll({
       include: [
         {
-          model: Variasi
+          model: Variasi,
+          include: [{ model: subVariasi}],
         },
         {
           model: Usia
         }
       ]
     });
+    // console.log(produk);
+    
     res.json(produk);
   } catch (error) {
+    console.error(error); // Log error untuk debugging
     res.status(500).json({ message: error.message });
   }
 };
 
+
 module.exports = {
   createProduk,
   getProduk,
-  editProduk
+  editProduk,
 };

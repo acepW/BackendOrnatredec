@@ -12,6 +12,9 @@ router.use("/", require("./Produk/usia"));
 router.use("/", require("./Forum/comments"));
 router.use("/", require("./Forum/posts"));
 router.use("/", require("./Forum/view"));
-router.use("/", require("./Forum/reply"))
+router.use("/", require("./Forum/reply"));
+
+//olah data
+router.use("/", require("./olah data/olahDataTentangTotal"));
 
 module.exports = router;

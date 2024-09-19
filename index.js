@@ -16,6 +16,8 @@ const Reply = require("./models/Forum/reply");
 const Views = require("./models/Forum/view");
 const Post = require("./models/Forum/posts");
 const User = require("./models/User/users");
+const simpanPost = require("./models/Forum/simpanPost");
+const subVariasi = require("./models/Produk/subVariasi");
 
 dotenv.config();
 const app = express();
@@ -27,6 +29,7 @@ app.use(
       origin : true
   })
 );
+
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -39,7 +42,7 @@ app.use('/api', routes);
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-      // await Post.sync();
+    //  await sequelize.sync();
 })
 .catch(err => console.log('Error: ' + err));
 

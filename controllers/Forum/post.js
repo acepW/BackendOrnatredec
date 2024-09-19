@@ -4,7 +4,8 @@ const Reply = require('../../models/Forum/reply');
 const User = require('../../models/User/users');
 const multer = require('multer');
 const path = require('path');
-const { where } = require('sequelize');
+const simpanPost = require('../../models/Forum/simpanPost');
+const View = require('../../models/Forum/view');
 
 // Konfigurasi multer untuk menyimpan file
 const storage = multer.diskStorage({
@@ -48,7 +49,7 @@ const PostUlasanForum = async (req, res) => {
             desc: desc,
             img: url,
             jumlahTanggapan,
-            kategori_forum : kategori_forum
+            kategori_forum : kategori_forum,
         });
 
         res.json(post);
@@ -203,9 +204,48 @@ const getPostKategoriBurung = async (req, res) => {
 
 const filterKategori = async (req, res) => {
     const kategori = req.query.kategori
+    const limit = parseInt(req.query.limit)
+    const page = parseInt(req.query.page) 
+    const offset = (page - 1) * limit;
     try {
         const post = await Post.findAll({
             where : {kategori_forum : kategori},
+            limit: limit,
+            offset: offset,
+            include: [
+                { 
+                    model: User, 
+                    attributes: ['username'] 
+                },
+                { 
+                    model: Comment, 
+                    limit: 5,
+                    offset: 0,
+                    include: [
+                        { model: User, attributes: ['username'] },
+                        { 
+                            model: Reply, 
+                            limit: 5,
+                            offset: 0,
+                            include: [{ model: User, attributes: ['username'] }]
+                        }
+                    ]
+                }
+            ]
+        });
+        res.json({ post });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getOnePost = async (req, res) => {
+    const idPost = req.params.id; 
+    const id = req.user.id;
+
+    try {
+        const post = await Post.findOne({ 
+            where: { id: idPost },
             include: [
                 { 
                     model: User, 
@@ -223,41 +263,22 @@ const filterKategori = async (req, res) => {
                 }
             ]
         });
-        res.json({ post });
+    
+            const view = await findOne({where : {userId : id, postId : idPost}})
+    
+            if (!view) {
+                await View.create({
+                    userId : id,
+                    postId : idPost,
+                })
+            }
+            
+            res.json({ post });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: error.message });
     }
-};
-
-const getOnePost = async (req, res) => {
-    const id = req.params;
-    try {
-        const Post = await post.findOne({ 
-            where : {id : id},
-            include: [
-                { 
-                    model: User, 
-                    attributes: ['name'] 
-                },
-                { 
-                    model: Comment, 
-                    include: [
-                        { model: User, attributes: ['name'] },
-                        { 
-                            model: Reply, 
-                            include: [{ model: User, attributes: ['name'] }]
-                        }
-                    ]
-                }
-            ]
-        });
-        res.json({ Post });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-
 }
-
 const deletePost = async (req, res) => {
     const id = parseInt(req.params.id);
     const userID = req.user.id;
@@ -285,6 +306,46 @@ const deletePost = async (req, res) => {
     }
 };
 
+const simpanPostingan = async (req, res) => {
+    const { id } = req.user; 
+    const { idPost } = req.body;
+
+    try {
+        const post = await Post.findOne({ where : {id : idPost}})
+
+        if(!post){
+            res.status(400).json({ message : "maaf postingan tidak ditemukan" })
+        }
+
+        const simpanan = await simpanPost.findAll({ where : {userId : id}})
+        if(simpanan.postId === idPost){
+            res.status(403).json({ message : "maaf postingan sudah ada" })
+        }
+
+        const simpan = await simpanPost.create({
+            userId: id,
+            postId: idPost
+        });
+        res.status(200).json(simpan);
+    } catch (error) {
+        res.status(500).json({ message : error.message })
+    }
+}
+
+const getSimpanPostingan = async (req, res) => {
+    const { id } = req.user; 
+    try {
+        const simpananPostingan = await simpanPost.findAll({where : {userId : id}})
+
+        if (simpananPostingan.length === 0) {
+            return res.status(505).json({ message : "maaf anda tidak memiliki simpanan postingan" })
+        }
+
+        res.status(200).json(simpananPostingan);
+    } catch (error) {
+        res.status(500).json({ message : error.message })
+    }
+}
 
 module.exports = {
     PostUlasanForum,
@@ -296,5 +357,7 @@ module.exports = {
     getPostKategoriBurung,
     getPostKategoriIkan,
     getPostKategoriTanaman,
-    filterKategori
-};
+    filterKategori,
+    simpanPostingan,
+    getSimpanPostingan
+}

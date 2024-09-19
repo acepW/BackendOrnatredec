@@ -9,10 +9,6 @@ const View = db.define('view', {
         type: DataTypes.INTEGER,
         autoIncrement: true
     },
-    jumlahView : {
-        type: DataTypes.STRING,
-        allowNull : true
-    },
     userId: {
         type: DataTypes.INTEGER,
         allowNull: false,

@@ -67,7 +67,7 @@ const token = jwt.sign(
 res.cookie('token', token, { httpOnly: true }); 
 
 
-    res.status(200).json({ success: true, message: 'Login successful' });
+    res.status(200).json({ success: true, message: 'Login successful', user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -76,9 +76,19 @@ res.cookie('token', token, { httpOnly: true });
 const getUser = async (req, res) =>{
   try {
     const user = await User.findAll({})
-    res.json(user)
+    res.status(200).json({message : "sukses", user})
   } catch (error) {
-    res.status(500).json({message : message.error})
+    res.status(500).json({message : error.message})
+  }
+}
+
+const getUserMe = async (req, res) =>{
+  const {id} = req.user
+  try {
+    const user = await User.findByPk(id)
+    res.status(200).json({message : "sukses", user})
+  } catch (error) {
+    res.status(500).json({message : error.message})
   }
 }
 
@@ -95,5 +105,6 @@ module.exports = {
   register,
   login,
   logout,
-  getUser
+  getUser,
+  getUserMe
 }
