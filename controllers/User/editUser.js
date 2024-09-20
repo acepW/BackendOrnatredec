@@ -32,6 +32,17 @@ const updateUser = async (req, res) => {
         user.backgroundProfile = backgroundProfile;
       }
   
+      await User.update({
+        
+        username : username,
+        email : email,
+        no_hp : no_hp,
+        alamat : alamat,
+        photoProfile,
+        backgroundProfile
+      }, {
+        where : {id : userId}
+      })
       // Simpan perubahan
       await user.update();
   
