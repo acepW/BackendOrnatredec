@@ -3,7 +3,7 @@ const User = require('../../models/User/users');
 // Fungsi Update User
 
 const updateUser = async (req, res) => {
-    const { username, email, no_hp, role } = req.body;
+    const { username, email, no_hp, role, tanggalLahir } = req.body;
     const userId = req.params.id; // Ambil ID dari URL
   
     // Cek apakah file foto profil atau background profil diupload
@@ -23,7 +23,7 @@ const updateUser = async (req, res) => {
       user.email = email || user.email;
       user.no_hp = no_hp || user.no_hp;
       user.role = role || user.role;
-  
+      user.tanggalLahir = tanggalLahir || user.tanggalLahir;
       // Update foto profil dan background profil jika ada file baru
       if (photoProfile) {
         user.photoProfile = photoProfile;
@@ -37,6 +37,7 @@ const updateUser = async (req, res) => {
   
       res.status(200).json({ success: true, message: 'User updated successfully', user });
     } catch (error) {
+      console.log(error); // Tambahkan ini untuk melihat detail error
       res.status(500).json({ success: false, message: error.message });
     }
   };

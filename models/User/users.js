@@ -1,13 +1,14 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const sequelize = require('../../config/database'); // Import konfigurasi database
+
 const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   },
-  email : {
+  email: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -15,7 +16,7 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  no_hp : {
+  no_hp: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -24,20 +25,24 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
   alamat: {
-    type: DataTypes.STRING, // Alamat disimpan sebagai string
-    allowNull: true, // Alamat bisa tidak diisi
+    type: DataTypes.STRING,
+    allowNull: true,
   },
   photoProfile: {
-    type: DataTypes.STRING, // URL untuk foto profil
-    allowNull: true, // Foto profil bisa tidak diisi
+    type: DataTypes.STRING,
+    allowNull: true,
   },
-  backgroundProfile : {
-    type: DataTypes.STRING, // URL untuk background foto profil
-    allowNull: true, // Foto profil bisa tidak diisi
+  backgroundProfile: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
-},{
-  freezeTableName : true,
-  timestamps : true
+  tanggalLahir: {
+    type: DataTypes.DATEONLY,
+    allowNull: true, 
+  },
+}, {
+  freezeTableName: true,
+  timestamps: true,
 }, {
   hooks: {
     beforeCreate: async (user) => {
