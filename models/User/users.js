@@ -31,10 +31,10 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING, // URL untuk foto profil
     allowNull: true, // Foto profil bisa tidak diisi
   },
-  backgroundProfile: {
-    type: DataTypes.STRING, // URL untuk background foto profil
-    allowNull: true, // Foto profil bisa tidak diisi
-  },
+  // backgroundProfile: {
+  //   type: DataTypes.STRING, // URL untuk background foto profil
+  //   allowNull: true, // Foto profil bisa tidak diisi
+  // },
 },{
   freezeTableName : true,
   timestamps : true

@@ -69,7 +69,7 @@ const token = jwt.sign(
 );
 
 // Set token akses tanpa refresh token
-res.cookie('token', token, { httpOnly: true }); 
+res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path: "/" }); 
 
 
     res.status(200).json({ success: true, message: 'Login successful', user });
@@ -99,7 +99,9 @@ const getUserMe = async (req, res) =>{
 
 const logout = (req, res) => {
   try {
-      res.clearCookie('token', {httpOnly: true});
+      res.clearCookie('token', {httpOnly: true, sameSite: "None",secure: true, path: "/"});
+      console.log('logout berhasil');
+      
       res.status(200).json({message: 'logout berhasil'});
   } catch (error) {
       res.status(500).json({ message: error.message });

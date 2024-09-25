@@ -33,7 +33,7 @@ app.use(
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
-// app.use(bodyParser.urlencoded({ extended: true }));;
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true }));;
 app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
 
 // Routes
@@ -42,7 +42,7 @@ app.use('/api', routes);
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-    //  await Views.sync({alter : true});
+    //  await User.sync({alter : true});
 })
 .catch(err => console.log('Error: ' + err));
 

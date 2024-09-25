@@ -6,8 +6,8 @@ const updateUser = async (req, res) => {
     const userId = req.params.id; // Ambil ID dari URL
   
     // Cek apakah file foto profil atau background profil diupload
-    const photoProfile = req.files?.photoProfile ? req.files.photoProfile[0].filename : null;
-    const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
+    const photoProfile = req.file ? `/uploads/${req.file.filename}` : null; 
+    // const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
   
     try {
       // Cari user berdasarkan ID
@@ -23,23 +23,23 @@ const updateUser = async (req, res) => {
       user.email = email || user.email;
       user.no_hp = no_hp || user.no_hp;
       user.alamat = alamat || user.alamat;
+
   
       // Update foto profil dan background profil jika ada file baru
       if (photoProfile) {
         user.photoProfile = photoProfile;
       }
-      if (backgroundProfile) {
-        user.backgroundProfile = backgroundProfile;
-      }
+      // if (backgroundProfile) {
+      //   user.backgroundProfile = backgroundProfile;
+      // }
   
       await User.update({
-        
+
         username : username,
         email : email,
         no_hp : no_hp,
         alamat : alamat,
-        photoProfile,
-        backgroundProfile
+        photoProfile ,
       }, {
         where : {id : userId}
       })

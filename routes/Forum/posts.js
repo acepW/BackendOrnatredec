@@ -14,5 +14,6 @@ router.get('/forum/burung', protect(['user','super admin']),ControllerPost.getPo
 router.get('/filter', protect(['user','super admin']),ControllerPost.filterKategori);
 router.post('/simpanPost', protect(['user','super admin']), ControllerPost.simpanPostingan);
 router.get('/simpanan',  protect(['user','super admin']), ControllerPost.getSimpanPostingan);
+router.get('/populer', ControllerPost.PostTerpopuler);
 
 module.exports = router;

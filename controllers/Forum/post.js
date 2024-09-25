@@ -357,6 +357,17 @@ const getSimpanPostingan = async (req, res) => {
     }
 }
 
+const PostTerpopuler = async (req, res) => {
+    try {
+        const populer = await Post.findAll({
+            order : [['jumlahTanggapan', 'DESC']]
+        })
+        res.status(200).json(populer)
+    } catch (error) {
+        res.status(500).json({ message : error.message })
+    }
+}
+
 module.exports = {
     PostUlasanForum,
     upload,
@@ -369,5 +380,6 @@ module.exports = {
     getPostKategoriTanaman,
     filterKategori,
     simpanPostingan,
-    getSimpanPostingan
+    getSimpanPostingan,
+    PostTerpopuler
 }

@@ -6,5 +6,6 @@ const controllerProduk = require("../../controllers/Produk/produk");
 router.post("/produk", protect(['super admin', 'admin']), controllerProduk.createProduk);
 router.get("/getProduk", controllerProduk.getProduk);
 router.put("/editProduk/:id", protect(['super admin', 'admin']), controllerProduk.editProduk);
+router.get("/filterKategori", controllerProduk.filterKategoriProduk);
 
 module.exports = router;

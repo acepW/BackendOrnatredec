@@ -11,7 +11,7 @@ router.post('/login', login);
 router.post('/register', register)
 
 // Logout User
-router.delete('/logout', logout);
+router.delete('/logout', protect(['user', 'admin', 'super admin', 'kasir']), logout);
 
 //get user
 router.get('/getUser', getUser)

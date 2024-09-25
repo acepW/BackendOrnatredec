@@ -208,11 +208,11 @@ const getProduk = async (req, res) => {
     const produk = await Produk.findAll({
       include: [
         {
-          model: Variasi,
-          include: [{ model: subVariasi}],
+          model: Usia
         },
         {
-          model: Usia
+          model: Variasi,
+          include: [{ model: subVariasi}],
         }
       ]
     });
@@ -225,9 +225,30 @@ const getProduk = async (req, res) => {
   }
 };
 
+const filterKategoriProduk = async (req, res) => {
+  const kategori = req.query.kategori
+
+  try {
+    const produk = await Produk.findAll({
+      where : {kategori_produk: kategori},
+    
+    include : [{
+         model : Usia
+    }, {
+        model : Variasi,
+        include: [{ model: subVariasi}],
+    }]
+  })
+
+  res.status(200).json(produk)
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 module.exports = {
   createProduk,
   getProduk,
   editProduk,
+  filterKategoriProduk
 };
