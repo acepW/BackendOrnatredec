@@ -18,6 +18,7 @@ const Post = require("./models/Forum/posts");
 const User = require("./models/User/users");
 const simpanPost = require("./models/Forum/simpanPost");
 const subVariasi = require("./models/Produk/subVariasi");
+const Alamat = require("./models/User/alamat");
 
 dotenv.config();
 const app = express();
@@ -42,7 +43,7 @@ app.use('/api', routes);
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-    //  await User.sync({alter : true});
+    //  await Alamat.sync({alter : true});
 })
 .catch(err => console.log('Error: ' + err));
 

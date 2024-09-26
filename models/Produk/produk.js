@@ -13,7 +13,7 @@ const Produk = db.define("produk", {
     },
     deskripsi_produk: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull : false  
     },
     foto_produk: {
         type: DataTypes.STRING,
