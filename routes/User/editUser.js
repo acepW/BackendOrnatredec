@@ -7,7 +7,7 @@ const uploadImage = require('../../middlewares/Multer');
 // Rute Update User (dengan upload file)
 router.put('/update/:id',uploadImage.single('photoProfile'), updateUser);
 router.post('/alamat', protect(['user']), buatAlamat)
-router.put('/EditAlamat/:id', protect(['user']), editAlamat)
+router.put('/EditAlamat/:id', editAlamat)
 
 // Rute Delete User
 router.delete('/delete/:id', deleteUser);

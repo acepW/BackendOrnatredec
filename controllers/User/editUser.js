@@ -1,6 +1,7 @@
 const Alamat = require('../../models/User/alamat');
 const User = require('../../models/User/users');
 
+
 // Fungsi Update User
 const updateUser = async (req, res) => {
     const { username, email, no_hp, alamat, tanggalLahir} = req.body;
@@ -18,13 +19,12 @@ const updateUser = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // Update data user
-      
-      user.username = username || user.username;
-      user.email = email || user.email;
-      user.no_hp = no_hp || user.no_hp;
-      user.alamat = alamat || user.alamat;
-      user.tanggalLahir = tanggalLahir || user.tanggalLahir;
+      // // Update data user
+      // user.username = username || user.username;
+      // user.email = email || user.email;
+      // user.no_hp = no_hp || user.no_hp;
+      // user.alamat = alamat || user.alamat;
+      // user.tanggalLahir = tanggalLahir || user.tanggalLahir;
   
       // Update foto profil dan background profil jika ada file baru
       if (photoProfile) {
@@ -44,10 +44,15 @@ const updateUser = async (req, res) => {
       }, {
         where : {id : userId}
       })
-      // Simpan perubahan
-      await user.update();
+
+      await Alamat.update({
+        nohp : no_hp
+      },{
+        where : {userId : userId}
+      })
+      const profilBaru = await User.findOne({ where: { id : userId} });
   
-      res.status(200).json({ success: true, message: 'User updated successfully', user });
+      res.status(200).json({ success: true, message: 'User updated successfully', profilBaru });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
@@ -83,7 +88,7 @@ const editAlamat = async (req, res) => {
   try {
     const address = await Alamat.findOne({where : {userId : id}});
     if (!address) {
-      res.status(400).json({message : "alamat tidak ditemukan"})
+      res.status(403).json({message : "alamat tidak ditemukan"})
     }
     await Alamat.update({
       provinsi : provinsi,

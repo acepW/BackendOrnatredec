@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require('cors')
-const cookieParser = require("cookie-parser");
+const cookieParser = require("cookie-parser"); 
 const bodyParser = require("body-parser");
 const sequelize = require("./config/database");
 const routes = require('./routes/router');
@@ -43,7 +43,7 @@ app.use('/api', routes);
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-    //  await Alamat.sync({alter : true});
+    //  await User.sync({alter : true});
 })
 .catch(err => console.log('Error: ' + err));
 

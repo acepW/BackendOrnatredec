@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const moment = require('moment');
+const Alamat = require('../../models/User/alamat');
 // Register User
 const register = async (req, res) => {
   const { username, email, password, no_hp, role } = req.body;
@@ -80,7 +82,7 @@ res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path
 
 const getUser = async (req, res) =>{
   try {
-    const user = await User.findAll({})
+    const user = await User.findAll({include:[{model : Alamat}]})
     res.status(200).json({message : "sukses", user})
   } catch (error) {
     res.status(500).json({message : error.message})
@@ -91,7 +93,18 @@ const getUserMe = async (req, res) =>{
   const {id} = req.user
   try {
     const user = await User.findByPk(id)
-    res.status(200).json({message : "sukses", user})
+    const alamat = await Alamat.findOne({where : {userId : id}})
+    const tanggalBaru = moment(user.tanggalLahir).format('DD-MM-YYYY');
+    res.status(200).json({message : "sukses", 
+      username: user.username,
+      email: user.email,
+      password : user.password,
+      no_hp : user.no_hp,
+      role : user.role,
+      alamat : alamat,
+      photoProfile : user.photoProfile,
+      tanggalLahir: tanggalBaru,
+    })
   } catch (error) {
     res.status(500).json({message : error.message})
   }

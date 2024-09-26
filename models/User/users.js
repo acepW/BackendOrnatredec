@@ -23,10 +23,6 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('user', 'admin', 'super admin', 'kasir'),
     allowNull: false,
   },
-  alamat: {
-    type: DataTypes.STRING, // Alamat disimpan sebagai string
-    allowNull: true, // Alamat bisa tidak diisi
-  },
   photoProfile: {
     type: DataTypes.STRING, // URL untuk foto profil
     allowNull: true, // Foto profil bisa tidak diisi
