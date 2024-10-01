@@ -28,7 +28,7 @@ const User = sequelize.define('User', {
     allowNull: true, // Foto profil bisa tidak diisi
   },
   tanggalLahir: {
-    type: DataTypes.DATEONLY, // URL untuk foto profil
+    type: DataTypes.DATEONLY,
     allowNull: true,
   }
   // backgroundProfile: {

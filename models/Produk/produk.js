@@ -17,7 +17,7 @@ const Produk = db.define("produk", {
     },
     foto_produk: {
         type: DataTypes.STRING,
-        allowNull : true
+        allowNull : false
     },
     harga: {
         type: DataTypes.INTEGER,

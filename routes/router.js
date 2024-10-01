@@ -5,9 +5,7 @@ router.use("/", require("./User/loginRoutes"));
 router.use("/", require("./User/editUser"));
 
 //Produk
-router.use("/", require("./Produk/variasi"));
 router.use("/", require("./Produk/produk"));
-router.use("/", require("./Produk/usia"));
 
 //Forum
 router.use("/", require("./Forum/comments"));

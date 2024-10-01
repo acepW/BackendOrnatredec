@@ -7,7 +7,6 @@ const sequelize = require("./config/database");
 const routes = require('./routes/router');
 const Users = require("./models/User/users");
 const Produk = require('./models/Produk/produk');
-const Usia = require('./models/Produk/usia');
 const Variasi = require('./models/Produk/variasi');
 const path = require("path");
 const Comments = require("./models/Forum/comments");
@@ -43,7 +42,7 @@ app.use('/api', routes);
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-    //  await User.sync({alter : true});
+    //  await User.sync({alter: true});
 })
 .catch(err => console.log('Error: ' + err));
 

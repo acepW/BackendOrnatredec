@@ -1,7 +1,6 @@
 const multer = require('multer');
 const path = require('path');
 const Produk = require("../../models/Produk/produk");
-const Usia = require('../../models/Produk/usia');
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
 
@@ -35,7 +34,6 @@ const upload = multer({
   { name: 'foto_variasi', maxCount: 10 }      
 ]);
 
-// Fungsi utama untuk membuat produk
 const createProduk = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
@@ -46,7 +44,6 @@ const createProduk = async (req, res) => {
       judul_produk,
       deskripsi_produk,
       harga,
-      usia,
       variasi,
       kategori_produk,
     } = req.body;
@@ -63,26 +60,6 @@ const createProduk = async (req, res) => {
         kategori_produk,
       });
 
-      // Validasi usia
-      const usiaArray = usia ? JSON.parse(usia) : [];
-        for (let index = 0; index < usiaArray.length; index++) {
-          await Usia.create({
-            id_produk: newProduk.id,
-            usia_produk: usiaArray[index].usia_produk,
-            stok: usiaArray[index].stok,
-            harga: usiaArray[index].harga,
-            hargaSetelah: parseInt(newProduk.harga) + parseInt(usiaArray[index].harga),
-          }
-        );
-
-          jumlahStok += parseInt(usiaArray[index].stok);
-        }
-      
-
-      await newProduk.update({
-        jumlah: jumlahStok,
-      });
-
        const variasiArray = variasi ? JSON.parse(variasi) : [];
        for (let index = 0; index < variasiArray.length; index++) {
         const newVariasi = await Variasi.create({
@@ -96,17 +73,21 @@ const createProduk = async (req, res) => {
               id_produk: newProduk.id,
               id_variasi: newVariasi.id,
               nama_variasi: subVariasiArray[i].nama_variasi,
+              usia : subVariasiArray[i].usia,
               stok: subVariasiArray[i].stok,
+              harga: subVariasiArray[i].harga,
               foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][i].filename : null
       });
+      jumlahStok += parseInt(subVariasiArray[i].stok);
     }
   }
+  await newProduk.update({
+    jumlah: jumlahStok,
+  });
       // Set foto URL
       if (newProduk && newProduk.foto_produk) {
         newProduk.foto_produk = `/uploads/${newProduk.foto_produk}`;
       }
-
-     
 
       res.status(200).json(newProduk);
     } catch (error) {
@@ -121,9 +102,14 @@ const editProduk = async (req, res) => {
     if (err) {
       return res.status(400).json({ message: err.message });
     }
-
     const { id } = req.params;
-    const { judul_produk, deskripsi_produk, harga, variasi, usia, kategori_produk } = req.body;
+    const {
+      judul_produk,
+      deskripsi_produk,
+      harga,
+      variasi,
+      kategori_produk,
+    } = req.body;
 
     try {
       let jumlahStok = 0;
@@ -133,83 +119,153 @@ const editProduk = async (req, res) => {
         return res.status(404).json({ message: 'Produk tidak ditemukan' });
       }
 
-      await Produk.update({
+       await Produk.update({
         judul_produk,
         deskripsi_produk,
-        foto_produk: req.files['foto_produk'] ? req.files['foto_produk'][0].filename : produk.foto_produk,
+        foto_produk: req.files['foto_produk'] ? req.files['foto_produk'][0].filename : null,
         harga,
         jumlah: jumlahStok,
         kategori_produk,
-      }, {
-        where: { id: id }
-      });
+      },{
+          where: { id: id }
+        });
 
-      if (usia) {
-        const usiaArray = JSON.parse(usia);
-        await Usia.destroy({ where: { id_produk: id } });
-        for (let index = 0; index < usiaArray.length; index++) {
-          await Usia.create({
-            id_produk: id,
-            usia_produk: usiaArray[index].usia_produk,
-            stok: usiaArray[index].stok,
-            harga: usiaArray[index].harga,
-            hargaSetelah: parseInt(produk.harga) + parseInt(usiaArray[index].harga),
-          });
-          jumlahStok += parseInt(usiaArray[index].stok);
-        }
-      }
+      const variasiArray = JSON.parse(variasi);
+      await Variasi.destroy({ where: { id_produk: id } });
+       for (let index = 0; index < variasiArray.length; index++) {
+        const newVariasi = await Variasi.create({
+          id_produk: id,
+           nama_variasi: variasiArray[index].nama_variasi,
+         });
 
-      await Produk.update({
-        jumlah: jumlahStok,
-      }, {
-        where: { id: id }
-      });
-
-      if (variasi) {
-        const variasiArray = JSON.parse(variasi);
-        await Variasi.destroy({ where: { id_produk: id } });
-        for (let index = 0; index < variasiArray.length; index++) {
-          const newVariasi = await Variasi.create({
-            id_produk: id,
-            nama_variasi: variasiArray[index].nama_variasi,
-          });
-
-          const subVariasiArray = variasiArray[index].sub_variasi || [];
-          await subVariasi.destroy({ where: { id_produk: id } });
-          for (let i = 0; i < subVariasiArray.length; i++) {
-            await subVariasi.create({
+            const subVariasiArray = variasiArray[index].sub_variasi || [];
+            await subVariasi.destroy({ where: { id_produk: id } });
+            for (let i = 0; i < subVariasiArray.length; i++) {
+             await subVariasi.create({
               id_produk: id,
               id_variasi: newVariasi.id,
               nama_variasi: subVariasiArray[i].nama_variasi,
+              usia : subVariasiArray[i].usia,
               stok: subVariasiArray[i].stok,
-              foto_variasi: req.files['foto_variasi'] && req.files['foto_variasi'][i] ? req.files['foto_variasi'][i].filename : null
-            });
-          }
-        }
-      }
-
+              harga: subVariasiArray[i].harga,
+              foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][i].filename : null
+      });
+      jumlahStok += parseInt(subVariasiArray[i].stok);
+      console.log(jumlahStok);
+      
+    }
+  }
+      await Produk.update({
+            jumlah: jumlahStok,
+          }, {
+            where: { id: id }
+          });
+    
+    
       const updatedProduk = await Produk.findByPk(id);
 
       if (updatedProduk && updatedProduk.foto_produk) {
         updatedProduk.foto_produk = `/uploads/${updatedProduk.foto_produk}`;
       }
-      
+
       res.status(200).json(updatedProduk);
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Terjadi kesalahan saat memperbarui produk." });
+      res.status(500).json({ message: "Terjadi kesalahan saat membuat produk." });
     }
   });
 };
-;
+
+// const editProduk = async (req, res) => {
+//   upload(req, res, async (err) => {
+//     if (err) {
+//       return res.status(400).json({ message: err.message });
+//     }
+
+//     const { id } = req.params;
+//     const { judul_produk, deskripsi_produk, harga, variasi, usia, kategori_produk } = req.body;
+
+//     try {
+//       let jumlahStok = 0;
+
+//       const produk = await Produk.findByPk(id);
+//       if (!produk) {
+//         return res.status(404).json({ message: 'Produk tidak ditemukan' });
+//       }
+
+//       await Produk.update({
+//         judul_produk,
+//         deskripsi_produk,
+//         foto_produk: req.files['foto_produk'] ? req.files['foto_produk'][0].filename : produk.foto_produk,
+//         harga,
+//         jumlah: jumlahStok,
+//         kategori_produk,
+//       }, {
+//         where: { id: id }
+//       });
+
+//       if (usia) {
+//         const usiaArray = JSON.parse(usia);
+//         await Usia.destroy({ where: { id_produk: id } });
+//         for (let index = 0; index < usiaArray.length; index++) {
+//           await Usia.create({
+//             id_produk: id,
+//             usia_produk: usiaArray[index].usia_produk,
+//             stok: usiaArray[index].stok,
+//             harga: usiaArray[index].harga,
+//             hargaSetelah: parseInt(produk.harga) + parseInt(usiaArray[index].harga),
+//           });
+//           jumlahStok += parseInt(usiaArray[index].stok);
+//         }
+//       }
+
+//       await Produk.update({
+//         jumlah: jumlahStok,
+//       }, {
+//         where: { id: id }
+//       });
+
+//       if (variasi) {
+//         const variasiArray = JSON.parse(variasi);
+//         await Variasi.destroy({ where: { id_produk: id } });
+//         for (let index = 0; index < variasiArray.length; index++) {
+//           const newVariasi = await Variasi.create({
+//             id_produk: id,
+//             nama_variasi: variasiArray[index].nama_variasi,
+//           });
+
+//           const subVariasiArray = variasiArray[index].sub_variasi || [];
+//           await subVariasi.destroy({ where: { id_produk: id } });
+//           for (let i = 0; i < subVariasiArray.length; i++) {
+//             await subVariasi.create({
+//               id_produk: id,
+//               id_variasi: newVariasi.id,
+//               nama_variasi: subVariasiArray[i].nama_variasi,
+//               stok: subVariasiArray[i].stok,
+//               foto_variasi: req.files['foto_variasi'] && req.files['foto_variasi'][i] ? req.files['foto_variasi'][i].filename : null
+//             });
+//           }
+//         }
+//       }
+
+//       const updatedProduk = await Produk.findByPk(id);
+
+//       if (updatedProduk && updatedProduk.foto_produk) {
+//         updatedProduk.foto_produk = `/uploads/${updatedProduk.foto_produk}`;
+//       }
+      
+//       res.status(200).json(updatedProduk);
+//     } catch (error) {
+//       console.log(error);
+//       res.status(500).json({ message: "Terjadi kesalahan saat memperbarui produk." });
+//     }
+//   });
+// };
 
 const getProduk = async (req, res) => {
   try {
     const produk = await Produk.findAll({
       include: [
-        {
-          model: Usia
-        },
         {
           model: Variasi,
           include: [{ model: subVariasi}],
@@ -232,9 +288,7 @@ const filterKategoriProduk = async (req, res) => {
     const produk = await Produk.findAll({
       where : {kategori_produk: kategori},
     
-    include : [{
-         model : Usia
-    }, {
+    include : [ {
         model : Variasi,
         include: [{ model: subVariasi}],
     }]
@@ -245,6 +299,207 @@ const filterKategoriProduk = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 }
+
+// const createProduk = async (req, res) => {
+//   upload(req, res, async (err) => {
+//     if (err) {
+//       return res.status(400).json({ message: err.message });
+//     }
+
+//     const {
+//       judul_produk,
+//       deskripsi_produk,
+//       harga,
+//       variasi,
+//       kategori_produk,
+//     } = req.body;
+
+//     try {
+//       let jumlahStok = 0;
+
+//       const newProduk = await Produk.create({
+//         judul_produk,
+//         deskripsi_produk,
+//         foto_produk: req.files['foto_produk'] ? req.files['foto_produk'][0].filename : null,
+//         harga,
+//         jumlah: jumlahStok,
+//         kategori_produk,
+//       });
+
+//       if (variasi) {
+//         const variasiArray = JSON.parse(variasi);
+
+//         if (variasiArray.length < 2) {
+//           return res.status(400).json({ message: "Minimal dua variasi diperlukan." });
+//         }
+
+//         const kombinasi = [];
+
+//         // Buat variasi dan sub-variasi
+//         for (let index = 0; index < variasiArray.length; index++) {
+//           const newVariasi = await Variasi.create({
+//             id_produk: newProduk.id,
+//             nama_variasi: variasiArray[index].nama_variasi,
+//           });
+
+//           const subVariasiArray = variasiArray[index].sub_variasi || [];
+//           for (let i = 0; i < subVariasiArray.length; i++) {
+//             const fotoSubVariasi = req.files['foto_variasi'] && req.files['foto_variasi'][i] ? req.files['foto_variasi'][i].filename : null;
+
+//             const newSubVariasi = await subVariasi.create({
+//               id_produk: newProduk.id,
+//               id_variasi: newVariasi.id,
+//               nama_variasi: subVariasiArray[i].nama_variasi,
+//               foto_variasi: fotoSubVariasi
+//             });
+
+//             console.log(`SubVariasi Created: ID = ${newSubVariasi.id}`);
+//           }
+//         }
+
+//         // Membuat kombinasi
+//         if (Array.isArray(variasiArray[0].sub_variasi) && Array.isArray(variasiArray[1].sub_variasi)) {
+//           for (let i = 0; i < variasiArray[0].sub_variasi.length; i++) {
+//             for (let j = 0; j < variasiArray[1].sub_variasi.length; j++) {
+//               const idVariasi1 = await Variasi.findOne({
+//                 where: { id_produk: newProduk.id, nama_variasi: variasiArray[0].nama_variasi },
+//                 include: [{ model: subVariasi, as: 'sub_variasi' }] 
+//               });
+        
+//               const idVariasi2 = await Variasi.findOne({
+//                 where: { id_produk: newProduk.id, nama_variasi: variasiArray[1].nama_variasi },
+//                 include: [{ model: subVariasi, as: 'sub_variasi' }]
+//               });
+        
+//               if (idVariasi1 && idVariasi2) {
+//                 const idSubVariasi1 = idVariasi1.sub_variasi[i]?.id; 
+//                 const idSubVariasi2 = idVariasi2.sub_variasi[j]?.id;
+        
+//                 if (idSubVariasi1 !== undefined && idSubVariasi2 !== undefined) {
+//                   kombinasi.push({
+//                     id_produk: newProduk.id,
+//                     id_variasi1: idVariasi1.id,
+//                     id_subVariasi1: idSubVariasi1,
+//                     id_variasi2: idVariasi2.id,
+//                     id_subVariasi2: idSubVariasi2,
+//                   });
+//                 } else {
+//                   console.error(`ID Sub-Variasi tidak ditemukan: SubVariasi1 = ${idSubVariasi1}, SubVariasi2 = ${idSubVariasi2}`);
+//                 }
+//               } else {
+//                 console.error(`ID Variasi tidak ditemukan: Variasi1 = ${idVariasi1}, Variasi2 = ${idVariasi2}`);
+//               }
+//             }
+//           }
+//         } else {
+//           console.error('Sub-variasi tidak terdefinisi atau bukan array:', {
+//             subVariasi1: variasiArray[0].sub_variasi,
+//             subVariasi2: variasiArray[1].sub_variasi
+//           });
+//         }
+        
+//         console.log('Kombinasi sebelum bulk create:', kombinasi);
+
+//         await ProdukKombinasi.bulkCreate(kombinasi);
+//       }
+
+//       if (newProduk && newProduk.foto_produk) {
+//         newProduk.foto_produk = `/uploads/${newProduk.foto_produk}`;
+//       }
+
+//       res.status(200).json(newProduk);
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: "Terjadi kesalahan saat membuat produk." });
+//     }
+//   });
+// };
+
+
+// const editProduk = async (req, res) => {
+//   upload(req, res, async (err) => {
+//     if (err) {
+//       return res.status(400).json({ message: err.message });
+//     }
+
+//     const { id } = req.params;
+//     const {
+//       judul_produk,
+//       deskripsi_produk,
+//       harga,
+//       variasi,
+//       usia,
+//       kategori_produk,
+//     } = req.body;
+
+//     try {
+//       let jumlahStok = 0;
+
+//       const produk = await Produk.findByPk(id);
+//       if (!produk) {
+//         return res.status(404).json({ message: 'Produk tidak ditemukan' });
+//       }
+
+//       await Produk.update({
+//         judul_produk,
+//         deskripsi_produk,
+//         foto_produk: req.files['foto_produk'] ? req.files['foto_produk'][0].filename : produk.foto_produk,
+//         harga,
+//         jumlah: jumlahStok,
+//         kategori_produk,
+//       }, {
+//         where: { id: id }
+//       });
+
+//       if (variasi) {
+//         const variasiArray = JSON.parse(variasi);
+//         await Variasi.destroy({ where: { id_produk: id } });
+//         for (let index = 0; index < variasiArray.length; index++) {
+//             await Variasi.create({
+//                 id_produk: id,
+//                 nama_variasi: variasiArray[index].nama_variasi,
+//                 stok: variasiArray[index].stok,
+//                 foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][index].filename : null,
+//             });
+//         }
+//     }
+
+//       if (usia) {
+//         const usiaArray = JSON.parse(usia);
+//         await Usia.destroy({ where: { id_produk: id } });
+//         for (let index = 0; index < usiaArray.length; index++) {
+//           await Usia.create({
+//             id_produk: id,
+//             usia_produk: usiaArray[index].usia_produk,
+//             stok: usiaArray[index].stok,
+//             harga: usiaArray[index].harga,
+//             hargaSetelah: parseInt(produk.harga) + parseInt(usiaArray[index].harga),
+//           }
+//         );
+
+//           jumlahStok += parseInt(usiaArray[index].stok);
+//         }
+//       }
+
+//       await Produk.update({
+//         jumlah: jumlahStok,
+//       }, {
+//         where: { id: id }
+//       });
+
+//       const updatedProduk = await Produk.findByPk(id);
+
+//       if (updatedProduk && updatedProduk.foto_produk) {
+//         updatedProduk.foto_produk = `/uploads/${updatedProduk.foto_produk}`;
+//       }
+      
+//       res.status(200).json(updatedProduk);
+//     } catch (error) {
+//       console.log(error);
+//       res.status(500).json({ message: "Terjadi kesalahan saat memperbarui produk." });
+//     }
+//   });
+// };
 
 module.exports = {
   createProduk,

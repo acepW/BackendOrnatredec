@@ -1,6 +1,6 @@
 const Alamat = require('../../models/User/alamat');
 const User = require('../../models/User/users');
-
+const moment = require('moment')
 
 // Fungsi Update User
 const updateUser = async (req, res) => {
@@ -33,14 +33,14 @@ const updateUser = async (req, res) => {
       // if (backgroundProfile) {
       //   user.backgroundProfile = backgroundProfile;
       // }
-  
+      const tanggalBaru = moment(tanggalLahir).format('YYYY-MM-DD');
       await User.update({
         username : username,
         email : email,
         no_hp : no_hp,
         alamat : alamat,
         photoProfile ,
-        tanggalLahir : tanggalLahir
+        tanggalLahir : tanggalBaru
       }, {
         where : {id : userId}
       })
@@ -76,6 +76,7 @@ const buatAlamat = async (req, res) => {
       kategori_alamat: kategori_alamat,
       alamatUtama : alamatUtama
     })
+
     res.status(200).json(alamat)
   } catch (error) {
     res.status(500).json({message : error.message})
