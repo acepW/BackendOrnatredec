@@ -7,6 +7,11 @@ router.use("/", require("./User/editUser"));
 //Produk
 router.use("/", require("./Produk/produk"));
 
+//Transaksi
+router.use("/", require("./Transaksi/transaksi"));
+router.use("/", require("./Transaksi/alamat"));
+router.use("/", require("./Transaksi/paymentgateway"));
+
 //Forum
 router.use("/", require("./Forum/comments"));
 router.use("/", require("./Forum/posts"));
