@@ -18,7 +18,7 @@ const Variasi = db.define("variasi", {
      },
     nama_variasi: {
         type: DataTypes.STRING,
-        allowNull :false
+        allowNull :true
     },
 }, {
     freezeTableName: true,

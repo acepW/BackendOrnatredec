@@ -29,21 +29,21 @@ const subVariasi = db.define("subvariasi", {
         type: DataTypes.STRING,
         allowNull :true
     },
-    nama_variasi: {
+    nama_sub_variasi: {
         type: DataTypes.STRING,
-        allowNull :false
+        allowNull :true
     },
     stok : {
         type: DataTypes.INTEGER,
-        allowNull :false,
+        allowNull :true,
     },
     usia : {
         type: DataTypes.STRING,
-        allowNull :false,
+        allowNull :true,
     },
     harga : {
         type: DataTypes.INTEGER,
-        allowNull :false,
+        allowNull :true,
     }
 }, {
     freezeTableName: true,

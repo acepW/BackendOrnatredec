@@ -301,7 +301,7 @@ const deletePost = async (req, res) => {
         }
 
         if (userRole !== 'super admin' && post.userId !== userID) {
-            return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus komen ini." });
+            return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus postingan ini." });
         }
 
         await Post.destroy({where: {id:id} })

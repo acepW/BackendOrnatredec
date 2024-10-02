@@ -30,6 +30,13 @@ const Reply = require('../../models/Forum/reply');
                 { where: { id: postId } }
             );
 
+            const jumlahBalasan = await Reply.count({ where: { commentId: commentId } });
+            await Comment.update({
+                balasan : jumlahBalasan
+            }, {
+                where : {id: commentId}
+            })
+
             res.json(reply)
         } catch (error) {
             res.status(500).json({message : error.message})
@@ -101,6 +108,7 @@ const Reply = require('../../models/Forum/reply');
             });
         }
     };
+
 
     module.exports = {
         createReply,

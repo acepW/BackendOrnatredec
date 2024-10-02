@@ -9,30 +9,31 @@ const Produk = db.define("produk", {
     },
     judul_produk: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull : true
     },
     deskripsi_produk: {
         type: DataTypes.STRING,
-        allowNull : false  
+        allowNull : true  
     },
     foto_produk: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull : true
     },
     harga: {
         type: DataTypes.INTEGER,
-        allowNull : false
+        allowNull : true
     },
     jumlah: {
         type: DataTypes.INTEGER,
-        allowNull : false
+        allowNull : true
     },
     kategori_produk : {
         type : DataTypes.ENUM('tanaman', 'ikan', 'burung'),
-        allowNull : false
+        allowNull : true
     }
 }, {
-    freezeTableName: true
+    freezeTableName: true,
+    timestamps : true
 });
 
 

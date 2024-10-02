@@ -10,7 +10,6 @@ router.use("/", require("./Produk/produk"));
 //Forum
 router.use("/", require("./Forum/comments"));
 router.use("/", require("./Forum/posts"));
-router.use("/", require("./Forum/view"));
 router.use("/", require("./Forum/reply"));
 
 //olah data
