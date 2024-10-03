@@ -69,7 +69,7 @@ const Reply = require('../../models/Forum/reply');
         
             res.json(updatedReply)
         } catch (error) {
-            res.status(500).json({ message: "Terjadi kesalahan saat mengedit reply." });
+            res.status(500).json({ message : error.message });
         }
     }
 

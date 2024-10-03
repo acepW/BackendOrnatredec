@@ -98,7 +98,7 @@ const createTransaksi = async (req, res) => {
         res.status(201).json(response);
     } catch (error) {
         console.error("Error:", error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+        res.status(500).json({ message : error.message});
     }
 };
 
@@ -137,7 +137,7 @@ const getAllTransaksi = async (req, res) => {
         res.status(200).json(response);
     } catch (error) {
         console.error("Error:", error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+        res.status(500).json({ message : error.message });
     }
 };
 
@@ -183,7 +183,7 @@ const getTransaksiById = async (req, res) => {
         res.status(200).json(response);
     } catch (error) {
         console.error("Error:", error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+        res.status(500).json({message : error.message});
     }
 };
 

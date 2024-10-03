@@ -73,7 +73,7 @@ const editComment = async (req, res) => {
 
         res.json(updatedComment)
     } catch (error) {
-        res.status(500).json({ message: "Terjadi kesalahan saat mengedit comment." });
+        res.status(500).json({ message : error.message });
     }
 }
 

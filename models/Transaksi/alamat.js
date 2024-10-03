@@ -1,5 +1,6 @@
 const {DataTypes} = require("sequelize");
 const sequelize = require("../../config/database");
+const User = require("../User/users");
 
 const Alamat = sequelize.define("alamat", {
     id: {
@@ -7,32 +8,49 @@ const Alamat = sequelize.define("alamat", {
         autoIncrement: true,
         primaryKey: true
     },
+    userId : {
+        type : DataTypes.INTEGER,
+        allowNull : false,
+        references : {
+            model : User,
+            key : 'id'
+        }
+    },
     provinsi: {
         type: DataTypes.STRING,
+        allowNull : false,
     },
     kota_kabupaten: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull : false,
     },
     kecamatan: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull : false,
     },
     kelurahan_desa: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull : false,
     },
     jalan_namagedung: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull : false,
     },
-    unit_lantai: {
-        type: DataTypes.STRING
+    rtrw: {
+        type: DataTypes.STRING,
+        allowNull : false,
     },
     patokan: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull : false,
     },
     nama_penerima: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull : false,
     },
     no_hp: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        allowNull : false,
     },
     kategori_alamat: {
         type: DataTypes.ENUM,
@@ -45,5 +63,8 @@ const Alamat = sequelize.define("alamat", {
 }, {
     freezeTableName: true
 });
+
+User.hasMany(Alamat, { foreignKey: 'userId' });
+Alamat.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = Alamat; 

@@ -4,7 +4,7 @@ const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const moment = require('moment');
-const Alamat = require('../../models/User/alamat');
+const Alamat = require('../../models/Transaksi/alamat');
 // Register User
 const register = async (req, res) => {
   const { username, email, password, no_hp, role } = req.body;

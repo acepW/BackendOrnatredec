@@ -46,9 +46,4 @@ const User = sequelize.define('User', {
   },
 });
 
-// Method untuk memvalidasi password
-// User.prototype.validatePassword = async function(password) {
-//   return bcrypt.compare(password, this.password);
-// };
-
 module.exports = User;
