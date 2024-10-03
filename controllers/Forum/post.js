@@ -208,34 +208,61 @@ const filterKategori = async (req, res) => {
     const kategori = req.query.kategori
     const limit = parseInt(req.query.limit)
     const page = parseInt(req.query.page) 
-    const offset = (page - 1) * limit;
-    try {
-        const post = await Post.findAll({
-            where : {kategori_forum : kategori},
-            limit: limit,
-            offset: offset,
-            include: [
-                { 
-                    model: User, 
-                    attributes: ['username'] 
-                },
-                { 
-                    model: Comment, 
-                    limit: 5,
-                    offset: 0,
+    const offset = (page - 1) * limit;      
+     try {
+              if (!kategori) {
+                const semuaPost = await Post.findAll({
+                    limit: limit,
+                    offset: offset,
                     include: [
-                        { model: User, attributes: ['username'] },
                         { 
-                            model: Reply, 
+                            model: User, 
+                            attributes: ['username'] 
+                        },
+                        { 
+                            model: Comment, 
                             limit: 5,
                             offset: 0,
-                            include: [{ model: User, attributes: ['username'] }]
+                            include: [
+                                { model: User, attributes: ['username'] },
+                                { 
+                                    model: Reply, 
+                                    limit: 5,
+                                    offset: 0,
+                                    include: [{ model: User, attributes: ['username'] }]
+                                }
+                            ]
                         }
                     ]
-                }
-            ]
-        });
-        res.json({ post });
+                });
+              return res.status(202).json(semuaPost)
+              } 
+              const postKategori = await Post.findAll({
+                where : {kategori_forum: kategori},
+                limit: limit,
+                offset: offset,
+                include: [
+                    { 
+                        model: User, 
+                        attributes: ['username'] 
+                    },
+                    { 
+                        model: Comment, 
+                        limit: 5,
+                        offset: 0,
+                        include: [
+                            { model: User, attributes: ['username'] },
+                            { 
+                                model: Reply, 
+                                limit: 5,
+                                offset: 0,
+                                include: [{ model: User, attributes: ['username'] }]
+                            }
+                        ]
+                    }
+                ]
+            });
+            return res.status(200).json(postKategori)
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
