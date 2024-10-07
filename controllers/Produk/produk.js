@@ -248,6 +248,23 @@ const filterKategoriProduk = async (req, res) => {
   }
 }
 
+const hapusProduk = async (req , res) => {
+  const idproduk  = req.params.id;
+  try {
+    const produk = await Produk.findByPk(idproduk)
+    if (!produk) {
+      return res.status(404).json({ message: "Produk tidak ditemukan." });
+  }
+
+    await Produk.destroy({where : {id : idproduk}})
+    await subVariasi.destroy({where : {id_produk : idproduk}})
+    await Variasi.destroy({where : {id_produk : idproduk}})
+
+    res.status(200).json({message :"sukses"})
+  } catch (error) {
+    res.status(500).json({message : error.message})
+  }
+}
 
 module.exports = {
   createProduk,
@@ -255,5 +272,6 @@ module.exports = {
   filterKategoriProduk,
   getProdukbyId,
   getProdukFilter,
-  upload
+  upload,
+  hapusProduk
 };

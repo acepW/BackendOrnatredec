@@ -14,7 +14,7 @@ router.post('/register', register)
 router.delete('/logout', protect(['user', 'admin', 'super admin', 'kasir']), logout);
 
 //get user
-router.get('/getUser', getUser)
+router.get('/getdanFilterUser', getUser)
 
 //router get me
 router.get('/getMe', protect(['user', 'admin', 'super admin', 'kasir']), getUserMe)

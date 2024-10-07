@@ -81,9 +81,17 @@ res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path
 };
 
 const getUser = async (req, res) =>{
+  roleUser = req.query.role
   try {
-    const user = await User.findAll({include:[{model : Alamat}]})
-    res.status(200).json({message : "sukses", user})
+    if (!roleUser) {
+      const user = await User.findAll({include:[{model : Alamat}]})
+      return res.status(200).json(user)
+    } 
+    const UserRole = await User.findAll({
+      where : {role : roleUser},
+      include:[{model : Alamat}]
+    })
+    return res.status(200).json(UserRole)
   } catch (error) {
     res.status(500).json({message : error.message})
   }

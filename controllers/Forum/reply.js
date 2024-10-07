@@ -73,6 +73,7 @@ const Reply = require('../../models/Forum/reply');
         }
     }
 
+
     const deleteReply = async (req, res) => {
         const id = parseInt(req.params.id);
         const userID = req.user.id;

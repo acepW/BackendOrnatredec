@@ -8,5 +8,6 @@ router.get("/getProdukId/:id", controllerProduk.getProdukbyId);
 router.put("/editProduk/:id", protect(['super admin', 'admin']), controllerProduk.upload.single('foto_produk'),controllerProduk.editProduk);
 router.get("/filterdanGet", controllerProduk.filterKategoriProduk);
 router.get("/filter",controllerProduk.getProdukFilter);
+router.delete("/hapusProduk/:id", controllerProduk.hapusProduk);
 
 module.exports = router;
