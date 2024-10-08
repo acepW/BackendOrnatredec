@@ -21,6 +21,9 @@ const PaymentGateway = sequelize.define("payment_gateway", {
     },
     payment_method: {
         type: DataTypes.STRING
+    },
+    order_id : {
+        type: DataTypes.STRING
     }
 }, {
     freezeTableName: true

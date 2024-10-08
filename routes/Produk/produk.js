@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const controllerProduk = require("../../controllers/Produk/produk");
+const  protect  = require('../../middlewares/authMiddleware');
 
 router.post("/produk",controllerProduk.upload.single('foto_produk'),controllerProduk.createProduk);
 router.get("/getProdukId/:id", controllerProduk.getProdukbyId);

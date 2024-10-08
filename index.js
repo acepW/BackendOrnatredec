@@ -46,7 +46,7 @@ app.use('/api', routes);
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-    // await sequelize.sync();
+    // await PaymentGateway.sync({alter : true});
 
 })
 .catch(err => console.log('Error: ' + err));
