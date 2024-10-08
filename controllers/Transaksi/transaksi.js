@@ -2,17 +2,20 @@ const Transaksi = require('../../models/Transaksi/transaksi');
 const Produk = require('../../models/Produk/produk');
 const Alamat = require('../../models/Transaksi/alamat');
 const TransaksiProduk = require('../../models/Transaksi/transaksiproduk'); // Jika menggunakan tabel pivot
+const User = require('../../models/User/users');
 
 const BIAYA_LAYANAN = 5000;
 
 const createTransaksi = async (req, res) => {
-    const { produk, id_alamat } = req.body;
+    const { produk } = req.body;
+    const userId = req.user.id;
 
     try {
         console.log("Request body:", req.body);
 
         // Ambil data alamat berdasarkan ID
-        const alamat = await Alamat.findByPk(id_alamat);
+        const alamat = await Alamat.findOne({where : {userId : userId}});
+        const idAlamat = alamat.id
         if (!alamat) {
             console.log("Alamat tidak ditemukan");
             return res.status(404).json({ message: 'Alamat tidak ditemukan' });
@@ -23,7 +26,7 @@ const createTransaksi = async (req, res) => {
 
         // Buat transaksi baru
         const newTransaksi = await Transaksi.create({
-            id_alamat,
+            id_alamat : idAlamat,
             sub_total: 0, // Ini akan diperbarui setelah produk diproses
             biaya_layanan: BIAYA_LAYANAN,
             total_pembayaran: 0 // Ini akan diperbarui setelah produk diproses
@@ -83,7 +86,7 @@ const createTransaksi = async (req, res) => {
                 kecamatan: alamat.kecamatan,
                 kelurahan_desa: alamat.kelurahan_desa,
                 jalan_namagedung: alamat.jalan_namagedung,
-                unit_lantai: alamat.unit_lantai,
+                rtrw: alamat.rtrw,
                 patokan: alamat.patokan,
                 nama_penerima: alamat.nama_penerima,
                 no_hp: alamat.no_hp,
@@ -110,11 +113,14 @@ const getAllTransaksi = async (req, res) => {
                 {
                     model: Produk, // Join dengan tabel produk
                     through: { attributes: ['jumlah'] }, // Mengambil jumlah dari tabel pivot
-                    attributes: ['id', 'nama_produk', 'harga'] // Hanya ambil field yang dibutuhkan
+                    attributes: ['id', 'judul_produk', 'harga'] // Hanya ambil field yang dibutuhkan
                 },
                 {
                     model: Alamat, // Join dengan tabel alamat
-                    attributes: ['provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'unit_lantai', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama']
+                    attributes: ['provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'rtrw', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama'],
+                    include : [
+                       { model : User, attributes : ['username', 'email'] }
+                    ]
                 },
             ]
         });
