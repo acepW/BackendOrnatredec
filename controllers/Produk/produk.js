@@ -197,9 +197,7 @@ const editProduk = async (req, res) => {
       console.log(error);
       res.status(500).json({ message : error.message});
     }
-  });
-};
-;
+  }
 
 const getProduk = async (req, res) => {
   try {
@@ -224,8 +222,41 @@ const getProduk = async (req, res) => {
 };
 
 
+// Mendapatkan produk berdasarkan ID
+const getProductById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+      const product = await Order.findByPk(id);
+
+      if (!product) {
+          return res.status(404).json({ message: 'Produk tidak ditemukan' });
+      }
+
+      res.status(200).json(product);
+  } catch (error) {
+      res.status(500).json({ message: 'Terjadi kesalahan', error });
+  }
+};
+
+// Mendapatkan produk dengan status "dipesan" saja
+const  getOrderedProducts = async (req, res) => {
+  try {
+      const products = await Product.findAll({
+          include: [{
+              model: Order,
+              where: { status: 'dipesan' }
+          }]
+      });
+      res.status(200).json(products);
+  } catch (error) {
+      res.status(500).json({ message: 'Terjadi kesalahan', error });
+  }
+};
 module.exports = {
   createProduk,
   getProduk,
   editProduk,
+  getProductById,
+  getOrderedProducts 
 };
