@@ -8,3 +8,4 @@ router.get("/getProduk", protect(['super admin', 'admin']), controllerProduk.get
 router.put("/editProduk/:id", protect(['super admin', 'admin']), controllerProduk.editProduk);
 
 module.exports = router;
+//ee
