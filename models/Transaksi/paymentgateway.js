@@ -1,8 +1,8 @@
-const {DataTypes} = require("sequelize");
-const sequelize = require("../../config/database");
+const { DataTypes } = require("sequelize");
+const db = require("../../config/database");
 const Transaksi = require("./transaksi");
 
-const PaymentGateway = sequelize.define("payment_gateway", {
+const PaymentGateway = db.define("payment_gateway", {
     id_transaksi: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -11,22 +11,31 @@ const PaymentGateway = sequelize.define("payment_gateway", {
             key: "id"
         }
     },
-    status: {
-        type: DataTypes.STRING,
-        // allowNull: false
+    order_id: {
+        type: DataTypes.STRING, // Pastikan tipe datanya string
+        allowNull: false,
     },
     payment_url: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
     },
     payment_method: {
         type: DataTypes.STRING
+    },
+    order_id : {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    status: {
+        type: DataTypes.STRING, // Atur sesuai status yang dikembalikan Midtrans
+        defaultValue: 'pending', // Set default ke 'pending'
     }
 }, {
     freezeTableName: true
 });
 
+// Definisikan relasi
 Transaksi.hasMany(PaymentGateway, { foreignKey: "id_transaksi" });
 PaymentGateway.belongsTo(Transaksi, { foreignKey: "id_transaksi" });
 
-module.exports = PaymentGateway
+module.exports = PaymentGateway;

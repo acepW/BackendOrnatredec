@@ -1,14 +1,14 @@
-const User = require('../../models/User/users'); 
+const User = require('../../models/User/users');
 
 // Fungsi Update User
 
 const updateUser = async (req, res) => {
-    const { username, email, no_hp, role, tanggalLahir } = req.body;
+    const { username, email, no_hp, alamat } = req.body;
     const userId = req.params.id; // Ambil ID dari URL
   
     // Cek apakah file foto profil atau background profil diupload
-    const photoProfile = req.files?.photoProfile ? req.files.photoProfile[0].filename : null;
-    const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
+    const photoProfile = req.file ? `/uploads/${req.file.filename}` : null; 
+    // const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
   
     try {
       // Cari user berdasarkan ID
@@ -19,11 +19,12 @@ const updateUser = async (req, res) => {
       }
   
       // Update data user
+      
       user.username = username || user.username;
       user.email = email || user.email;
       user.no_hp = no_hp || user.no_hp;
-      user.role = role || user.role;
-      user.tanggalLahir = tanggalLahir || user.tanggalLahir;
+      user.alamat = alamat || user.alamat;
+  
       // Update foto profil dan background profil jika ada file baru
       if (photoProfile) {
         user.photoProfile = photoProfile;
@@ -33,9 +34,9 @@ const updateUser = async (req, res) => {
       }
   
       // Simpan perubahan
-      await user.save();
+      await user.update();
   
-      res.status(200).json({ success: true, message: 'User updated successfully', user });
+      res.status(200).json({ success: true, message: 'User updated successfully', profilBaru });
     } catch (error) {
       console.log(error); // Tambahkan ini untuk melihat detail error
       res.status(500).json({ success: false, message: error.message });
@@ -65,5 +66,5 @@ const deleteUser = async (req, res) => {
   
   module.exports = {
     updateUser,
-    deleteUser
+    deleteUser,
   }

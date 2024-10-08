@@ -19,7 +19,7 @@ protect = (roles = []) => {
 
       next();
     } catch (error) {
-      res.status(401).json({ success: false, message: 'Token tidak valid' });
+      res.status(401).json({ message : error.message });
     }
   };
 };

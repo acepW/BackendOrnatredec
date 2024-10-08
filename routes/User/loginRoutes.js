@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, logout, getUser } = require('../../controllers/User/loginController');
+const { register, login, logout, getUser, TotalUser, getUserMe } = require('../../controllers/User/loginController');
 const  protect  = require('../../middlewares/authMiddleware');
 const router = express.Router();
 const {upload}= require ('../../middlewares/Multer')
@@ -14,11 +14,14 @@ router.post('/register', upload.fields([
 router.post('/login', login);
 // router.get('/userr', getUser);
 
+//router register
+router.post('/register', register)
+
 // Logout User
-router.delete('/logout', logout);
+router.delete('/logout', protect(['user', 'admin', 'super admin', 'kasir']), logout);
 
 //get user
-router.get('/getUser', getUser)
+router.get('/getdanFilterUser', getUser)
 
 
 router.get('/admin', protect(['admin']), (req, res) => {

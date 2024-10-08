@@ -29,6 +29,10 @@ const Comments = db.define('comments',{
             key : 'id'
         }
     },
+    balasan : {
+        type : DataTypes.INTEGER,
+        allowNull : false,
+    }
 },{
     freezeTableName : true,
     timestamps : true

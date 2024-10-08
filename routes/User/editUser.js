@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../../models/User/users'); 
-
 const { updateUser, deleteUser } = require('../../controllers/User/editUser'); // Import fungsi dari controller
-const {upload}= require('../../middlewares/Multer');
+const uploadImage = require('../../middlewares/Multer');
 
 
 // Rute Update User (dengan upload file)
-router.put('/update/:id',upload.fields([
+router.put('/update/:id',uploadImage.fields([
   { name: 'photoProfile', maxCount: 1 },
   { name: 'backgroundProfile', maxCount: 1 }
 ]), updateUser);

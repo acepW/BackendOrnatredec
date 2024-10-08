@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const moment = require('moment');
+const Alamat = require('../../models/Transaksi/alamat');
 // Register User
 const register = async (req, res) => {
   const { username, email, password, no_hp, role } = req.body;
@@ -29,7 +31,7 @@ const register = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
+    let alamat = null;
     // Create the user in the database
     const user = await User.create({
       username,
@@ -68,7 +70,7 @@ const token = jwt.sign(
 );
 
 // Set token akses tanpa refresh token
-res.cookie('token', token, { httpOnly: true }); 
+res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path: "/" }); 
 
 
     res.status(200).json({ success: true, message: 'Login successful' });
@@ -78,17 +80,30 @@ res.cookie('token', token, { httpOnly: true });
 };
 
 const getUser = async (req, res) =>{
+  roleUser = req.query.role
   try {
     const user = await User.findAll({})
-    res.json(user)
+    res.status(200).json({message : "sukses", user})
   } catch (error) {
-    res.status(500).json({message : message.error})
+    res.status(500).json({message : error.message})
+  }
+}
+
+const getUserMe = async (req, res) =>{
+  const {id} = req.user
+  try {
+    const user = await User.findByPk(id)
+    res.status(200).json({message : "sukses", user})
+  } catch (error) {
+    res.status(500).json({message : error.message})
   }
 }
 
 const logout = (req, res) => {
   try {
-      res.clearCookie('token', {httpOnly: true});
+      res.clearCookie('token', {httpOnly: true, sameSite: "None",secure: true, path: "/"});
+      console.log('logout berhasil');
+      
       res.status(200).json({message: 'logout berhasil'});
   } catch (error) {
       res.status(500).json({ message: error.message });

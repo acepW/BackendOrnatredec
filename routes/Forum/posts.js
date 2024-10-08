@@ -12,5 +12,7 @@ router.get('/forum/tanaman', protect(['user','super admin']),ControllerPost.getP
 router.get('/forum/ikan', protect(['user','super admin']),ControllerPost.getPostKategoriIkan);
 router.get('/forum/burung', protect(['user','super admin']),ControllerPost.getPostKategoriBurung);
 router.get('/filter', protect(['user','super admin']),ControllerPost.filterKategori);
+router.post('/simpanPost', protect(['user','super admin']), ControllerPost.simpanPostingan);
+router.get('/simpanan',  protect(['user','super admin']), ControllerPost.getSimpanPostingan);
 
 module.exports = router;

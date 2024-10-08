@@ -41,6 +41,7 @@ const PostUlasanForum = async (req, res) => {
     const { id } = req.user;
     const url = req.file ? `/uploads/${req.file.filename}` : null; 
     let jumlahTanggapan = 0;
+    let jumlahView = 0
     try {
         const post = await Post.create({
             userId: id,
@@ -48,7 +49,7 @@ const PostUlasanForum = async (req, res) => {
             desc: desc,
             img: url,
             jumlahTanggapan,
-            kategori_forum : kategori_forum
+            kategori_forum : kategori_forum,
         });
 
         res.json(post);
@@ -203,9 +204,14 @@ const getPostKategoriBurung = async (req, res) => {
 
 const filterKategori = async (req, res) => {
     const kategori = req.query.kategori
+    const limit = parseInt(req.query.limit)
+    const page = parseInt(req.query.page) 
+    const offset = (page - 1) * limit;
     try {
         const post = await Post.findAll({
             where : {kategori_forum : kategori},
+            limit: limit,
+            offset: offset,
             include: [
                 { 
                     model: User, 
@@ -213,10 +219,14 @@ const filterKategori = async (req, res) => {
                 },
                 { 
                     model: Comment, 
+                    limit: 5,
+                    offset: 0,
                     include: [
                         { model: User, attributes: ['username'] },
                         { 
                             model: Reply, 
+                            limit: 5,
+                            offset: 0,
                             include: [{ model: User, attributes: ['username'] }]
                         }
                     ]
@@ -251,7 +261,17 @@ const getOnePost = async (req, res) => {
                 }
             ]
         });
-        res.json({ Post });
+    
+            const view = await findOne({where : {userId : id, postId : idPost}})
+    
+            if (!view) {
+                await View.create({
+                    userId : id,
+                    postId : idPost,
+                })
+            }
+            
+            res.json({ post });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -270,7 +290,7 @@ const deletePost = async (req, res) => {
         }
 
         if (userRole !== 'super admin' && post.userId !== userID) {
-            return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus komen ini." });
+            return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus postingan ini." });
         }
 
         await Post.destroy({where: {id:id} })
@@ -285,6 +305,46 @@ const deletePost = async (req, res) => {
     }
 };
 
+const simpanPostingan = async (req, res) => {
+    const { id } = req.user; 
+    const { idPost } = req.body;
+
+    try {
+        const post = await Post.findOne({ where : {id : idPost}})
+
+        if(!post){
+            res.status(400).json({ message : "maaf postingan tidak ditemukan" })
+        }
+
+        const simpanan = await simpanPost.findAll({ where : {userId : id}})
+        if(simpanan.postId === idPost){
+            res.status(403).json({ message : "maaf postingan sudah ada" })
+        }
+
+        const simpan = await simpanPost.create({
+            userId: id,
+            postId: idPost
+        });
+        res.status(200).json(simpan);
+    } catch (error) {
+        res.status(500).json({ message : error.message })
+    }
+}
+
+const getSimpanPostingan = async (req, res) => {
+    const { id } = req.user; 
+    try {
+        const simpananPostingan = await simpanPost.findAll({where : {userId : id}})
+
+        if (simpananPostingan.length === 0) {
+            return res.status(505).json({ message : "maaf anda tidak memiliki simpanan postingan" })
+        }
+
+        res.status(200).json(simpananPostingan);
+    } catch (error) {
+        res.status(500).json({ message : error.message })
+    }
+}
 
 module.exports = {
     PostUlasanForum,
@@ -296,5 +356,7 @@ module.exports = {
     getPostKategoriBurung,
     getPostKategoriIkan,
     getPostKategoriTanaman,
-    filterKategori
-};
+    filterKategori,
+    simpanPostingan,
+    getSimpanPostingan
+}
