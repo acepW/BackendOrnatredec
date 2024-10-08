@@ -66,14 +66,9 @@ const createPaymentGateway = async (req, res) => {
 
         res.status(200).json({
             message: 'Payment created successfully',
-<<<<<<< HEAD
-            payment_url: paymentData.payment_url, // URL untuk redirect ke Snap Midtrans
-            status : paymentData.status
-=======
             payment_url: paymentData.payment_url,
             order_id: paymentData.order_id,
             transaction_status: paymentData.status
->>>>>>> 43f1071696821ce1623125516a4bf9846078e911
         });
     } catch (error) {
         console.error("Error:", error.response ? error.response.data : error.message);
