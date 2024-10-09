@@ -5,13 +5,15 @@ router.use("/", require("./User/loginRoutes"));
 
 //Produk
 router.use("/", require("./Produk/produk"));
-router.use("/", require("./Produk/order"));
+
 
 
 //Transaksi
 router.use("/", require("./Transaksi/transaksi"));
 router.use("/", require("./Transaksi/alamat"));
 router.use("/", require("./Transaksi/paymentgateway"));
+router.use("/", require("./Transaksi/transaksiproduk"));
+router.use("/", require("./Transaksi/transaksiproduk1"));
 
 //Forum
 router.use("/", require("./Forum/comments"));
