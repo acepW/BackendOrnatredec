@@ -31,8 +31,8 @@ const updateOrderStatus = async (req, res) => {
 };
 
 // Mendapatkan semua pesanan dan mengubah status dari "dipesan" ke "dikemas"
-const getAllOrders = async (req, res) => {
-    try {
+// const getAllOrders = async (req, res) => {
+//     try {
         // Cari semua pesanan yang masih berstatus "dipesan"
         // const orders = await Order.findAll({
         //     where: { status: 'dipesan' },
@@ -60,13 +60,13 @@ const getAllOrders = async (req, res) => {
         //     }]
         // });
 
-        res.status(200).json({msg:"oke"});
-     } catch (error) {
-        console.log (error);  // Menampilkan error di console
-        res.status(500).json({ error: error.message });
+//         res.status(200).json({msg:"oke"});
+//      } catch (error) {
+//         console.log (error);  // Menampilkan error di console
+//         res.status(500).json({ error: error.message });
         
-    }
-};
+//     }
+// };
 
 // Mendapatkan pesanan berdasarkan ID, dan mengubah status dari "dipesan" ke "dikemas"
 const getOrderById = async (req, res) => {
@@ -92,13 +92,13 @@ const getOrderById = async (req, res) => {
 
         res.status(200).json(order);
     } catch (error) {
-        res.status(500).json({ message: error });
+        res.status(300).json({ message: "jwodojd" });
     }
 };
 
 // Ekspor semua fungsi
 module.exports = {
     updateOrderStatus,
-    getAllOrders,
+    // getAllOrders,
     getOrderById
 };

@@ -45,7 +45,7 @@ app.use('/api', routes);
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-    // await Order.sync({alter : true});
+    // await sequelize.sync({alter : true});
 })
 .catch(err => console.log('Error: ' + err));
 

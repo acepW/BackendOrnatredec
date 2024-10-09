@@ -5,13 +5,13 @@ const router = express.Router();
 const orderController = require('../../controllers/Produk/order');
 
 // Endpoint untuk mengubah status pesanan
-router.put('ord/:id/status', orderController.updateOrderStatus);
+router.put('/:id/status', orderController.updateOrderStatus);
 
 
 // Mendapatkan semua pesanan dan otomatis mengubah status dari "dipesan" ke "dikemas"
-router.get('ord/', orderController.getAllOrders);
+// router.get('/', orderController.getAllOrders);
 
 // Mendapatkan pesanan berdasarkan ID dan otomatis mengubah status dari "dipesan" ke "dikemas"
-router.get('ord/:id', orderController.getOrderById);
+router.get('/:id', orderController.getOrderById);
 
 module.exports = router;

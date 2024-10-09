@@ -5,7 +5,7 @@ router.use("/", require("./User/loginRoutes"));
 
 //Produk
 router.use("/", require("./Produk/produk"));
-//router.use("/", require("./Produk/order"));
+router.use("/", require("./Produk/order"));
 
 
 //Transaksi
