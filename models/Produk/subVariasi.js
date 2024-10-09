@@ -27,15 +27,23 @@ const subVariasi = db.define("subvariasi", {
      },
     foto_variasi : {
         type: DataTypes.STRING,
-        allowNull :false
+        allowNull :true
     },
-    nama_variasi: {
+    nama_sub_variasi: {
         type: DataTypes.STRING,
-        allowNull :false
+        allowNull :true
     },
-    stok: {
+    stok : {
         type: DataTypes.INTEGER,
-        allowNull :false
+        allowNull :true,
+    },
+    usia : {
+        type: DataTypes.STRING,
+        allowNull :true,
+    },
+    harga : {
+        type: DataTypes.INTEGER,
+        allowNull :true,
     }
 }, {
     freezeTableName: true,
@@ -45,7 +53,7 @@ const subVariasi = db.define("subvariasi", {
 Produk.hasMany(subVariasi, { foreignKey: 'id_produk' });
 subVariasi.belongsTo(Produk, { foreignKey: 'id_produk' });
 
-Variasi.hasMany(subVariasi, { foreignKey: 'id_variasi' });
-subVariasi.belongsTo(Variasi, { foreignKey: 'id_variasi' });
+Variasi.hasMany(subVariasi, { foreignKey: 'id_variasi'});
+subVariasi.belongsTo(Variasi, { foreignKey: 'id_variasi'});
 
 module.exports = subVariasi;

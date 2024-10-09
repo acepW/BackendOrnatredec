@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const moment = require('moment');
+const Alamat = require('../../models/Transaksi/alamat');
 // Register User
 const register = async (req, res) => {
   const { username, email, password, no_hp, role } = req.body;
@@ -29,7 +31,7 @@ const register = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
+    let alamat = null;
     // Create the user in the database
     const user = await User.create({
       username,
@@ -69,7 +71,7 @@ const token = jwt.sign(
 );
 
 // Set token akses tanpa refresh token
-res.cookie('token', token, { httpOnly: true }); 
+res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path: "/" }); 
 
 
     res.status(200).json({ success: true, message: 'Login successful', user });
@@ -79,9 +81,17 @@ res.cookie('token', token, { httpOnly: true });
 };
 
 const getUser = async (req, res) =>{
+  roleUser = req.query.role
   try {
-    const user = await User.findAll({})
-    res.status(200).json({message : "sukses", user})
+    if (!roleUser) {
+      const user = await User.findAll({include:[{model : Alamat}]})
+      return res.status(200).json(user)
+    } 
+    const UserRole = await User.findAll({
+      where : {role : roleUser},
+      include:[{model : Alamat}]
+    })
+    return res.status(200).json(UserRole)
   } catch (error) {
     res.status(500).json({message : error.message})
   }
@@ -91,7 +101,18 @@ const getUserMe = async (req, res) =>{
   const {id} = req.user
   try {
     const user = await User.findByPk(id)
-    res.status(200).json({message : "sukses", user})
+    const alamat = await Alamat.findOne({where : {userId : id}})
+    const tanggalBaru = moment(user.tanggalLahir).format('DD-MM-YYYY');
+    res.status(200).json({message : "sukses", 
+      username: user.username,
+      email: user.email,
+      password : user.password,
+      no_hp : user.no_hp,
+      role : user.role,
+      alamat : alamat,
+      photoProfile : user.photoProfile,
+      tanggalLahir: tanggalBaru,
+    })
   } catch (error) {
     res.status(500).json({message : error.message})
   }
@@ -99,7 +120,9 @@ const getUserMe = async (req, res) =>{
 
 const logout = (req, res) => {
   try {
-      res.clearCookie('token', {httpOnly: true});
+      res.clearCookie('token', {httpOnly: true, sameSite: "None",secure: true, path: "/"});
+      console.log('logout berhasil');
+      
       res.status(200).json({message: 'logout berhasil'});
   } catch (error) {
       res.status(500).json({ message: error.message });

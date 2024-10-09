@@ -11,8 +11,9 @@ router.delete('/deletePost/:id', protect(['user','super admin']),ControllerPost.
 router.get('/forum/tanaman', protect(['user','super admin']),ControllerPost.getPostKategoriTanaman);
 router.get('/forum/ikan', protect(['user','super admin']),ControllerPost.getPostKategoriIkan);
 router.get('/forum/burung', protect(['user','super admin']),ControllerPost.getPostKategoriBurung);
-router.get('/filter', protect(['user','super admin']),ControllerPost.filterKategori);
+router.get('/filterdanGetForum', protect(['user','super admin']),ControllerPost.filterKategori);
 router.post('/simpanPost', protect(['user','super admin']), ControllerPost.simpanPostingan);
 router.get('/simpanan',  protect(['user','super admin']), ControllerPost.getSimpanPostingan);
+router.get('/populer', ControllerPost.PostTerpopuler);
 
 module.exports = router;

@@ -1,13 +1,15 @@
+const Alamat = require('../../models/Transaksi/alamat');
 const User = require('../../models/User/users');
+const moment = require('moment')
 
 // Fungsi Update User
 const updateUser = async (req, res) => {
-    const { username, email, no_hp, alamat } = req.body;
+    const { username, email, no_hp, tanggalLahir} = req.body;
     const userId = req.params.id; // Ambil ID dari URL
   
     // Cek apakah file foto profil atau background profil diupload
-    const photoProfile = req.files?.photoProfile ? req.files.photoProfile[0].filename : null;
-    const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
+    const photoProfile = req.file ? `/uploads/${req.file.filename}` : null; 
+    // const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
   
     try {
       // Cari user berdasarkan ID
@@ -17,25 +19,39 @@ const updateUser = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // Update data user
-      
-      user.username = username || user.username;
-      user.email = email || user.email;
-      user.no_hp = no_hp || user.no_hp;
-      user.alamat = alamat || user.alamat;
+      // // Update data user
+      // user.username = username || user.username;
+      // user.email = email || user.email;
+      // user.no_hp = no_hp || user.no_hp;
+      // user.alamat = alamat || user.alamat;
+      // user.tanggalLahir = tanggalLahir || user.tanggalLahir;
   
       // Update foto profil dan background profil jika ada file baru
       if (photoProfile) {
         user.photoProfile = photoProfile;
       }
-      if (backgroundProfile) {
-        user.backgroundProfile = backgroundProfile;
-      }
+      // if (backgroundProfile) {
+      //   user.backgroundProfile = backgroundProfile;
+      // }
+      const tanggalBaru = moment(tanggalLahir).format('YYYY-MM-DD');
+      await User.update({
+        username : username,
+        email : email,
+        no_hp : no_hp,
+        photoProfile ,
+        tanggalLahir : tanggalBaru
+      }, {
+        where : {id : userId}
+      })
+
+      await Alamat.update({
+        nohp : no_hp
+      },{
+        where : {userId : userId}
+      })
+      const profilBaru = await User.findOne({ where: { id : userId} });
   
-      // Simpan perubahan
-      await user.update();
-  
-      res.status(200).json({ success: true, message: 'User updated successfully', user });
+      res.status(200).json({ success: true, message: 'User updated successfully', profilBaru });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
@@ -64,5 +80,5 @@ const deleteUser = async (req, res) => {
   
   module.exports = {
     updateUser,
-    deleteUser
+    deleteUser,
   }

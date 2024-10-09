@@ -61,6 +61,9 @@ const createPaymentGateway = async (req, res) => {
             status: 'pending', // Set status awal sebagai 'pending' sebelum memeriksa status selanjutnya
         });
 
+        console.log(paymentData);
+        
+
         res.status(200).json({
             message: 'Payment created successfully',
             payment_url: paymentData.payment_url,

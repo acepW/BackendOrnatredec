@@ -30,6 +30,13 @@ const Reply = require('../../models/Forum/reply');
                 { where: { id: postId } }
             );
 
+            const jumlahBalasan = await Reply.count({ where: { commentId: commentId } });
+            await Comment.update({
+                balasan : jumlahBalasan
+            }, {
+                where : {id: commentId}
+            })
+
             res.json(reply)
         } catch (error) {
             res.status(500).json({message : error.message})
@@ -62,9 +69,10 @@ const Reply = require('../../models/Forum/reply');
         
             res.json(updatedReply)
         } catch (error) {
-            res.status(500).json({ message: "Terjadi kesalahan saat mengedit reply." });
+            res.status(500).json({ message : error.message });
         }
     }
+
 
     const deleteReply = async (req, res) => {
         const id = parseInt(req.params.id);
@@ -101,6 +109,7 @@ const Reply = require('../../models/Forum/reply');
             });
         }
     };
+
 
     module.exports = {
         createReply,

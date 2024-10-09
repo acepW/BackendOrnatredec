@@ -42,6 +42,7 @@ const PostUlasanForum = async (req, res) => {
     const { id } = req.user;
     const url = req.file ? `/uploads/${req.file.filename}` : null; 
     let jumlahTanggapan = 0;
+    let jumlahView = 0
     try {
         const post = await Post.create({
             userId: id,
@@ -50,6 +51,7 @@ const PostUlasanForum = async (req, res) => {
             img: url,
             jumlahTanggapan,
             kategori_forum : kategori_forum,
+            jumlahView
         });
 
         res.json(post);
@@ -206,34 +208,61 @@ const filterKategori = async (req, res) => {
     const kategori = req.query.kategori
     const limit = parseInt(req.query.limit)
     const page = parseInt(req.query.page) 
-    const offset = (page - 1) * limit;
-    try {
-        const post = await Post.findAll({
-            where : {kategori_forum : kategori},
-            limit: limit,
-            offset: offset,
-            include: [
-                { 
-                    model: User, 
-                    attributes: ['username'] 
-                },
-                { 
-                    model: Comment, 
-                    limit: 5,
-                    offset: 0,
+    const offset = (page - 1) * limit;      
+     try {
+              if (!kategori) {
+                const semuaPost = await Post.findAll({
+                    limit: limit,
+                    offset: offset,
                     include: [
-                        { model: User, attributes: ['username'] },
                         { 
-                            model: Reply, 
+                            model: User, 
+                            attributes: ['username'] 
+                        },
+                        { 
+                            model: Comment, 
                             limit: 5,
                             offset: 0,
-                            include: [{ model: User, attributes: ['username'] }]
+                            include: [
+                                { model: User, attributes: ['username'] },
+                                { 
+                                    model: Reply, 
+                                    limit: 5,
+                                    offset: 0,
+                                    include: [{ model: User, attributes: ['username'] }]
+                                }
+                            ]
                         }
                     ]
-                }
-            ]
-        });
-        res.json({ post });
+                });
+              return res.status(202).json(semuaPost)
+              } 
+              const postKategori = await Post.findAll({
+                where : {kategori_forum: kategori},
+                limit: limit,
+                offset: offset,
+                include: [
+                    { 
+                        model: User, 
+                        attributes: ['username'] 
+                    },
+                    { 
+                        model: Comment, 
+                        limit: 5,
+                        offset: 0,
+                        include: [
+                            { model: User, attributes: ['username'] },
+                            { 
+                                model: Reply, 
+                                limit: 5,
+                                offset: 0,
+                                include: [{ model: User, attributes: ['username'] }]
+                            }
+                        ]
+                    }
+                ]
+            });
+            return res.status(200).json(postKategori)
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -264,7 +293,7 @@ const getOnePost = async (req, res) => {
             ]
         });
     
-            const view = await findOne({where : {userId : id, postId : idPost}})
+            const view = await View.findOne({where : {userId : id, postId : idPost}})
     
             if (!view) {
                 await View.create({
@@ -272,6 +301,14 @@ const getOnePost = async (req, res) => {
                     postId : idPost,
                 })
             }
+
+            jumlahview = await View.count({where : {postId : idPost}})
+
+            await Post.update({
+                jumlahView : jumlahview
+            }, {
+                where :  {id : idPost}
+            })
             
             res.json({ post });
     } catch (error) {
@@ -291,7 +328,7 @@ const deletePost = async (req, res) => {
         }
 
         if (userRole !== 'super admin' && post.userId !== userID) {
-            return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus komen ini." });
+            return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus postingan ini." });
         }
 
         await Post.destroy({where: {id:id} })
@@ -347,6 +384,17 @@ const getSimpanPostingan = async (req, res) => {
     }
 }
 
+const PostTerpopuler = async (req, res) => {
+    try {
+        const populer = await Post.findAll({
+            order : [['jumlahTanggapan', 'DESC']]
+        })
+        res.status(200).json(populer)
+    } catch (error) {
+        res.status(500).json({ message : error.message })
+    }
+}
+
 module.exports = {
     PostUlasanForum,
     upload,
@@ -359,5 +407,6 @@ module.exports = {
     getPostKategoriTanaman,
     filterKategori,
     simpanPostingan,
-    getSimpanPostingan
+    getSimpanPostingan,
+    PostTerpopuler
 }

@@ -23,18 +23,18 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('user', 'admin', 'super admin', 'kasir'),
     allowNull: false,
   },
-  alamat: {
-    type: DataTypes.STRING, // Alamat disimpan sebagai string
-    allowNull: true, // Alamat bisa tidak diisi
-  },
-  fotoProfil: {
+  photoProfile: {
     type: DataTypes.STRING, // URL untuk foto profil
     allowNull: true, // Foto profil bisa tidak diisi
   },
-  background_fotoProfil: {
-    type: DataTypes.STRING, // URL untuk background foto profil
-    allowNull: true, // Foto profil bisa tidak diisi
-  },
+  tanggalLahir: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  }
+  // backgroundProfile: {
+  //   type: DataTypes.STRING, // URL untuk background foto profil
+  //   allowNull: true, // Foto profil bisa tidak diisi
+  // },
 },{
   freezeTableName : true,
   timestamps : true
@@ -45,10 +45,5 @@ const User = sequelize.define('User', {
     },
   },
 });
-
-// Method untuk memvalidasi password
-User.prototype.validatePassword = async function(password) {
-  return bcrypt.compare(password, this.password);
-};
 
 module.exports = User;

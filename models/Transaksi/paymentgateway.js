@@ -1,4 +1,3 @@
-// models/paymentGateway.js
 const { DataTypes } = require("sequelize");
 const db = require("../../config/database");
 const Transaksi = require("./transaksi");
@@ -21,6 +20,9 @@ const PaymentGateway = db.define("payment_gateway", {
         allowNull: false,
     },
     payment_method: {
+        type: DataTypes.STRING
+    },
+    order_id : {
         type: DataTypes.STRING,
         allowNull: false,
     },

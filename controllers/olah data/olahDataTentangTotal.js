@@ -28,13 +28,27 @@ const totalSemua = async (req, res) => {
 
         const totalPostingan = await Post.count({})
 
+        const totalForumIkan = await Post.count({
+            where : {kategori_forum : kategoriIkan}
+        })
+
+        const totalForumTanaman = await Post.count({
+            where : {kategori_forum : kategoriTanaman}
+        })
+
+        const totalForumBurung = await Post.count({
+            where : {kategori_forum : kategoriBurung}
+        })
       res.status(200).json({
         totalProduk,
         totalProdukBurung,
         totalProdukIkan,
         totalProdukTanaman,
         totalPostingan,
-        totalPenggunaUser
+        totalPenggunaUser,
+        totalForumBurung,
+        totalForumIkan,
+        totalForumTanaman
       })
 
     } catch (error) {

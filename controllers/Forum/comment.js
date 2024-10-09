@@ -8,10 +8,12 @@ const CreateComment = async (req, res) => {
     const {id} = req.user
 
     try {
+        let Balasan = 0;
         const comment = await Comment.create({
             userId : id,
             postId,
-            desc
+            desc,
+            balasan : Balasan
         }) 
 
         const commentCount = await Comment.count({ where: { postId: postId } });
@@ -71,7 +73,7 @@ const editComment = async (req, res) => {
 
         res.json(updatedComment)
     } catch (error) {
-        res.status(500).json({ message: "Terjadi kesalahan saat mengedit comment." });
+        res.status(500).json({ message : error.message });
     }
 }
 
