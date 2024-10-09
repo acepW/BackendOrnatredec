@@ -1,5 +1,6 @@
 const Post = require("../../models/Forum/posts");
 const Produk = require("../../models/Produk/produk");
+const TransaksiProduk = require("../../models/Transaksi/transaksiproduk");
 const User = require("../../models/User/users");
 
 const totalSemua = async (req, res) => {
@@ -39,6 +40,9 @@ const totalSemua = async (req, res) => {
         const totalForumBurung = await Post.count({
             where : {kategori_forum : kategoriBurung}
         })
+
+        const totalPemesanan = await TransaksiProduk.count()
+
       res.status(200).json({
         totalProduk,
         totalProdukBurung,
@@ -48,7 +52,8 @@ const totalSemua = async (req, res) => {
         totalPenggunaUser,
         totalForumBurung,
         totalForumIkan,
-        totalForumTanaman
+        totalForumTanaman,
+        totalPemesanan
       })
 
     } catch (error) {

@@ -395,6 +395,18 @@ const PostTerpopuler = async (req, res) => {
     }
 }
 
+const jumlahpostinganUser = async (req, res) => {
+    const id = req.user.id;
+    try {
+        const postingan = await Post.findAll({where : {userId : id}})
+        if (postingan.length === 0) {
+            return res.status(404).json({ message : "kamu belum memposting apapun di forum" })
+        }
+        res.status(200).json(postingan)
+    } catch (error) {
+        res.status(500).json({ message : error.message })
+    }
+}
 module.exports = {
     PostUlasanForum,
     upload,
@@ -408,5 +420,6 @@ module.exports = {
     filterKategori,
     simpanPostingan,
     getSimpanPostingan,
-    PostTerpopuler
+    PostTerpopuler,
+    jumlahpostinganUser
 }

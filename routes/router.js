@@ -6,6 +6,7 @@ router.use("/", require("./User/editUser"));
 
 //Produk
 router.use("/", require("./Produk/produk"));
+router.use("/", require("./Produk/order"));
 
 //Transaksi
 router.use("/", require("./Transaksi/transaksi"));
@@ -16,6 +17,7 @@ router.use("/", require("./Transaksi/paymentgateway"));
 router.use("/", require("./Forum/comments"));
 router.use("/", require("./Forum/posts"));
 router.use("/", require("./Forum/reply"));
+router.use("/", require("./Forum/report"));
 
 //olah data
 router.use("/", require("./olah data/olahDataTentangTotal"));

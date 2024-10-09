@@ -30,6 +30,16 @@ const User = sequelize.define('User', {
   tanggalLahir: {
     type: DataTypes.DATEONLY,
     allowNull: true,
+  },
+  status : {
+    type : DataTypes.ENUM ('terblokir', 'tidak terblokir'),
+    allowNull : false,
+    defaultValue : 'tidak terblokir' 
+  },
+  statusAktif : {
+    type : DataTypes.ENUM ('aktif', 'tidak aktif'),
+    allowNull : false,
+    defaultValue : 'aktif'
   }
   // backgroundProfile: {
   //   type: DataTypes.STRING, // URL untuk background foto profil

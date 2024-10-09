@@ -39,6 +39,10 @@ const Post = db.define('post',{
     jumlahView : {
         type : DataTypes.STRING,
         allowNull : false,
+    },
+    jumlahReport : {
+        type : DataTypes.STRING,
+        allowNull : false,
     }
 },{
     freezeTableName : true,

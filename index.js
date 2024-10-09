@@ -22,6 +22,8 @@ const Transaksi = require("./models/Transaksi/transaksi");
 const Alamatt = require("./models/Transaksi/alamat");
 const TransaksiProduk = require("./models/Transaksi/transaksiproduk");
 const PaymentGateway = require("./models/Transaksi/paymentgateway");
+const Report = require("./models/Forum/report");
+const Order = require("./models/Produk/order");
 
 dotenv.config();
 const app = express();
@@ -46,7 +48,7 @@ app.use('/api', routes);
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-    // await sequelize.sync({alter : true});
+    // await User.sync({alter : true});
 })
 .catch(err => console.log('Error: ' + err));
 

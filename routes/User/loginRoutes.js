@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, logout, getUser, getUserMe } = require('../../controllers/User/loginController');
+const { register, login, logout, getUser, getUserMe, BlokirUser } = require('../../controllers/User/loginController');
 const  protect  = require('../../middlewares/authMiddleware');
 const router = express.Router();
 
@@ -18,6 +18,9 @@ router.get('/getdanFilterUser', getUser)
 
 //router get me
 router.get('/getMe', protect(['user', 'admin', 'super admin', 'kasir']), getUserMe)
+
+//blokir user
+router.put('/blokir/:id', BlokirUser)
 
 router.get('/admin', protect(['admin']), (req, res) => {
   res.status(200).json({ success: true, message: 'Welcome Admin' });

@@ -14,14 +14,14 @@ const register = async (req, res) => {
   const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
 
   try {
-    const UserEmail = await User.findOne({ where: { email } });
-    if (UserEmail) {
-        return res.status(409).json({ message: 'Email already exists' });
-    }
-
     const UserUsername = await User.findOne({ where: { username } });
     if (UserUsername) {
-        return res.status(409).json({ message: 'Username already exists' });
+        return res.status(405).json({ message: 'Username already exists' });
+    }
+
+    const UserEmail = await User.findOne({ where: { email } });
+    if (UserEmail) {
+        return res.status(404).json({ message: 'Email already exists' });
     }
 
     const UserNophone = await User.findOne({ where: { no_hp } });
@@ -62,8 +62,20 @@ const login = async (req, res) => {
 
     const isMatch = bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'password salah' });
+      return res.status(404).json({ success: false, message: 'password salah' });
     }
+
+    if (user.status == 'terblokir' && user.statusAktif == 'tidak aktif') {
+      return res.status(403).json({ success: false, message: 'maaf akun anda telah diblokir sistem' });
+    }
+
+    const status = 'aktif'
+    
+       await user.update(
+        {statusAktif : status },
+        {where : {id : user.id}}
+      )
+    
 // Generate JWT without expiration
 const token = jwt.sign(
   { id: user.id, role: user.role },
@@ -118,14 +130,38 @@ const getUserMe = async (req, res) =>{
   }
 }
 
-const logout = (req, res) => {
+const logout = async (req, res) => {
+  const id = req.user.id
   try {
       res.clearCookie('token', {httpOnly: true, sameSite: "None",secure: true, path: "/"});
       console.log('logout berhasil');
+
+      const status = 'tidak aktif'
+
+      await User.update(
+        {statusAktif : status },
+        {where : {id : id}}
+      )
       
       res.status(200).json({message: 'logout berhasil'});
   } catch (error) {
       res.status(500).json({ message: error.message });
+  }
+}
+
+const BlokirUser = async (req, res) => {
+  const id = req.params.id;
+  try {
+    await User.update({
+      status : 'terblokir',
+      statusAktif : 'tidak aktif'
+    }, {
+      where : {id : id}
+    })
+
+  res.status(200).json({message : 'berhasil terblokir'})
+  } catch (error) {
+    res.status(200).json({message : error.message})
   }
 }
 
@@ -134,5 +170,6 @@ module.exports = {
   login,
   logout,
   getUser,
-  getUserMe
+  getUserMe,
+  BlokirUser
 }
