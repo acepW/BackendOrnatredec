@@ -6,7 +6,7 @@ router.use("/", require("./User/editUser"));
 
 //Produk
 router.use("/", require("./Produk/produk"));
-router.use("/", require("./Produk/order"));
+// router.use("/", require("./Produk/order"));
 
 //Transaksi
 router.use("/", require("./Transaksi/transaksi"));

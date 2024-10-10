@@ -10,8 +10,8 @@ const register = async (req, res) => {
   const { username, email, password, no_hp, role } = req.body;
 
   // Ambil file yang diupload
-  const photoProfile = req.files?.photoProfile ? req.files.photoProfile[0].filename : null;
-  const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
+  const photoProfile = req.file ? `/uploads/${req.file.filename}` : null; 
+  // const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
 
   try {
     const UserUsername = await User.findOne({ where: { username } });
@@ -41,7 +41,7 @@ const register = async (req, res) => {
       role,
       alamat,
       photoProfile,           // Tambahkan foto profil
-      backgroundProfile       // Tambahkan background profil
+      // backgroundProfile       // Tambahkan background profil
     });
 
     res.status(201).json({ success: true, message: 'User registered successfully', user });
