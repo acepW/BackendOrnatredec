@@ -41,14 +41,14 @@ app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api', routes);
- 
+
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-//     await TransaksiProduk.sync({alter : true});
+    // await sequelize.sync({alter : true});
  })
 .catch(err => console.log('Error: ' + err));
 
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
