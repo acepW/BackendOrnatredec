@@ -67,10 +67,7 @@ const createTransaksi = async (req, res) => {
             const variasiDetails = {
                 id_variasi: variasi ? variasi.id : null,
                 nama_variasi: variasi ? variasi.nama_variasi : null,
-                sub_variasi: subVariasiItem ? {
-                    id_sub_variasi: subVariasiItem.id,
-                    nama_sub_variasi: subVariasiItem.nama_sub_variasi
-                } : null
+                usia: subVariasiItem ? subVariasiItem.usia : null // Ganti "sub_variasi" menjadi "usia"
             };
 
             produkDetails.push({
