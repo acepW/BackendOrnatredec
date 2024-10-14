@@ -10,5 +10,6 @@ router.put("/editProduk/:id", protect(['super admin', 'admin']), controllerProdu
 router.get("/filterdanGet", controllerProduk.filterKategoriProduk);
 router.get("/filter",controllerProduk.getProdukFilter);
 router.delete("/hapusProduk/:id", controllerProduk.hapusProduk);
+router.post("/troli", protect(['user']), controllerProduk.troliProduk)
 
 module.exports = router;
