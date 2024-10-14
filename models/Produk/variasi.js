@@ -8,21 +8,21 @@ const Variasi = db.define("variasi", {
         autoIncrement: true,
         primaryKey: true
     },
-    id_produk : {
+    id_produk: {
         type: DataTypes.INTEGER,
-        allowNull :false,
-           references: {
-           model: Produk,
-           key: "id"
-                }
-     },
+        allowNull: false,
+        references: {
+            model: Produk,
+            key: "id"
+        }
+    },
     nama_variasi: {
         type: DataTypes.STRING,
-        allowNull :true
+        allowNull: true
     },
 }, {
     freezeTableName: true,
-    timestamps : true
+    timestamps: true
 });
 
 Produk.hasMany(Variasi, { foreignKey: 'id_produk' });
