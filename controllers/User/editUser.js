@@ -1,4 +1,6 @@
+const Post = require('../../models/Forum/posts');
 const Alamat = require('../../models/Transaksi/alamat');
+const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 const User = require('../../models/User/users');
 const moment = require('moment')
 
@@ -78,7 +80,26 @@ const deleteUser = async (req, res) => {
     }
   };
   
+const detailUser = async (req, res) => {
+  const id = req.params.id
+  try {
+   const user = await User.findOne({
+      where: { id: id },
+      include: [
+        { model: Post },
+        { model: Alamat, attributes: ['kota_kabupaten'] }
+      ]
+   });
+    const Postuser = await Post.count({ where: { userId: id } })
+    // const TransaksiUser = await TransaksiProduk.count({where : {id_alamat : id}})
+    res.status(200).json({user, Postuser})
+  } catch (error) {
+    res.status(500).json({message : error.message})
+  }
+}
+  
   module.exports = {
     updateUser,
     deleteUser,
+    detailUser
   }

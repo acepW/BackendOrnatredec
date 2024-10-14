@@ -266,6 +266,10 @@ const hapusProduk = async (req , res) => {
   }
 }
 
+const troliProduk = async (req, res) => {
+  const { produk } = req.body;
+}
+
 module.exports = {
   createProduk,
   editProduk,

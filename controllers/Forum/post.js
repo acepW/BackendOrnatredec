@@ -42,7 +42,8 @@ const PostUlasanForum = async (req, res) => {
     const { id } = req.user;
     const url = req.file ? `/uploads/${req.file.filename}` : null; 
     let jumlahTanggapan = 0;
-    let jumlahView = 0
+    let jumlahView = 0;
+    let jumlahReport = 0;
     try {
         const post = await Post.create({
             userId: id,
@@ -51,7 +52,8 @@ const PostUlasanForum = async (req, res) => {
             img: url,
             jumlahTanggapan,
             kategori_forum : kategori_forum,
-            jumlahView
+            jumlahView,
+            jumlahReport
         });
 
         res.json(post);
