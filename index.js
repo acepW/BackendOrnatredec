@@ -49,7 +49,7 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    // await Troli.sync();
+    await TransaksiProduk.sync();
   })
   .catch(err => console.log('Error: ' + err));
 

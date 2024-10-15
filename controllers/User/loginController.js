@@ -39,7 +39,6 @@ const register = async (req, res) => {
       password: hashedPassword,
       no_hp,
       role,
-      alamat,
       photoProfile,           // Tambahkan foto profil
       // backgroundProfile       // Tambahkan background profil
     });
@@ -86,7 +85,7 @@ const token = jwt.sign(
 res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path: "/" }); 
 
 
-    res.status(200).json({ success: true, message: 'Login successful', user });
+    res.status(200).json({ success: true, message: 'Login successful' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -95,15 +94,8 @@ res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path
 const getUser = async (req, res) =>{
   roleUser = req.query.role
   try {
-    if (!roleUser) {
-      const user = await User.findAll({include:[{model : Alamat}]})
-      return res.status(200).json(user)
-    } 
-    const UserRole = await User.findAll({
-      where : {role : roleUser},
-      include:[{model : Alamat}]
-    })
-    return res.status(200).json(UserRole)
+    const user = await User.findAll({})
+    res.status(200).json({message : "sukses", user})
   } catch (error) {
     res.status(500).json({message : error.message})
   }
@@ -113,18 +105,7 @@ const getUserMe = async (req, res) =>{
   const {id} = req.user
   try {
     const user = await User.findByPk(id)
-    const alamat = await Alamat.findOne({where : {userId : id}})
-    const tanggalBaru = moment(user.tanggalLahir).format('DD-MM-YYYY');
-    res.status(200).json({message : "sukses", 
-      username: user.username,
-      email: user.email,
-      password : user.password,
-      no_hp : user.no_hp,
-      role : user.role,
-      alamat : alamat,
-      photoProfile : user.photoProfile,
-      tanggalLahir: tanggalBaru,
-    })
+    res.status(200).json({message : "sukses", user})
   } catch (error) {
     res.status(500).json({message : error.message})
   }
@@ -165,11 +146,28 @@ const BlokirUser = async (req, res) => {
   }
 }
 
+const getUserFilter = async (req, res) => {
+    const role = req.query.role
+    try {
+      const user = await User.findAll({
+        where : {role: role},
+      
+      include : [ {
+          model : Alamat,
+      }]
+    })
+    return res.status(200).json(user)
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+}
+  
 module.exports = {
   register,
   login,
   logout,
   getUser,
   getUserMe,
-  BlokirUser
+  BlokirUser,
+  getUserFilter
 }

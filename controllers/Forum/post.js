@@ -4,8 +4,7 @@ const Reply = require('../../models/Forum/reply');
 const User = require('../../models/User/users');
 const multer = require('multer');
 const path = require('path');
-const simpanPost = require('../../models/Forum/simpanPost');
-const View = require('../../models/Forum/view');
+const { where } = require('sequelize');
 
 // Konfigurasi multer untuk menyimpan file
 const storage = multer.diskStorage({
@@ -54,6 +53,7 @@ const PostUlasanForum = async (req, res) => {
             kategori_forum : kategori_forum,
             jumlahView,
             jumlahReport
+
         });
 
         res.json(post);
@@ -210,73 +210,12 @@ const filterKategori = async (req, res) => {
     const kategori = req.query.kategori
     const limit = parseInt(req.query.limit)
     const page = parseInt(req.query.page) 
-    const offset = (page - 1) * limit;      
-     try {
-              if (!kategori) {
-                const semuaPost = await Post.findAll({
-                    limit: limit,
-                    offset: offset,
-                    include: [
-                        { 
-                            model: User, 
-                            attributes: ['username'] 
-                        },
-                        { 
-                            model: Comment, 
-                            limit: 5,
-                            offset: 0,
-                            include: [
-                                { model: User, attributes: ['username'] },
-                                { 
-                                    model: Reply, 
-                                    limit: 5,
-                                    offset: 0,
-                                    include: [{ model: User, attributes: ['username'] }]
-                                }
-                            ]
-                        }
-                    ]
-                });
-              return res.status(202).json(semuaPost)
-              } 
-              const postKategori = await Post.findAll({
-                where : {kategori_forum: kategori},
-                limit: limit,
-                offset: offset,
-                include: [
-                    { 
-                        model: User, 
-                        attributes: ['username'] 
-                    },
-                    { 
-                        model: Comment, 
-                        limit: 5,
-                        offset: 0,
-                        include: [
-                            { model: User, attributes: ['username'] },
-                            { 
-                                model: Reply, 
-                                limit: 5,
-                                offset: 0,
-                                include: [{ model: User, attributes: ['username'] }]
-                            }
-                        ]
-                    }
-                ]
-            });
-            return res.status(200).json(postKategori)
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-const getOnePost = async (req, res) => {
-    const idPost = req.params.id; 
-    const id = req.user.id;
-
+    const offset = (page - 1) * limit;
     try {
-        const post = await Post.findOne({ 
-            where: { id: idPost },
+        const post = await Post.findAll({
+            where : {kategori_forum : kategori},
+            limit: limit,
+            offset: offset,
             include: [
                 { 
                     model: User, 
@@ -284,18 +223,50 @@ const getOnePost = async (req, res) => {
                 },
                 { 
                     model: Comment, 
+                    limit: 5,
+                    offset: 0,
                     include: [
                         { model: User, attributes: ['username'] },
                         { 
                             model: Reply, 
+                            limit: 5,
+                            offset: 0,
                             include: [{ model: User, attributes: ['username'] }]
                         }
                     ]
                 }
             ]
         });
+        res.json({ post });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getOnePost = async (req, res) => {
+    const id = req.params;
+    try {
+        const Post = await post.findOne({ 
+            where : {id : id},
+            include: [
+                { 
+                    model: User, 
+                    attributes: ['name'] 
+                },
+                { 
+                    model: Comment, 
+                    include: [
+                        { model: User, attributes: ['name'] },
+                        { 
+                            model: Reply, 
+                            include: [{ model: User, attributes: ['name'] }]
+                        }
+                    ]
+                }
+            ]
+        });
     
-            const view = await View.findOne({where : {userId : id, postId : idPost}})
+            const view = await findOne({where : {userId : id, postId : idPost}})
     
             if (!view) {
                 await View.create({
@@ -303,21 +274,14 @@ const getOnePost = async (req, res) => {
                     postId : idPost,
                 })
             }
-
-            jumlahview = await View.count({where : {postId : idPost}})
-
-            await Post.update({
-                jumlahView : jumlahview
-            }, {
-                where :  {id : idPost}
-            })
             
             res.json({ post });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: error.message });
     }
+
 }
+
 const deletePost = async (req, res) => {
     const id = parseInt(req.params.id);
     const userID = req.user.id;
@@ -386,6 +350,7 @@ const getSimpanPostingan = async (req, res) => {
     }
 }
 
+
 const PostTerpopuler = async (req, res) => {
     try {
         const populer = await Post.findAll({
@@ -409,6 +374,7 @@ const jumlahpostinganUser = async (req, res) => {
         res.status(500).json({ message : error.message })
     }
 }
+
 module.exports = {
     PostUlasanForum,
     upload,

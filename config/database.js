@@ -4,7 +4,8 @@ dotenv.config();
 
 const sequelize = new Sequelize (process.env.DB_NAME, process.env.nama,  process.env.PASSWORD,{ 
     host : process.env.HOST,
-    dialect : 'mysql'
+    dialect : 'mysql',
+    logging: console.log  // Aktifkan logging query SQL di konsol
 })
 
 module.exports = sequelize;
