@@ -42,6 +42,10 @@ const Troli = db.define('troli', {
             model: subVariasi,
             key: 'id'
         }
+    },
+    jumlahStok: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
     }
 }, {
     freezeTableName: true,

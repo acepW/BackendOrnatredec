@@ -23,7 +23,6 @@ const Alamat = require("./models/Transaksi/alamat");
 const TransaksiProduk = require("./models/Transaksi/transaksiproduk");
 const PaymentGateway = require("./models/Transaksi/paymentgateway");
 const Report = require("./models/Forum/report");
-const Order = require("./models/Produk/order");
 const Troli = require("./models/Produk/troli");
 
 dotenv.config();
@@ -40,7 +39,7 @@ app.use(
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
-// app.use(bodyParser.urlencoded({ extended: true }));;
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
@@ -49,7 +48,7 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    await TransaksiProduk.sync();
+    await Troli.sync({alter : true});
   })
   .catch(err => console.log('Error: ' + err));
 

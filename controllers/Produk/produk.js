@@ -4,6 +4,7 @@ const Produk = require("../../models/Produk/produk");
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
 const { where } = require('sequelize');
+const Troli = require('../../models/Produk/troli');
 
 // Konfigurasi Multer untuk penyimpanan file
 const storage = multer.diskStorage({
@@ -267,8 +268,36 @@ const hapusProduk = async (req , res) => {
 }
 
 const troliProduk = async (req, res) => {
-  const { produk } = req.body;
-}
+  const { id_produk, id_subVariasi } = req.body; 
+  const id_User = req.user.id; 
+  
+  try {
+    const produk = await Produk.findByPk(id_produk);
+    if (!produk) {
+      return res.status(400).json({ message: 'Produk tidak ditemukan' });
+    }
+
+    const subVariasi = await subVariasi.findByPk(id_subVariasi);
+    if (!subVariasi) {
+      return res.status(400).json({ message: 'Sub Variasi tidak ditemukan' });
+    }
+
+    const variasi = await subVariasi.id_variasi
+
+    const troli = await Troli.create({
+      id_User,
+      id_produk,
+      id_variasi : variasi,
+      id_subVariasi,
+      jumlahStok
+    });
+
+    res.status(200).json(troli);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 module.exports = {
   createProduk,

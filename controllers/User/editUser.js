@@ -86,13 +86,26 @@ const detailUser = async (req, res) => {
    const user = await User.findOne({
       where: { id: id },
       include: [
-        { model: Post },
         { model: Alamat, attributes: ['kota_kabupaten'] }
       ]
    });
+     const posts = await Post.findAll({where : {userId : id}})
+     const Postingan = posts.map(post => ({
+      id: post.id,
+      judul: post.judul,
+      desc: post.desc,
+      fotoKonten: post.fotoKonten,
+      userId: post.userId,
+      kategori_forum: post.kategori_forum,
+      jumlahTanggapan: post.jumlahTanggapan,
+      jumlahView: post.jumlahView,
+      jumlahReport: post.jumlahReport,
+      createdAt: moment(post.createdAt).format('YYYY-MM-DD') 
+     }));
+    
     const Postuser = await Post.count({ where: { userId: id } })
-    // const TransaksiUser = await TransaksiProduk.count({where : {id_alamat : id}})
-    res.status(200).json({user, Postuser})
+    const TransaksiUser = await TransaksiProduk.count({ where: { user_id: id } })
+    res.status(200).json({user, Postingan, Postuser, TransaksiUser})
   } catch (error) {
     res.status(500).json({message : error.message})
   }

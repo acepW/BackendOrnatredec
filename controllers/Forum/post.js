@@ -48,7 +48,7 @@ const PostUlasanForum = async (req, res) => {
             userId: id,
             judul : judul,
             desc: desc,
-            img: url,
+            fotoKonten: url,
             jumlahTanggapan,
             kategori_forum : kategori_forum,
             jumlahView,
@@ -82,7 +82,7 @@ const editPostingan = async (req, res) => {
         judul : judul,
         desc : desc,
         kategori_forum : kategori_forum,
-        img : url
+        fotoKonten : url
        },{
         where : {id : id}
        }

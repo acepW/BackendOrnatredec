@@ -82,7 +82,9 @@ const createTransaksi = async (req, res) => {
                     usia: subVariasiItem ? subVariasiItem.usia : null,
                 }
             });
-
+            
+            const subvariasi = await subVariasi.findOne({ where: { id: subVariasiItem.id } })
+            const id_variasi = subvariasi.id_variasi
             await produkItem.update({ jumlah: produkItem.jumlah - item.jumlah });
 
             const existingEntry = await TransaksiProduk.findOne({
@@ -96,8 +98,12 @@ const createTransaksi = async (req, res) => {
                 await existingEntry.update({ jumlah: existingEntry.jumlah + item.jumlah });
             } else {
                 await TransaksiProduk.create({
+                    id_alamat: alamat.id,
+                    user_id: userId,
                     id_transaksi: newTransaksi.id,
                     id_produk: produkItem.id,
+                    id_subvariasi: subVariasiItem.id,
+                    id_variasi : id_variasi,
                     jumlah: item.jumlah
                 });
             }
@@ -142,50 +148,50 @@ const createTransaksi = async (req, res) => {
     }
 };
 
-const getAllTransaksi = async (req, res) => {
-    try {
-        const transaksi = await Transaksi.findAll({
-            include: [
-                {
-                    model: Produk,
-                    through: { attributes: ['jumlah'] },
-                    attributes: ['id', 'judul_produk', 'harga']
-                },
-                {
-                    model: Alamat,
-                    attributes: ['provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama']
-                },
-                {
-                    model: User,
-                    attributes: ['id', 'username']
-                }
-            ]
-        });
+// const getAllTransaksi = async (req, res) => {
+//     try {
+//         const transaksi = await Transaksi.findAll({
+//             include: [
+//                 {
+//                     model: Produk,
+//                     through: { attributes: ['jumlah'] },
+//                     attributes: ['id', 'judul_produk', 'harga']
+//                 },
+//                 {
+//                     model: Alamat,
+//                     attributes: ['provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama']
+//                 },
+//                 {
+//                     model: User,
+//                     attributes: ['id', 'username']
+//                 }
+//             ]
+//         });
 
-        const response = transaksi.map(transaksiItem => ({
-            id: transaksiItem.id,
-            user: {
-                id: transaksiItem.user.id,
-                username: transaksiItem.user.username
-            },
-            produk: transaksiItem.produks.map(item => ({
-                id: item.id,
-                nama_produk: item.judul_produk,
-                harga: item.harga,
-                jumlah: item.transaksi_produk.jumlah
-            })),
-            alamat: transaksiItem.alamat,
-            sub_total: transaksiItem.sub_total,
-            biaya_layanan: transaksiItem.biaya_layanan,
-            total_pembayaran: transaksiItem.total_pembayaran
-        }));
+//         const response = transaksi.map(transaksiItem => ({
+//             id: transaksiItem.id,
+//             user: {
+//                 id: transaksiItem.user.id,
+//                 username: transaksiItem.user.username
+//             },
+//             produk: transaksiItem.produks.map(item => ({
+//                 id: item.id,
+//                 nama_produk: item.judul_produk,
+//                 harga: item.harga,
+//                 jumlah: item.transaksi_produk.jumlah
+//             })),
+//             alamat: transaksiItem.alamat,
+//             sub_total: transaksiItem.sub_total,
+//             biaya_layanan: transaksiItem.biaya_layanan,
+//             total_pembayaran: transaksiItem.total_pembayaran
+//         }));
 
-        res.status(200).json(response);
-    } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
-    }
-};
+//         res.status(200).json(response);
+//     } catch (error) {
+//         console.error("Error:", error);
+//         res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+//     }
+// };
 
 const getTransaksiById = async (req, res) => {
     try {
@@ -239,8 +245,36 @@ const getTransaksiById = async (req, res) => {
     }
 };
 
+const getTransaksiFilter = async (req, res) => {
+    const status = req.query.status
+    try {
+      const Transaksi = await TransaksiProduk.findAll({
+        where : {status: status},
+          include: [{
+              model: User,
+              attributes : ['username']
+          },
+              {
+          model: Produk,  
+      },
+              {
+          model : Variasi,
+          include: [{ model: subVariasi}],
+      },
+          {
+              model: Alamat 
+          
+      }]
+    })
+    return res.status(200).json(Transaksi)
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
 module.exports = {
     createTransaksi,
-    getAllTransaksi,
-    getTransaksiById
+    // getAllTransaksi,
+    getTransaksiById,
+    getTransaksiFilter
 };

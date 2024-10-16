@@ -41,7 +41,7 @@ const totalSemua = async (req, res) => {
             where : {kategori_forum : kategoriBurung}
         })
 
-        const totalPemesanan = await TransaksiProduk.count()
+        const totalPemesanan = await TransaksiProduk.count({})
 
       res.status(200).json({
         totalProduk,
@@ -55,7 +55,6 @@ const totalSemua = async (req, res) => {
         totalForumTanaman,
         totalPemesanan
       })
-
     } catch (error) {
         res.status(500).json({message : error.message})
     }

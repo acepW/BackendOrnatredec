@@ -3,6 +3,8 @@ const sequelize = require("../../config/database");
 const Produk = require("../Produk/produk");
 const Variasi = require("../Produk/variasi");
 const Subvariasi = require("../Produk/subVariasi");
+const User = require("../User/users");
+const Alamat = require("./alamat");
 
 const TransaksiProduk = sequelize.define("transaksi_produk", {
   id_transaksi: {
@@ -18,6 +20,20 @@ const TransaksiProduk = sequelize.define("transaksi_produk", {
       key: "id"
     }
   },
+  user_id: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: User,
+            key: "id"
+        }
+    },
+    id_alamat: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: Alamat,
+            key: "id"
+        }
+    },
   id_variasi: {
     type: DataTypes.INTEGER,
     allowNull: true, // Tidak semua produk punya variasi
@@ -42,10 +58,6 @@ const TransaksiProduk = sequelize.define("transaksi_produk", {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  totalHarga: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  }
 }, {
   freezeTableName: true,
   timestamps: true
@@ -55,9 +67,13 @@ const TransaksiProduk = sequelize.define("transaksi_produk", {
 Produk.hasMany(TransaksiProduk, { foreignKey: "id_produk" });
 Variasi.hasMany(TransaksiProduk, { foreignKey: "id_variasi" });
 Subvariasi.hasMany(TransaksiProduk, { foreignKey: "id_subvariasi" });
+User.hasMany(TransaksiProduk, { foreignKey: "user_id" });
+Alamat.hasMany(TransaksiProduk, { foreignKey: "id_alamat" });
 
 TransaksiProduk.belongsTo(Produk, { foreignKey: "id_produk" });
 TransaksiProduk.belongsTo(Variasi, { foreignKey: "id_variasi" });
 TransaksiProduk.belongsTo(Subvariasi, { foreignKey: "id_subvariasi" });
+TransaksiProduk.belongsTo(User, { foreignKey: "user_id" });
+TransaksiProduk.belongsTo(Alamat, { foreignKey: "id_alamat" });
 
 module.exports = TransaksiProduk;
