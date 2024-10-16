@@ -12,6 +12,8 @@ router.put('/:id/status', orderController.updateOrderStatus);
 router.get('/', orderController.getAllOrders);
 
 // // Mendapatkan pesanan berdasarkan ID dan otomatis mengubah status dari "dipesan" ke "dikemas"
-// router.get('/:id', orderController.getOrderById);
+router.get('/:id', orderController.getOrderById);
 
+//router get id tanpa rubah status
+ router.get('detail/:id', orderController.detail);
 module.exports = router;

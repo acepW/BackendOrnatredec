@@ -103,10 +103,35 @@ const getOrderById = async (req, res) => {
 };
 
 
+// Fungsi untuk mengambil satu pesanan berdasarkan ID tanpa mengubah statusnya
+const detail = async (req, res) => {
+    const { id } = req.params; // Mendapatkan id_transaksi dari parameter URL
+
+    try {
+        // Cari pesanan berdasarkan id_transaksi
+        const order = await transaksi_produk.findByPk(id, {
+            include: [{
+                model: Produk, // Include model Produk untuk mendapatkan detail produk terkait
+            }]
+        });
+
+        // Jika pesanan tidak ditemukan
+        if (!order) {
+            return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
+        }
+
+        // Kirim respons dengan data pesanan tanpa mengubah status
+        res.status(200).json(order);
+    } catch (error) {
+        console.error('Caught error:', error); // Debugging log
+        res.status(500).json({ message: 'Terjadi kesalahan', error: error.message || error });
+    }
+};
 // Ekspor semua fungsi
 module.exports = {
     updateOrderStatus,
     getAllOrders,
-    getOrderById
+    getOrderById,
+    detail
  
 };
