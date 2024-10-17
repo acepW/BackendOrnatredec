@@ -224,7 +224,6 @@ const editProduk = async (req, res) => {
 
 const filterKategoriProduk = async (req, res) => {
   const kategori = req.query.kategori
-
   try {
     if (!kategori) {
       const semuaProduk = await Produk.findAll({

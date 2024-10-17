@@ -28,7 +28,7 @@ const fileFilter = (req, file, cb) => {
 // Set up Multer middleware
 const upload = multer({
   storage: storage,
-  fileFilter: fileFilter,
+  // fileFilter: fileFilter,
 });
 
 module.exports = upload;

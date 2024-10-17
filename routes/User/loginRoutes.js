@@ -8,7 +8,7 @@ const {upload}= require ('../../middlewares/Multer')
 // Login User
 router.post('/login', login);
 
-router.post('/getMe', getUserMe)
+router.get('/getMe',protect(['user']), getUserMe)
 // router.get('/userr', getUser);
 
 //router register
