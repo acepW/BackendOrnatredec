@@ -16,7 +16,7 @@ const Post = db.define('post',{
         type : DataTypes.STRING,
         allowNull : true,
     },
-    img : {
+    fotoKonten : {
         type : DataTypes.STRING,
         allowNull : true,
     },
@@ -35,6 +35,16 @@ const Post = db.define('post',{
     jumlahTanggapan : {
         type : DataTypes.INTEGER,
         allowNull : false,
+
+    },
+    jumlahView : {
+        type : DataTypes.STRING,
+        allowNull : false,
+    },
+    jumlahReport : {
+        type : DataTypes.STRING,
+        allowNull : false,
+
     }
 },{
     freezeTableName : true,

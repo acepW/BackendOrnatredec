@@ -1,4 +1,4 @@
-const express = require('express')
+const express = require("express");
 const router = express.Router();
 const  protect  = require('../../middlewares/authMiddleware');
 const totalSemua = require('../../controllers/olah data/olahDataTentangTotal');

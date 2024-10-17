@@ -3,6 +3,7 @@ const path = require('path');
 const Produk = require("../../models/Produk/produk");
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
+const { where } = require('sequelize');
 
 // Konfigurasi Multer untuk penyimpanan file
 const storage = multer.diskStorage({
@@ -221,19 +222,45 @@ const getProduk = async (req, res) => {
   }
 };
 
+  const getProdukFilter = async (req, res) => {
+    const kategori = req.query.kategori
+    try {
+      const produk = await Produk.findAll({
+        where : {kategori_produk: kategori},
+      
+      include : [ {
+          model : Variasi,
+          include: [{ model: subVariasi}],
+      }]
+    })
+    return res.status(200).json(produk)
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
 
-// Mendapatkan produk berdasarkan ID
-const getProductById = async (req, res) => {
-  const { id } = req.params;
+const filterKategoriProduk = async (req, res) => {
+  const kategori = req.query.kategori
 
   try {
-      const product = await Order.findByPk(id);
-
-      if (!product) {
-          return res.status(404).json({ message: 'Produk tidak ditemukan' });
-      }
-
-      res.status(200).json(product);
+    if (!kategori) {
+      const semuaProduk = await Produk.findAll({
+        include : [ {
+          model : Variasi,
+          include: [{ model: subVariasi}],
+      }]
+      })
+    return res.status(202).json(semuaProduk)
+    } 
+      const produk = await Produk.findAll({
+        where : {kategori_produk: kategori},
+      
+      include : [ {
+          model : Variasi,
+          include: [{ model: subVariasi}],
+      }]
+    })
+    return res.status(200).json(produk)
   } catch (error) {
       res.status(500).json({ message: 'Terjadi kesalahan', error });
   }
@@ -252,11 +279,15 @@ const  getOrderedProducts = async (req, res) => {
   } catch (error) {
       res.status(500).json({ message: 'Terjadi kesalahan', error });
   }
-};
+}
+
 module.exports = {
   createProduk,
   getProduk,
   editProduk,
-  getProductById,
-  getOrderedProducts 
+  filterKategoriProduk,
+  getProdukbyId,
+  getProdukFilter,
+  upload,
+  hapusProduk
 };

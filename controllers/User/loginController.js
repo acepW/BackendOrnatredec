@@ -11,7 +11,7 @@ const register = async (req, res) => {
 
   // Ambil file yang diupload
   const photoProfile = req.files?.photoProfile ? req.files.photoProfile[0].filename : null;
-  const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
+  // const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
 
   try {
     const UserEmail = await User.findOne({ where: { email } });
@@ -40,7 +40,9 @@ const register = async (req, res) => {
       no_hp,
       role,
       photoProfile,           // Tambahkan foto profil
-      backgroundProfile       // Tambahkan background profil
+      backgroundProfile   ,    // Tambahkan background profil
+      alamat,
+    
     });
 
     res.status(201).json({ success: true, message: 'User registered successfully', user });
@@ -53,7 +55,7 @@ const login = async (req, res) => {
   const { username, password } = req.body;
   
   try {
-    const user = await User.findOne({ where: { username } });
+    const user = await User.findOne({ where: { username }, include : [{model : Alamat}] });
     
     if (!user) {
       return res.status(401).json({ success: false, message: 'username tidak ditemukan' });
@@ -63,6 +65,18 @@ const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'password salah' });
     }
+
+    if (user.status == 'terblokir' && user.statusAktif == 'tidak aktif') {
+      return res.status(403).json({ success: false, message: 'maaf akun anda telah diblokir sistem' });
+    }
+
+    const status = 'aktif'
+
+       await user.update(
+        {statusAktif : status },
+        {where : {id : user.id}}
+    )
+    
 // Generate JWT without expiration
 const token = jwt.sign(
   { id: user.id, role: user.role },
@@ -79,7 +93,7 @@ res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path
   }
 };
 
-const getUser = async (req, res) =>{
+const getUserFilter = async (req, res) =>{
   roleUser = req.query.role
   try {
     const user = await User.findAll({})
@@ -99,14 +113,38 @@ const getUserMe = async (req, res) =>{
   }
 }
 
-const logout = (req, res) => {
+const logout = async (req, res) => {
+  const id = req.user.id
   try {
       res.clearCookie('token', {httpOnly: true, sameSite: "None",secure: true, path: "/"});
       console.log('logout berhasil');
-      
+
+      const status = 'tidak aktif'
+
+      await User.update(
+        {statusAktif : status },
+        {where : {id : id}}
+      )
+
       res.status(200).json({message: 'logout berhasil'});
   } catch (error) {
       res.status(500).json({ message: error.message });
+  }
+}
+
+const BlokirUser = async (req, res) => {
+  const id = req.params.id;
+  try {
+    await User.update({
+      status : 'terblokir',
+      statusAktif : 'tidak aktif'
+    }, {
+      where : {id : id}
+    })
+
+  res.status(200).json({message : 'berhasil terblokir'})
+  } catch (error) {
+    res.status(200).json({message : error.message})
   }
 }
 
@@ -114,5 +152,9 @@ module.exports = {
   register,
   login,
   logout,
-  getUser
+
+  getUser,
+  getUserMe,
+  getUserFilter,
+  BlokirUser
 }

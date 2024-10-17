@@ -1,8 +1,12 @@
 const express = require('express');
 const { register, login, logout, getUser, TotalUser, getUserMe } = require('../../controllers/User/loginController');
+
+const { register, login, logout, getUserMe, BlokirUser, getUserFilter } = require('../../controllers/User/loginController');
+
 const  protect  = require('../../middlewares/authMiddleware');
 const router = express.Router();
 const {upload}= require ('../../middlewares/Multer')
+
 
 router.post('/register', upload.fields([
   { name: 'photoProfile', maxCount: 1 },
@@ -12,6 +16,8 @@ router.post('/register', upload.fields([
 
 // Login User
 router.post('/login', login);
+
+router.get('/getMe',protect(['user']), getUserMe)
 // router.get('/userr', getUser);
 
 //router register
@@ -21,8 +27,11 @@ router.post('/register', register)
 router.delete('/logout', protect(['user', 'admin', 'super admin', 'kasir']), logout);
 
 //get user
-router.get('/getdanFilterUser', getUser)
+router.get('/getdanFilterUser', getUserFilter)
 
+
+//blokir user
+router.put('/blokir/:id', BlokirUser)
 
 router.get('/admin', protect(['admin']), (req, res) => {
   res.status(200).json({ success: true, message: 'Welcome Admin' });

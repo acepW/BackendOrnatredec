@@ -20,7 +20,11 @@ const createAlamat = async (req, res) => {
     try {
         const noHp = await User.findByPk(id);
         const noPonsel = noHp.no_hp;
-
+        const alamatAda = await Alamat.findOne({where : {userId : id}})
+      if (alamatAda) {
+        return res.status(404).json({message : 'maaf alamat kamu sudah ada'})
+      }
+      
         const alamat = await Alamat.create({
             userId : id,
             provinsi,
