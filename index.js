@@ -48,7 +48,7 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    await Troli.sync({alter : true});
+    // await Troli.sync({alter : true});
   })
   .catch(err => console.log('Error: ' + err));
 

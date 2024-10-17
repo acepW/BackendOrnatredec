@@ -195,15 +195,25 @@ const createTransaksi = async (req, res) => {
 
 const getTransaksiById = async (req, res) => {
     try {
-        const transaksiId = req.params.id;
+        const id = req.params.id;
 
         const transaksi = await Transaksi.findOne({
-            where: { id: transaksiId },
+            where: { id: id },
             include: [
-                {
+                 {
                     model: Produk,
                     through: { attributes: ['jumlah'] },
-                    attributes: ['id', 'judul_produk', 'harga']
+                    attributes: ['id', 'judul_produk', 'harga'],
+                    include: [
+                        {
+                            model: Variasi,
+                            attributes: ['nama_variasi']
+                        },
+                        {
+                            model: subVariasi,
+                            attributes: ['nama_sub_variasi', 'usia']
+                        }
+                    ]
                 },
                 {
                     model: Alamat,
@@ -223,14 +233,17 @@ const getTransaksiById = async (req, res) => {
         const response = {
             id: transaksi.id,
             user: {
-                id: transaksi.user.id,
-                username: transaksi.user.username
+                id: transaksi.User.id,
+                username: transaksi.User.username
             },
             produk: transaksi.produks.map(item => ({
                 id: item.id,
                 nama_produk: item.judul_produk,
                 harga: item.harga,
-                jumlah: item.transaksi_produk.jumlah
+                jumlah: item.transaksi_produk.jumlah,
+                nama_variasi: item.Variasi.nama_variasi,
+                nama_sub_variasi : item.subVariasi.nama_sub_variasi,
+                usia : item.subVariasi.usia
             })),
             alamat: transaksi.alamat,
             sub_total: transaksi.sub_total,
@@ -248,25 +261,55 @@ const getTransaksiById = async (req, res) => {
 const getTransaksiFilter = async (req, res) => {
     const status = req.query.status
     try {
-      const Transaksi = await TransaksiProduk.findAll({
+    if (!status) {
+       const TransaksiStatus = await TransaksiProduk.findAll({
+           include: [{
+              model: User,
+              attributes : ['username']
+      },
+              {
+              model: Produk,  
+              attributes : ['judul_produk', 'foto_produk', 'harga',]
+      },
+              {
+                  model: Variasi,
+                  attributes : ['nama_variasi']
+      },
+              {
+                  model: subVariasi,
+                  attributes : ['nama_sub_variasi']
+      },
+              {
+          model: Alamat 
+          
+      }]
+    })
+        return res.status(200).json(TransaksiStatus)
+        } 
+       const Transaksi = await TransaksiProduk.findAll({
         where : {status: status},
           include: [{
               model: User,
               attributes : ['username']
-          },
-              {
-          model: Produk,  
       },
               {
-          model : Variasi,
-          include: [{ model: subVariasi}],
+              model: Produk,  
+              attributes : ['judul_produk', 'foto_produk', 'harga',]
       },
-          {
-              model: Alamat 
+              {
+                  model: Variasi,
+                  attributes : ['nama_variasi']
+      },
+              {
+                  model: subVariasi,
+                  attributes : ['nama_sub_variasi']
+      },
+              {
+          model: Alamat 
           
       }]
-    })
-    return res.status(200).json(Transaksi)
+       }) 
+         return res.status(202).json(Transaksi)
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
