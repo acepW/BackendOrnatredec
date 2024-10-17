@@ -148,6 +148,7 @@ const createTransaksi = async (req, res) => {
     }
 };
 
+<<<<<<< HEAD
 // const getAllTransaksi = async (req, res) => {
 //     try {
 //         const transaksi = await Transaksi.findAll({
@@ -185,6 +186,45 @@ const createTransaksi = async (req, res) => {
 //             biaya_layanan: transaksiItem.biaya_layanan,
 //             total_pembayaran: transaksiItem.total_pembayaran
 //         }));
+=======
+const getAllTransaksi = async (req, res) => {
+    try {
+        const transaksi = await Transaksi.findAll({
+            include: [
+                {
+                    model: Produk,
+                    through: { attributes: ['jumlah'] },
+                    attributes: ['id', 'judul_produk', 'harga']
+                },
+                {
+                    model: Alamat,
+                    attributes: ['provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama']
+                },
+                {
+                    model: User,
+                    attributes: ['id', 'username']
+                }
+            ]
+        });
+
+        const response = transaksi.map(transaksiItem => ({
+            id: transaksiItem.id,
+            user: {
+                id: transaksiItem.user.id,
+                username: transaksiItem.user.username
+            },
+            produk: transaksiItem.produks.map(item => ({
+                id: item.id,
+                nama_produk: item.judul_produk,
+                harga: item.harga,
+                jumlah: item.transaksi_produk.jumlah
+            })),
+            alamat: transaksiItem.alamat,
+            sub_total: transaksiItem.sub_total,
+            biaya_layanan: transaksiItem.biaya_layanan,
+            total_pembayaran: transaksiItem.total_pembayaran
+        }));
+>>>>>>> 318ffece20a58d30e095949180766a0af3d52b74
 
 //         res.status(200).json(response);
 //     } catch (error) {
@@ -233,8 +273,13 @@ const getTransaksiById = async (req, res) => {
         const response = {
             id: transaksi.id,
             user: {
+<<<<<<< HEAD
                 id: transaksi.User.id,
                 username: transaksi.User.username
+=======
+                id: transaksi.user.id,
+                username: transaksi.user.username
+>>>>>>> 318ffece20a58d30e095949180766a0af3d52b74
             },
             produk: transaksi.produks.map(item => ({
                 id: item.id,
