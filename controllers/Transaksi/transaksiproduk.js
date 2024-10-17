@@ -82,6 +82,94 @@ const getAllOrders = async (req, res) => {
     }
 }
 
+const getAllOrdersdikemas = async (req, res) => {
+    try {
+        const orders = await transaksi_produk.findAll({
+            where: { status: 'dikemas' },
+            include: [{
+                model: Produk, // Include model Produk untuk mengambil detail produk terkait
+            }]
+        });
+
+        console.log("Orders found:", orders); // Debugging log
+
+
+        // Jika tidak ada pesanan berstatus "dipesan"
+        if (orders.length === 0) {
+            return res.status(200).json({ message: 'Tidak ada pesanan yang berstatus "dipesan"' });
+
+      
+        }
+
+        // Ubah status semua pesanan dari "dipesan" ke "dikemas"
+        for (let order of orders) {
+            order.status = 'sedang diantar';
+            await order.save();
+            console.log("transaksi_produk updated:", order); // Debugging log
+        }
+
+        // Ambil ulang semua pesanan setelah update status
+        const updatedOrders = await transaksi_produk.findAll({
+            include: [{
+                model: Produk, // Mengambil produk terkait
+            }]
+        });
+
+        // Kirim respons dengan data pesanan yang sudah diperbarui
+
+        res.status(200).json(updatedOrders);
+    } catch (error) {
+        console.error('Error fetching or updating orders:', error); // Log error yang lebih spesifik
+        res.status(500).json({ message: 'Terjadi kesalahan saat mengambil atau memperbarui pesanan', error: error.message });
+
+    }
+}
+
+const getAllOrdersantar= async (req, res) => {
+    try {
+        const orders = await transaksi_produk.findAll({
+            where: { status: 'sedang diantar' },
+            include: [{
+                model: Produk, // Include model Produk untuk mengambil detail produk terkait
+            }]
+        });
+
+        console.log("Orders found:", orders); // Debugging log
+
+
+        // Jika tidak ada pesanan berstatus "dipesan"
+        if (orders.length === 0) {
+            return res.status(200).json({ message: 'Tidak ada pesanan yang berstatus "dipesan"' });
+
+      
+        }
+
+        // Ubah status semua pesanan dari "dipesan" ke "dikemas"
+        for (let order of orders) {
+            order.status = 'selesai';
+            await order.save();
+            console.log("transaksi_produk updated:", order); // Debugging log
+        }
+
+        // Ambil ulang semua pesanan setelah update status
+        const updatedOrders = await transaksi_produk.findAll({
+            include: [{
+                model: Produk, // Mengambil produk terkait
+            }]
+        });
+
+        // Kirim respons dengan data pesanan yang sudah diperbarui
+
+        res.status(200).json(updatedOrders);
+    } catch (error) {
+        console.error('Error fetching or updating orders:', error); // Log error yang lebih spesifik
+        res.status(500).json({ message: 'Terjadi kesalahan saat mengambil atau memperbarui pesanan', error: error.message });
+
+    }
+}
+
+
+
 // Fungsi untuk mengambil satu pesanan berdasarkan ID dan mengubah statusnya jika diperlukan
 const getOrderById = async (req, res) => {
     const { id } = req.params; // Mendapatkan id_transaksi dari parameter URL
@@ -122,7 +210,83 @@ const getOrderById = async (req, res) => {
     }
 };
 
+const getOrderByIddikemas = async (req, res) => {
+    const { id } = req.params; // Mendapatkan id_transaksi dari parameter URL
 
+    try {
+        // Cari pesanan berdasarkan id_transaksi
+
+    
+
+        const Order = await transaksi_produk.findByPk(id, {
+
+            include: [{
+                model: Produk, // Include model Produk untuk mendapatkan detail produk terkait
+            }]
+        });
+
+        // Jika pesanan tidak ditemukan
+      
+
+        if (!Order) {
+            return res.status(405).json({ message: 'Pesanan tidak ditemukan' });
+
+        }
+
+        // Jika status pesanan adalah 'dipesan', ubah menjadi 'dikemas'
+        if (order.status === 'dikemas') {
+            order.status = 'sedang diantar';
+            await order.save(); // Simpan perubahan ke database
+            console.log("Pesanan telah diperbarui:", order);
+        }
+
+
+        // Kirim respons dengan data pesanan yang sudah diperbarui
+        res.status(200).json(order);
+    } catch (error) {
+        console.error('Caught error:', error); // Debugging log
+        res.status(500).json({ message: 'Terjadi kesalahan', error: error.message || error });
+    }
+};
+
+const getOrderByIdantar = async (req, res) => {
+    const { id } = req.params; // Mendapatkan id_transaksi dari parameter URL
+
+    try {
+        // Cari pesanan berdasarkan id_transaksi
+
+    
+
+        const Order = await transaksi_produk.findByPk(id, {
+
+            include: [{
+                model: Produk, // Include model Produk untuk mendapatkan detail produk terkait
+            }]
+        });
+
+        // Jika pesanan tidak ditemukan
+      
+
+        if (!Order) {
+            return res.status(405).json({ message: 'Pesanan tidak ditemukan' });
+
+        }
+
+        // Jika status pesanan adalah 'dipesan', ubah menjadi 'dikemas'
+        if (order.status === 'sedang diantar') {
+            order.status = 'selesai';
+            await order.save(); // Simpan perubahan ke database
+            console.log("Pesanan telah diperbarui:", order);
+        }
+
+
+        // Kirim respons dengan data pesanan yang sudah diperbarui
+        res.status(200).json(order);
+    } catch (error) {
+        console.error('Caught error:', error); // Debugging log
+        res.status(500).json({ message: 'Terjadi kesalahan', error: error.message || error });
+    }
+};
 // Fungsi untuk mengambil satu pesanan berdasarkan ID tanpa mengubah statusnya
 const detail = async (req, res) => {
     const { id } = req.params; // Mendapatkan id_transaksi dari parameter URL
@@ -157,6 +321,10 @@ module.exports = {
     getAllOrders,
     getOrderById,
     detail,
+    getAllOrdersantar,
+    getAllOrdersdikemas,
+    getOrderByIdantar,
+    getOrderByIddikemas
  
 
    

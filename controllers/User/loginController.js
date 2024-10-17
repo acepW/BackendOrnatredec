@@ -153,7 +153,7 @@ module.exports = {
   login,
   logout,
 
-  getUser,
+  
   getUserMe,
   getUserFilter,
   BlokirUser
