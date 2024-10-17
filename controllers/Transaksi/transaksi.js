@@ -1,7 +1,7 @@
 const Transaksi = require('../../models/Transaksi/transaksi');
 const Produk = require('../../models/Produk/produk');
 const Alamat = require('../../models/Transaksi/alamat');
-const TransaksiProduk = require('../../models/Transaksi/transaksiproduk'); // Jika menggunakan tabel pivot
+const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
 const User = require("../../models/User/users");
@@ -44,7 +44,7 @@ const createTransaksi = async (req, res) => {
                             {
                                 model: subVariasi,
                                 as: 'subvariasis',
-                                where: { id: item.id_subvariasi } // Menggunakan id_subvariasi untuk filter
+                                where: { id: item.id_subvariasi }
                             }
                         ]
                     }
@@ -59,14 +59,12 @@ const createTransaksi = async (req, res) => {
                 return res.status(400).json({ message: `Stok tidak cukup untuk produk dengan ID ${item.id_produk}` });
             }
 
-            // Dapatkan harga dari subvariasi
             const subVariasiItem = produkItem.variasis[0]?.subvariasis.find(sv => sv.id === item.id_subvariasi);
             const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
 
-            const itemSubTotal = (produkItem.harga + hargaSubVariasi) * item.jumlah; // Tambahkan harga produk dan subvariasi
+            const itemSubTotal = (produkItem.harga + hargaSubVariasi) * item.jumlah;
             subTotal += itemSubTotal;
 
-            // Update stok subvariasi
             if (subVariasiItem) {
                 await subVariasi.update({ stok: subVariasiItem.stok - item.jumlah }, { where: { id: subVariasiItem.id } });
             }
@@ -74,7 +72,7 @@ const createTransaksi = async (req, res) => {
             produkDetails.push({
                 id: produkItem.id,
                 nama_produk: produkItem.judul_produk,
-                harga: produkItem.harga,
+                harga: produkItem.harga + hargaSubVariasi, // Harga final dengan subvariasi
                 jumlah: item.jumlah,
                 sub_variasi: {
                     id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
@@ -98,7 +96,8 @@ const createTransaksi = async (req, res) => {
                 await TransaksiProduk.create({
                     id_transaksi: newTransaksi.id,
                     id_produk: produkItem.id,
-                    jumlah: item.jumlah
+                    jumlah: item.jumlah,
+                    totalHarga: itemSubTotal // Menyimpan total harga
                 });
             }
         }
@@ -148,7 +147,7 @@ const getAllTransaksi = async (req, res) => {
             include: [
                 {
                     model: Produk,
-                    through: { attributes: ['jumlah'] },
+                    through: { attributes: ['jumlah', 'totalHarga'] }, // Ambil totalHarga dari pivot table
                     attributes: ['id', 'judul_produk', 'harga']
                 },
                 {
@@ -172,7 +171,8 @@ const getAllTransaksi = async (req, res) => {
                 id: item.id,
                 nama_produk: item.judul_produk,
                 harga: item.harga,
-                jumlah: item.transaksi_produk.jumlah
+                jumlah: item.transaksi_produk.jumlah,
+                totalHarga: item.transaksi_produk.totalHarga // Tampilkan total harga per produk
             })),
             alamat: transaksiItem.alamat,
             sub_total: transaksiItem.sub_total,
@@ -189,53 +189,41 @@ const getAllTransaksi = async (req, res) => {
 
 const getTransaksiById = async (req, res) => {
     try {
-        const transaksiId = req.params.id;
+        const { id } = req.params; // ambil id dari parameter URL
 
-        const transaksi = await Transaksi.findOne({
-            where: { id: transaksiId },
+        const transaksiData = await Transaksi.findOne({
+            where: { id: id },
             include: [
                 {
                     model: Produk,
-                    through: { attributes: ['jumlah'] },
-                    attributes: ['id', 'judul_produk', 'harga']
+                    as: 'produks', // gunakan alias yang sesuai
+                    through: {
+                        attributes: ['jumlah', 'totalHarga'], // ambil kolom dari tabel perantara
+                    },
+                    include: [
+                        {
+                            model: Variasi,
+                            as: 'variasis', // pastikan alias sesuai dengan yang didefinisikan
+                            attributes: ['id', 'nama_variation'] // ambil kolom yang valid
+                        }
+                    ]
                 },
                 {
                     model: Alamat,
-                    attributes: ['provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama']
-                },
-                {
-                    model: User,
-                    attributes: ['id', 'username']
+                    as: 'alamat', // pastikan alias sesuai
+                    attributes: ['id', 'provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama'] // ambil kolom yang valid
                 }
             ]
         });
 
-        if (!transaksi) {
+        if (!transaksiData) {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
         }
 
-        const response = {
-            id: transaksi.id,
-            user: {
-                id: transaksi.user.id,
-                username: transaksi.user.username
-            },
-            produk: transaksi.produks.map(item => ({
-                id: item.id,
-                nama_produk: item.judul_produk,
-                harga: item.harga,
-                jumlah: item.transaksi_produk.jumlah
-            })),
-            alamat: transaksi.alamat,
-            sub_total: transaksi.sub_total,
-            biaya_layanan: transaksi.biaya_layanan,
-            total_pembayaran: transaksi.total_pembayaran
-        };
-
-        res.status(200).json(response);
+        return res.status(200).json(transaksiData);
     } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+        console.error(error);
+        return res.status(500).json({ message: 'Terjadi kesalahan saat mengambil data transaksi' });
     }
 };
 

@@ -8,7 +8,8 @@ router.use("/", require("./User/editUser"))
 router.use("/", require("./Produk/produk"));
 // router.use("/", require("./Produk/order"));
 
-
+//Ulasan
+router.use("/", require("./Ulasan/ulasan"));
 
 //Transaksi
 router.use("/", require("./Transaksi/transaksi"));
