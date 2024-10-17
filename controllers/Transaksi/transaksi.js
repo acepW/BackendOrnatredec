@@ -148,7 +148,6 @@ const createTransaksi = async (req, res) => {
     }
 };
 
-<<<<<<< HEAD
 // const getAllTransaksi = async (req, res) => {
 //     try {
 //         const transaksi = await Transaksi.findAll({
@@ -186,7 +185,6 @@ const createTransaksi = async (req, res) => {
 //             biaya_layanan: transaksiItem.biaya_layanan,
 //             total_pembayaran: transaksiItem.total_pembayaran
 //         }));
-=======
 const getAllTransaksi = async (req, res) => {
     try {
         const transaksi = await Transaksi.findAll({
@@ -224,14 +222,13 @@ const getAllTransaksi = async (req, res) => {
             biaya_layanan: transaksiItem.biaya_layanan,
             total_pembayaran: transaksiItem.total_pembayaran
         }));
->>>>>>> 318ffece20a58d30e095949180766a0af3d52b74
 
-//         res.status(200).json(response);
-//     } catch (error) {
-//         console.error("Error:", error);
-//         res.status(500).json({ message: 'Terjadi kesalahan pada server' });
-//     }
-// };
+        res.status(200).json(response);
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+    }
+};
 
 const getTransaksiById = async (req, res) => {
     try {
@@ -273,13 +270,9 @@ const getTransaksiById = async (req, res) => {
         const response = {
             id: transaksi.id,
             user: {
-<<<<<<< HEAD
+
                 id: transaksi.User.id,
                 username: transaksi.User.username
-=======
-                id: transaksi.user.id,
-                username: transaksi.user.username
->>>>>>> 318ffece20a58d30e095949180766a0af3d52b74
             },
             produk: transaksi.produks.map(item => ({
                 id: item.id,
