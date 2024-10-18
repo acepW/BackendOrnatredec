@@ -2,7 +2,7 @@ const express = require('express');
 const { register, login, logout, getUserMe, BlokirUser, getUserFilter } = require('../../controllers/User/loginController');
 const  protect  = require('../../middlewares/authMiddleware');
 const router = express.Router();
-const {upload}= require ('../../middlewares/Multer')
+// const {upload}= require ('../../middlewares/Multer')
 
 
 // Login User

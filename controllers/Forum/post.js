@@ -219,7 +219,7 @@ const filterKategori = async (req, res) => {
             include: [
                 { 
                     model: User, 
-                    attributes: ['username'] 
+                    attributes: ['username', 'photoProfile'] 
                 },
                 { 
                     model: Comment, 
@@ -237,7 +237,7 @@ const filterKategori = async (req, res) => {
                 }
             ]
         });
-        res.json({ post });
+        res.json(post);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -285,7 +285,7 @@ const getOnePost = async (req, res) => {
                 where :  {id : idPost}
             })
             
-            res.json({ post });
+            res.json(post);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: error.message });

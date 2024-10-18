@@ -4,6 +4,7 @@ const Produk = require("./produk");
 const Variasi = require("./variasi");
 const subVariasi = require("./subVariasi");
 const User = require("../User/users");
+const Alamat = require("../Transaksi/alamat");
 
 const Troli = db.define('troli', {
     id: {
@@ -16,6 +17,14 @@ const Troli = db.define('troli', {
         allowNull: false,
         references: {
             model: User,
+            key: 'id'
+        }
+    },
+    id_alamat: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Alamat,
             key: 'id'
         }
     },
@@ -63,5 +72,8 @@ Troli.belongsTo(Variasi, { foreignKey: 'id_variasi' });
 
 subVariasi.hasMany(Troli, { foreignKey: 'id_subVariasi' });
 Troli.belongsTo(subVariasi, { foreignKey: 'id_subVariasi' });
+
+Alamat.hasMany(Troli, { foreignKey: 'id_alamat' });
+Troli.belongsTo(Alamat, { foreignKey: 'id_alamat' });
 
 module.exports = Troli;
