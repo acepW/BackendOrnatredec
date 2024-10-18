@@ -5,13 +5,33 @@ const router = express.Router();
 const orderController = require('../../controllers/Transaksi/transaksiproduk');
 
 // Endpoint untuk mengubah status pesanan
-router.put('/status/:id', orderController.updateOrderStatus);
+
+router.put('/:id/status', orderController.updateOrderStatus);
 
 
 // Mendapatkan semua pesanan dan otomatis mengubah status dari "dipesan" ke "dikemas"
-router.get('/status', orderController.getAllOrders);
+router.get('/dipesan', orderController.getAllOrders);
 
-// Mendapatkan pesanan berdasarkan ID dan otomatis mengubah status dari "dipesan" ke "dikemas"
-router.get('/order/:id', orderController.getOrderById);
+// // Mendapatkan pesanan berdasarkan ID dan otomatis mengubah status dari "dipesan" ke "dikemas"
+router.get('/dipesan/:id', orderController.getOrderById);
+
+//router get id tanpa rubah status
+ router.get('/detail/:id', orderController.detail);
+
+router.put('/status/:id', orderController.updateOrderStatus);
+
+
+// Mendapatkan semua pesanan dan otomatis mengubah status dari "dikemas" ke "sedang diantar"
+router.get('/dipesan/status', orderController.getAllOrdersdikemas);
+
+// Mendapatkan pesanan berdasarkan ID dan otomatis mengubah status dari "dikemas" ke "sedang diantar"
+router.get('/dipesan/order/:id', orderController.getOrderByIddikemas);
+
+// Mendapatkan semua pesanan dan otomatis mengubah status dari "sedang diantar" ke "selesai"
+router.get('/diantar/status', orderController.getAllOrdersantar);
+
+// Mendapatkan pesanan berdasarkan ID dan otomatis mengubah status dari "sedang diantar" ke "selesai"
+router.get('/diantar/order/:id', orderController.getOrderByIdantar);
+
 
 module.exports = router;
