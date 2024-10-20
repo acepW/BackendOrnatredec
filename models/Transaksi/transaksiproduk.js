@@ -20,20 +20,6 @@ const TransaksiProduk = sequelize.define("transaksi_produk", {
       key: "id"
     }
   },
-  user_id: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: User,
-      key: "id"
-    }
-  },
-  id_alamat: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: Alamat,
-      key: "id"
-    }
-  },
   id_variasi: {
     type: DataTypes.INTEGER,
     allowNull: true, // Tidak semua produk punya variasi
@@ -59,9 +45,9 @@ const TransaksiProduk = sequelize.define("transaksi_produk", {
     allowNull: false
   },
   totalHarga: {
-    type: DataTypes.INTEGER, // Pastikan tipe datanya sesuai
-    // allowNull: false,
-  },
+    type: DataTypes.INTEGER,
+    allowNull: false
+  }
 }, {
   freezeTableName: true,
   timestamps: true

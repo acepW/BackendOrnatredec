@@ -47,4 +47,7 @@ Transaksi.belongsTo(User, { foreignKey: "user_id" });
 Transaksi.belongsToMany(Produk, { through: TransaksiProduk, foreignKey: 'id_transaksi' });
 Produk.belongsToMany(Transaksi, { through: TransaksiProduk, foreignKey: 'id_produk' });
 
+Transaksi.belongsToMany(Produk, { through: TransaksiProduk, foreignKey: 'id_transaksi' });
+Produk.belongsToMany(Transaksi, { through: TransaksiProduk, foreignKey: 'id_produk' });
+
 module.exports = Transaksi;

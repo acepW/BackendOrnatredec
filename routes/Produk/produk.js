@@ -22,4 +22,3 @@ router.post("/produk", protect(['super admin', 'admin']), controllerProduk.creat
 router.put("/editProduk/:id", protect(['super admin', 'admin']), controllerProduk.editProduk);
 
 module.exports = router;
-//ee

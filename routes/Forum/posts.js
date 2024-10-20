@@ -5,7 +5,7 @@ const  protect  = require('../../middlewares/authMiddleware');
 
 router.post('/post', protect(['super admin', 'user']), ControllerPost.upload.single('file'), ControllerPost.PostUlasanForum);
 router.get('/semua', protect(['user', 'super admin']), ControllerPost.getPost);
-router.get('/satu', protect(['super admin', 'user']), ControllerPost.getOnePost);
+router.get('/satu/:id', protect(['super admin', 'user']), ControllerPost.getOnePost);
 router.put('/post/:id', protect(['super admin', 'user']),ControllerPost.upload.single('file'), ControllerPost.editPostingan);
 router.delete('/deletePost/:id', protect(['user','super admin']),ControllerPost.deletePost);
 router.get('/forum/tanaman', protect(['user','super admin']),ControllerPost.getPostKategoriTanaman);

@@ -10,18 +10,18 @@ const register = async (req, res) => {
   const { username, email, password, no_hp, role } = req.body;
 
   // Ambil file yang diupload
-  const photoProfile = req.file ? `/uploads/${req.file.filename}` : null; 
+  // const photoProfile = req.files?.photoProfile ? req.files.photoProfile[0].filename : null;
   // const backgroundProfile = req.files?.backgroundProfile ? req.files.backgroundProfile[0].filename : null;
 
   try {
-    const UserUsername = await User.findOne({ where: { username } });
-    if (UserUsername) {
-        return res.status(405).json({ message: 'Username already exists' });
-    }
-
     const UserEmail = await User.findOne({ where: { email } });
     if (UserEmail) {
-        return res.status(404).json({ message: 'Email already exists' });
+        return res.status(409).json({ message: 'Email already exists' });
+    }
+
+    const UserUsername = await User.findOne({ where: { username } });
+    if (UserUsername) {
+        return res.status(409).json({ message: 'Username already exists' });
     }
 
     const UserNophone = await User.findOne({ where: { no_hp } });
@@ -39,7 +39,8 @@ const register = async (req, res) => {
       password: hashedPassword,
       no_hp,
       role,
-      photoProfile,           // Tambahkan foto profil
+      alamat,
+      // photoProfile,           // Tambahkan foto profil
       // backgroundProfile       // Tambahkan background profil
     });
 
@@ -53,7 +54,7 @@ const login = async (req, res) => {
   const { username, password } = req.body;
   
   try {
-    const user = await User.findOne({ where: { username } });
+    const user = await User.findOne({ where: { username }, include : [{model : Alamat}] });
     
     if (!user) {
       return res.status(401).json({ success: false, message: 'username tidak ditemukan' });
@@ -61,7 +62,7 @@ const login = async (req, res) => {
 
     const isMatch = bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(404).json({ success: false, message: 'password salah' });
+      return res.status(401).json({ success: false, message: 'password salah' });
     }
 
     if (user.status == 'terblokir' && user.statusAktif == 'tidak aktif') {
@@ -69,11 +70,11 @@ const login = async (req, res) => {
     }
 
     const status = 'aktif'
-    
+
        await user.update(
         {statusAktif : status },
         {where : {id : user.id}}
-      )
+    )
     
 // Generate JWT without expiration
 const token = jwt.sign(
@@ -85,17 +86,24 @@ const token = jwt.sign(
 res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path: "/" }); 
 
 
-    res.status(200).json({ success: true, message: 'Login successful' });
+    res.status(200).json({ success: true, message: 'Login successful', user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-const getUser = async (req, res) =>{
+const getUserFilter = async (req, res) =>{
   roleUser = req.query.role
   try {
-    const user = await User.findAll({})
-    res.status(200).json({message : "sukses", user})
+    if (!roleUser) {
+      const user = await User.findAll({include:[{model : Alamat}]})
+      return res.status(200).json(user)
+    } 
+    const UserRole = await User.findAll({
+      where : {role : roleUser},
+      include:[{model : Alamat}]
+    })
+    return res.status(200).json(UserRole)
   } catch (error) {
     res.status(500).json({message : error.message})
   }
@@ -105,7 +113,18 @@ const getUserMe = async (req, res) =>{
   const {id} = req.user
   try {
     const user = await User.findByPk(id)
-    res.status(200).json({message : "sukses", user})
+    const alamat = await Alamat.findOne({where : {userId : id}})
+    const tanggalBaru = moment(user.tanggalLahir).format('DD-MM-YYYY');
+    res.status(200).json({message : "sukses", 
+      username: user.username,
+      email: user.email,
+      password : user.password,
+      no_hp : user.no_hp,
+      role : user.role,
+      alamat : alamat,
+      photoProfile : user.photoProfile,
+      tanggalLahir: tanggalBaru,
+    })
   } catch (error) {
     res.status(500).json({message : error.message})
   }
@@ -123,7 +142,7 @@ const logout = async (req, res) => {
         {statusAktif : status },
         {where : {id : id}}
       )
-      
+
       res.status(200).json({message: 'logout berhasil'});
   } catch (error) {
       res.status(500).json({ message: error.message });
@@ -146,28 +165,11 @@ const BlokirUser = async (req, res) => {
   }
 }
 
-const getUserFilter = async (req, res) => {
-    const role = req.query.role
-    try {
-      const user = await User.findAll({
-        where : {role: role},
-      
-      include : [ {
-          model : Alamat,
-      }]
-    })
-    return res.status(200).json(user)
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-}
-  
 module.exports = {
   register,
   login,
   logout,
-  getUser,
   getUserMe,
-  BlokirUser,
-  getUserFilter
+  getUserFilter,
+  BlokirUser
 }

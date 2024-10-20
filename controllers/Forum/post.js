@@ -4,7 +4,8 @@ const Reply = require('../../models/Forum/reply');
 const User = require('../../models/User/users');
 const multer = require('multer');
 const path = require('path');
-const { where } = require('sequelize');
+const simpanPost = require('../../models/Forum/simpanPost');
+const View = require('../../models/Forum/view');
 
 // Konfigurasi multer untuk menyimpan file
 const storage = multer.diskStorage({
@@ -42,7 +43,7 @@ const PostUlasanForum = async (req, res) => {
     const url = req.file ? `/uploads/${req.file.filename}` : null; 
     let jumlahTanggapan = 0;
     let jumlahView = 0;
-    let jumlahReport = 0;
+     let jumlahReport = 0
     try {
         const post = await Post.create({
             userId: id,
@@ -53,7 +54,6 @@ const PostUlasanForum = async (req, res) => {
             kategori_forum : kategori_forum,
             jumlahView,
             jumlahReport
-
         });
 
         res.json(post);
@@ -244,29 +244,31 @@ const filterKategori = async (req, res) => {
 };
 
 const getOnePost = async (req, res) => {
-    const id = req.params;
+    const idPost = req.params.id; 
+    const id = req.user.id;
+
     try {
-        const Post = await post.findOne({ 
-            where : {id : id},
+        const post = await Post.findOne({ 
+            where: { id: idPost },
             include: [
                 { 
                     model: User, 
-                    attributes: ['name'] 
+                    attributes: ['username'] 
                 },
                 { 
                     model: Comment, 
                     include: [
-                        { model: User, attributes: ['name'] },
+                        { model: User, attributes: ['username'] },
                         { 
                             model: Reply, 
-                            include: [{ model: User, attributes: ['name'] }]
+                            include: [{ model: User, attributes: ['username'] }]
                         }
                     ]
                 }
             ]
         });
     
-            const view = await findOne({where : {userId : id, postId : idPost}})
+            const view = await View.findOne({where : {userId : id, postId : idPost}})
     
             if (!view) {
                 await View.create({
@@ -274,14 +276,21 @@ const getOnePost = async (req, res) => {
                     postId : idPost,
                 })
             }
+
+            jumlahview = await View.count({where : {postId : idPost}})
+
+            await Post.update({
+                jumlahView : jumlahview
+            }, {
+                where :  {id : idPost}
+            })
             
             res.json({ post });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: error.message });
     }
-
 }
-
 const deletePost = async (req, res) => {
     const id = parseInt(req.params.id);
     const userID = req.user.id;
@@ -294,7 +303,7 @@ const deletePost = async (req, res) => {
         }
 
         if (userRole !== 'super admin' && post.userId !== userID) {
-            return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus postingan ini." });
+            return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus komen ini." });
         }
 
         await Post.destroy({where: {id:id} })
@@ -350,7 +359,6 @@ const getSimpanPostingan = async (req, res) => {
     }
 }
 
-
 const PostTerpopuler = async (req, res) => {
     try {
         const populer = await Post.findAll({
@@ -361,7 +369,7 @@ const PostTerpopuler = async (req, res) => {
         res.status(500).json({ message : error.message })
     }
 }
-
+    
 const jumlahpostinganUser = async (req, res) => {
     const id = req.user.id;
     try {
@@ -388,6 +396,6 @@ module.exports = {
     filterKategori,
     simpanPostingan,
     getSimpanPostingan,
-    PostTerpopuler,
-    jumlahpostinganUser
+    jumlahpostinganUser,
+    PostTerpopuler
 }
