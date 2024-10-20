@@ -60,11 +60,6 @@ const TransaksiProduk = sequelize.define("transaksi_produk", {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-
-  totalHarga: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  }
 }, {
   freezeTableName: true,
   timestamps: true

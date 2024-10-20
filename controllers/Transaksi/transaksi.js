@@ -238,7 +238,7 @@ const getTransaksiById = async (req, res) => {
         const transaksi = await Transaksi.findOne({
             where: { id: id },
             include: [
-                 {
+                {
                     model: Produk,
                     through: { attributes: ['jumlah'] },
                     attributes: ['id', 'judul_produk', 'harga'],
@@ -248,14 +248,18 @@ const getTransaksiById = async (req, res) => {
                             attributes: ['nama_variasi']
                         },
                         {
-                            model: subVariasi,
+                            model: subVariasi,  // Penulisan yang benar untuk subVariasi
                             attributes: ['nama_sub_variasi', 'usia']
                         }
                     ]
                 },
                 {
                     model: Alamat,
-                    attributes: ['provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama']
+                    attributes: [
+                        'provinsi', 'kota_kabupaten', 'kecamatan',
+                        'kelurahan_desa', 'jalan_namagedung', 'patokan',
+                        'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama'
+                    ]
                 },
                 {
                     model: User,
@@ -268,23 +272,25 @@ const getTransaksiById = async (req, res) => {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
         }
 
+        // Pastikan transaksi.Produk ada sebelum memanggil .map()
+        const produkList = transaksi.produks ? transaksi.produks.map(item => ({
+            id: item.id,
+            nama_produk: item.judul_produk,
+            harga: item.harga,
+            jumlah: item.transaksi_produk.jumlah, // Pastikan ini ada di through alias
+            nama_variasi: item.variasis ? item.variasis.nama_variasi : null, // Handle jika variasi tidak ada
+            nama_sub_variasi: item.subVariasis ? item.subVariasis.nama_sub_variasi : null,
+            usia: item.subVariasis ? item.subVariasis.usia : null
+        })) : [];
+
         const response = {
             id: transaksi.id,
             user: {
-
                 id: transaksi.User.id,
                 username: transaksi.User.username
             },
-            produk: transaksi.produks.map(item => ({
-                id: item.id,
-                nama_produk: item.judul_produk,
-                harga: item.harga,
-                jumlah: item.transaksi_produk.jumlah,
-                nama_variasi: item.Variasi.nama_variasi,
-                nama_sub_variasi : item.subVariasi.nama_sub_variasi,
-                usia : item.subVariasi.usia
-            })),
-            alamat: transaksi.alamat,
+            produk: produkList,  // Produk list yang sudah diverifikasi
+            alamat: transaksi.Alamat,
             sub_total: transaksi.sub_total,
             biaya_layanan: transaksi.biaya_layanan,
             total_pembayaran: transaksi.total_pembayaran
@@ -293,9 +299,11 @@ const getTransaksiById = async (req, res) => {
         res.status(200).json(response);
     } catch (error) {
         console.error("Error:", error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+        res.status(500).json({ message: error.message });
     }
 };
+
+
 
 const getTransaksiFilter = async (req, res) => {
     const status = req.query.status
@@ -355,41 +363,61 @@ const getTransaksiFilter = async (req, res) => {
 }
   
 const troliProduk = async (req, res) => {
-  const { id_produk, id_subVariasi } = req.body; 
-  const id_User = req.user.id; 
-  
-    try {
+  const { id_produk, id_subVariasi, jumlahStok } = req.body;
+  const id_User = req.user.id;
+
+  try {
     const userid = await User.findByPk(id_User);
     if (!userid) {
-             return res.status(400).json({ message: 'Produk tidak ditemukan' });
+      return res.status(400).json({ message: 'User tidak ditemukan' });
     }
+
+    const alamat = await Alamat.findOne({ where: { userId: id_User } });
 
     const produk = await Produk.findByPk(id_produk);
     if (!produk) {
       return res.status(400).json({ message: 'Produk tidak ditemukan' });
     }
 
-    const subVariasi = await subVariasi.findByPk(id_subVariasi);
-    if (!subVariasi) {
+    const subvariasi = await subVariasi.findByPk(id_subVariasi);
+    if (!subvariasi) {
       return res.status(400).json({ message: 'Sub Variasi tidak ditemukan' });
     }
 
-    const variasi = await subVariasi.id_variasi
+    const variasi = subvariasi.id_variasi;
 
-    const troli = await Troli.create({
-      id_User : id_User,
-      id_produk,
-      id_alamat ,
-      id_variasi : variasi,
-      id_subVariasi,
-      jumlahStok
+    const troliProduk = await Troli.findOne({ where: { id_User: id_User, id_produk: id_produk, id_subVariasi: id_subVariasi } });
+
+    if (!troliProduk) {
+      const troli = await Troli.create({
+        id_User: id_User,
+        id_produk,
+        id_alamat: alamat.id,
+        id_variasi: variasi,
+        id_subVariasi,
+        jumlahStok: jumlahStok
+      });
+
+      return res.status(200).json(troli);
+    }
+
+    const jumlahBaru = troliProduk.jumlahStok + jumlahStok;
+
+    await Troli.update({
+      jumlahStok: jumlahBaru
+    }, {
+      where: { id: troliProduk.id }
     });
 
-    res.status(200).json(troli);
+    const TroliUpdate = await Troli.findByPk(troliProduk.id);
+
+    res.status(202).json(TroliUpdate);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 module.exports = {
     createTransaksi,

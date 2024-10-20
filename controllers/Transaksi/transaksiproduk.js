@@ -325,7 +325,4 @@ module.exports = {
     getAllOrdersdikemas,
     getOrderByIdantar,
     getOrderByIddikemas
- 
-
-   
 };

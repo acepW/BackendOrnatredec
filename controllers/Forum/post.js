@@ -368,7 +368,7 @@ const getSimpanPostingan = async (req, res) => {
 }
 
 
-const PostTerpopuler = async (req, res) => {
+const   PostTerpopuler = async (req, res) => {
     try {
         const populer = await Post.findAll({
             order : [['jumlahTanggapan', 'DESC']]

@@ -40,7 +40,7 @@ const register = async (req, res) => {
       no_hp,
       role,
       photoProfile,           // Tambahkan foto profil
-      backgroundProfile   ,    // Tambahkan background profil
+      // backgroundProfile   ,    // Tambahkan background profil
       alamat,
     
     });
@@ -84,10 +84,10 @@ const token = jwt.sign(
 );
 
 // Set token akses tanpa refresh token
-res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path: "/" }); 
+res.cookie('token', token, { httpOnly: true, sameSite: "None", secure: true, path: "/" }); 
 
 
-    res.status(200).json({ success: true, message: 'Login successful' });
+    res.status(200).json({ success: true, message: 'Login successful', user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -19,7 +19,11 @@ const Report = db.define('report',{
     },
     id_post : {
         type : DataTypes.INTEGER,
-        allowNull : false,
+        allowNull: false,
+        references: {
+            model: Post,
+            key : 'id'
+        }
     },
     desc_report : {
         type : DataTypes.STRING,
@@ -30,7 +34,7 @@ const Report = db.define('report',{
     timestamps: true,
 })
 
-Report.hasMany(Post, {foreignKey: 'postId'});
-Post.belongsTo(Report, {foreignKey : 'postId'});
+Post.hasMany(Report, {foreignKey: 'id_post'});
+Report.belongsTo(Post, {foreignKey : 'id_post'});
 
 module.exports = Report;
