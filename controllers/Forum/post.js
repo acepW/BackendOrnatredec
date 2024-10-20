@@ -4,8 +4,7 @@ const Reply = require('../../models/Forum/reply');
 const User = require('../../models/User/users');
 const multer = require('multer');
 const path = require('path');
-const simpanPost = require('../../models/Forum/simpanPost');
-const View = require('../../models/Forum/view');
+const { where } = require('sequelize');
 
 // Konfigurasi multer untuk menyimpan file
 const storage = multer.diskStorage({
@@ -54,6 +53,7 @@ const PostUlasanForum = async (req, res) => {
             kategori_forum : kategori_forum,
             jumlahView,
             jumlahReport
+
         });
 
         res.json(post);
@@ -211,6 +211,42 @@ const filterKategori = async (req, res) => {
     const limit = parseInt(req.query.limit)
     const page = parseInt(req.query.page) 
     const offset = (page - 1) * limit;
+
+    try {
+        const post = await Post.findAll({
+            where : {kategori_forum : kategori},
+            limit: limit,
+            offset: offset,
+            include: [
+                { 
+                    model: User, 
+                    attributes: ['username', 'photoProfile'] 
+                },
+                { 
+                    model: Comment, 
+                    limit: 5,
+                    offset: 0,
+                    include: [
+                        { model: User, attributes: ['username'] },
+                        { 
+                            model: Reply, 
+                            limit: 5,
+                            offset: 0,
+                            include: [{ model: User, attributes: ['username'] }]
+                        }
+                    ]
+                }
+            ]
+        });
+        res.json(post);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const getOnePost = async (req, res) => {
+    const idPost = req.params.id; 
+    const id = req.user.id;
     try {
         const post = await Post.findAll({
             where : {kategori_forum : kategori},
@@ -237,36 +273,6 @@ const filterKategori = async (req, res) => {
                 }
             ]
         });
-        res.json({ post });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-const getOnePost = async (req, res) => {
-    const idPost = req.params.id; 
-    const id = req.user.id;
-
-    try {
-        const post = await Post.findOne({ 
-            where: { id: idPost },
-            include: [
-                { 
-                    model: User, 
-                    attributes: ['username'] 
-                },
-                { 
-                    model: Comment, 
-                    include: [
-                        { model: User, attributes: ['username'] },
-                        { 
-                            model: Reply, 
-                            include: [{ model: User, attributes: ['username'] }]
-                        }
-                    ]
-                }
-            ]
-        });
     
             const view = await View.findOne({where : {userId : id, postId : idPost}})
     
@@ -285,12 +291,14 @@ const getOnePost = async (req, res) => {
                 where :  {id : idPost}
             })
             
-            res.json({ post });
+            res.json(post);
+        res.json({ post });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: error.message });
     }
-}
+};
+
+
 const deletePost = async (req, res) => {
     const id = parseInt(req.params.id);
     const userID = req.user.id;
@@ -359,7 +367,8 @@ const getSimpanPostingan = async (req, res) => {
     }
 }
 
-const PostTerpopuler = async (req, res) => {
+
+const   PostTerpopuler = async (req, res) => {
     try {
         const populer = await Post.findAll({
             order : [['jumlahTanggapan', 'DESC']]
@@ -382,6 +391,7 @@ const jumlahpostinganUser = async (req, res) => {
         res.status(500).json({ message : error.message })
     }
 }
+
 
 module.exports = {
     PostUlasanForum,

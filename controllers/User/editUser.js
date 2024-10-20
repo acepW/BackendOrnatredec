@@ -1,12 +1,10 @@
-const Post = require('../../models/Forum/posts');
 const Alamat = require('../../models/Transaksi/alamat');
-const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 const User = require('../../models/User/users');
-const moment = require('moment')
 
 // Fungsi Update User
+
 const updateUser = async (req, res) => {
-    const { username, email, no_hp, tanggalLahir} = req.body;
+    const { username, email, no_hp, alamat } = req.body;
     const userId = req.params.id; // Ambil ID dari URL
   
     // Cek apakah file foto profil atau background profil diupload
@@ -21,40 +19,27 @@ const updateUser = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // // Update data user
-      // user.username = username || user.username;
-      // user.email = email || user.email;
-      // user.no_hp = no_hp || user.no_hp;
-      // user.alamat = alamat || user.alamat;
-      // user.tanggalLahir = tanggalLahir || user.tanggalLahir;
+      // Update data user
+      
+      user.username = username || user.username;
+      user.email = email || user.email;
+      user.no_hp = no_hp || user.no_hp;
+      user.alamat = alamat || user.alamat;
   
       // Update foto profil dan background profil jika ada file baru
       if (photoProfile) {
         user.photoProfile = photoProfile;
       }
-      // if (backgroundProfile) {
-      //   user.backgroundProfile = backgroundProfile;
-      // }
-      const tanggalBaru = moment(tanggalLahir).format('YYYY-MM-DD');
-      await User.update({
-        username : username,
-        email : email,
-        no_hp : no_hp,
-        photoProfile ,
-        tanggalLahir : tanggalBaru
-      }, {
-        where : {id : userId}
-      })
-
-      await Alamat.update({
-        nohp : no_hp
-      },{
-        where : {userId : userId}
-      })
-      const profilBaru = await User.findOne({ where: { id : userId} });
+      if (backgroundProfile) {
+        user.backgroundProfile = backgroundProfile;
+      }
+  
+      // Simpan perubahan
+      await user.update();
   
       res.status(200).json({ success: true, message: 'User updated successfully', profilBaru });
     } catch (error) {
+      console.log(error); // Tambahkan ini untuk melihat detail error
       res.status(500).json({ success: false, message: error.message });
     }
   };

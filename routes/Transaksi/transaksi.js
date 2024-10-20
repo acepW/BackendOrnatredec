@@ -3,7 +3,8 @@ const {
     createTransaksi,
     // getAllTransaksi,
     getTransaksiById,
-    getTransaksiFilter
+    getTransaksiFilter,
+    troliProduk
 } = require("../../controllers/Transaksi/transaksi");
 
 const router = express.Router();

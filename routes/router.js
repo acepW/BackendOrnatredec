@@ -2,6 +2,7 @@ const router = require("express").Router();
 
 //User
 router.use("/", require("./User/loginRoutes"));
+
 router.use("/", require("./User/editUser"))
 
 //Produk

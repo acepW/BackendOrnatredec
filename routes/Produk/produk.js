@@ -10,7 +10,6 @@ router.put("/editProduk/:id", protect(['super admin', 'admin']), controllerProdu
 router.get("/filterdanGet", controllerProduk.filterKategoriProduk);
 router.get("/filter",controllerProduk.getProdukFilter);
 router.delete("/hapusProduk/:id", controllerProduk.hapusProduk);
-router.post("/troli", protect(['user']), controllerProduk.troliProduk)
 router.post("/produk", protect(['super admin', 'admin']), controllerProduk.createProduk);
 // router.get("/getProduk", controllerProduk.getProduk);
 

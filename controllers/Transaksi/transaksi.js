@@ -5,6 +5,7 @@ const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
 const User = require("../../models/User/users");
+const Troli = require('../../models/Produk/troli');
 
 const BIAYA_LAYANAN = 5000;
 
@@ -237,12 +238,26 @@ const getTransaksiById = async (req, res) => {
             include: [
                 {
                     model: Produk,
-                    through: { attributes: ['jumlah'] }, // Ambil jumlah dari pivot table
-                    attributes: ['id', 'judul_produk', 'harga']
+                    through: { attributes: ['jumlah'] },
+                    attributes: ['id', 'judul_produk', 'harga'],
+                    include: [
+                        {
+                            model: Variasi,
+                            attributes: ['nama_variasi']
+                        },
+                        {
+                            model: subVariasi,
+                            attributes: ['nama_sub_variasi', 'usia']
+                        }
+                    ]
                 },
                 {
                     model: Alamat,
-                    attributes: ['provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama']
+                    attributes: [
+                        'provinsi', 'kota_kabupaten', 'kecamatan',
+                        'kelurahan_desa', 'jalan_namagedung', 'patokan',
+                        'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama'
+                    ]
                 },
                 {
                     model: User,
@@ -254,6 +269,17 @@ const getTransaksiById = async (req, res) => {
         if (!transaksi) {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
         }
+
+        // Pastikan transaksi.Produk ada sebelum memanggil .map()
+        const produkList = transaksi.produks ? transaksi.produks.map(item => ({
+            id: item.id,
+            nama_produk: item.judul_produk,
+            harga: item.harga,
+            jumlah: item.transaksi_produk.jumlah, // Pastikan ini ada di through alias
+            nama_variasi: item.variasis ? item.variasis.nama_variasi : null, // Handle jika variasi tidak ada
+            nama_sub_variasi: item.subVariasis ? item.subVariasis.nama_sub_variasi : null,
+            usia: item.subVariasis ? item.subVariasis.usia : null
+        })) : [];
 
         // Menyiapkan data produk untuk response
         const produkDetails = transaksi.produks.map(item => ({
@@ -267,23 +293,20 @@ const getTransaksiById = async (req, res) => {
         const response = {
             id: transaksi.id,
             user: {
-                id: transaksi.user.id,
-                username: transaksi.user.username
+
+                id: transaksi.User.id,
+                username: transaksi.User.username
             },
-            produk: produkDetails,
-            alamat: {
-                id: transaksi.id_alamat,
-                provinsi: transaksi.alamat.provinsi,
-                kota_kabupaten: transaksi.alamat.kota_kabupaten,
-                kecamatan: transaksi.alamat.kecamatan,
-                kelurahan_desa: transaksi.alamat.kelurahan_desa,
-                jalan_namagedung: transaksi.alamat.jalan_namagedung,
-                patokan: transaksi.alamat.patokan,
-                nama_penerima: transaksi.alamat.nama_penerima,
-                no_hp: transaksi.alamat.no_hp,
-                kategori_alamat: transaksi.alamat.kategori_alamat,
-                alamat_pengiriman_utama: transaksi.alamat.alamat_pengiriman_utama
-            },
+            produk: transaksi.produks.map(item => ({
+                id: item.id,
+                nama_produk: item.judul_produk,
+                harga: item.harga,
+                jumlah: item.transaksi_produk.jumlah,
+                nama_variasi: item.Variasi.nama_variasi,
+                nama_sub_variasi: item.subVariasi.nama_sub_variasi,
+                usia: item.subVariasi.usia
+            })),
+            alamat: transaksi.alamat,
             sub_total: transaksi.sub_total,
             biaya_layanan: transaksi.biaya_layanan,
             total_pembayaran: transaksi.total_pembayaran
@@ -292,9 +315,11 @@ const getTransaksiById = async (req, res) => {
         res.status(200).json(response);
     } catch (error) {
         console.error("Error:", error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+        res.status(500).json({ message: error.message });
     }
 };
+
+
 
 const getTransaksiFilter = async (req, res) => {
     const status = req.query.status
@@ -355,6 +380,7 @@ const getTransaksiFilter = async (req, res) => {
 
 module.exports = {
     createTransaksi,
+    troliProduk,
     // getAllTransaksi,
     getTransaksiById,
     getTransaksiFilter
