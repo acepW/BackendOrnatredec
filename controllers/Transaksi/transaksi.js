@@ -80,7 +80,7 @@ const createTransaksi = async (req, res) => {
                     usia: subVariasiItem ? subVariasiItem.usia : null,
                 }
             });
-            
+
             const subvariasi = await subVariasi.findOne({ where: { id: subVariasiItem.id } })
             const id_variasi = subvariasi.id_variasi
             await produkItem.update({ jumlah: produkItem.jumlah - item.jumlah });
@@ -228,42 +228,62 @@ const getAllTransaksi = async (req, res) => {
 };
 
 const getTransaksiById = async (req, res) => {
-    try {
-        const transaksiId = req.params.id;
+    const transaksiId = req.params.id; // Mengambil ID dari parameter URL
+    const userId = req.user.id; // Mengambil ID pengguna dari token atau session
 
-        const transaksi = await Transaksi.findOne({
-            where: { id: transaksiId },
+    try {
+        // Mencari transaksi berdasarkan ID dan mengikutsertakan model yang diperlukan
+        const transaksi = await Transaksi.findByPk(transaksiId, {
             include: [
-                 {
+                {
                     model: Produk,
-                    through: { attributes: ['jumlah'] },
+                    through: { attributes: ['jumlah'] }, // Ambil jumlah dari pivot table
                     attributes: ['id', 'judul_produk', 'harga']
                 },
                 {
                     model: Alamat,
-                    as: 'alamat', // pastikan alias sesuai
-                    attributes: ['id', 'provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama'] // ambil kolom yang valid
+                    attributes: ['provinsi', 'kota_kabupaten', 'kecamatan', 'kelurahan_desa', 'jalan_namagedung', 'patokan', 'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama']
+                },
+                {
+                    model: User,
+                    attributes: ['id', 'username']
                 }
             ]
         });
 
-        if (!transaksiData) {
+        if (!transaksi) {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
         }
 
+        // Menyiapkan data produk untuk response
+        const produkDetails = transaksi.produks.map(item => ({
+            id: item.id,
+            nama_produk: item.judul_produk,
+            harga: item.harga,
+            jumlah: item.transaksi_produk.jumlah,
+        }));
+
+        // Membuat response sesuai dengan format yang diinginkan
         const response = {
             id: transaksi.id,
             user: {
                 id: transaksi.user.id,
                 username: transaksi.user.username
             },
-            produk: transaksi.produks.map(item => ({
-                id: item.id,
-                nama_produk: item.judul_produk,
-                harga: item.harga,
-                jumlah: item.transaksi_produk.jumlah
-            })),
-            alamat: transaksi.alamat,
+            produk: produkDetails,
+            alamat: {
+                id: transaksi.id_alamat,
+                provinsi: transaksi.alamat.provinsi,
+                kota_kabupaten: transaksi.alamat.kota_kabupaten,
+                kecamatan: transaksi.alamat.kecamatan,
+                kelurahan_desa: transaksi.alamat.kelurahan_desa,
+                jalan_namagedung: transaksi.alamat.jalan_namagedung,
+                patokan: transaksi.alamat.patokan,
+                nama_penerima: transaksi.alamat.nama_penerima,
+                no_hp: transaksi.alamat.no_hp,
+                kategori_alamat: transaksi.alamat.kategori_alamat,
+                alamat_pengiriman_utama: transaksi.alamat.alamat_pengiriman_utama
+            },
             sub_total: transaksi.sub_total,
             biaya_layanan: transaksi.biaya_layanan,
             total_pembayaran: transaksi.total_pembayaran
@@ -271,67 +291,67 @@ const getTransaksiById = async (req, res) => {
 
         res.status(200).json(response);
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Terjadi kesalahan saat mengambil data transaksi' });
+        console.error("Error:", error);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
     }
 };
 
 const getTransaksiFilter = async (req, res) => {
     const status = req.query.status
     try {
-    if (!status) {
-       const TransaksiStatus = await TransaksiProduk.findAll({
-           include: [{
-              model: User,
-              attributes : ['username']
-      },
-              {
-              model: Produk,  
-              attributes : ['judul_produk', 'foto_produk', 'harga',]
-      },
-              {
-                  model: Variasi,
-                  attributes : ['nama_variasi']
-      },
-              {
-                  model: subVariasi,
-                  attributes : ['nama_sub_variasi']
-      },
-              {
-          model: Alamat 
-          
-      }]
-    })
-        return res.status(200).json(TransaksiStatus)
-        } 
-       const Transaksi = await TransaksiProduk.findAll({
-        where : {status: status},
-          include: [{
-              model: User,
-              attributes : ['username']
-      },
-              {
-              model: Produk,  
-              attributes : ['judul_produk', 'foto_produk', 'harga',]
-      },
-              {
-                  model: Variasi,
-                  attributes : ['nama_variasi']
-      },
-              {
-                  model: subVariasi,
-                  attributes : ['nama_sub_variasi']
-      },
-              {
-          model: Alamat 
-          
-      }]
-       }) 
-         return res.status(202).json(Transaksi)
+        if (!status) {
+            const TransaksiStatus = await TransaksiProduk.findAll({
+                include: [{
+                    model: User,
+                    attributes: ['username']
+                },
+                {
+                    model: Produk,
+                    attributes: ['judul_produk', 'foto_produk', 'harga',]
+                },
+                {
+                    model: Variasi,
+                    attributes: ['nama_variasi']
+                },
+                {
+                    model: subVariasi,
+                    attributes: ['nama_sub_variasi']
+                },
+                {
+                    model: Alamat
+
+                }]
+            })
+            return res.status(200).json(TransaksiStatus)
+        }
+        const Transaksi = await TransaksiProduk.findAll({
+            where: { status: status },
+            include: [{
+                model: User,
+                attributes: ['username']
+            },
+            {
+                model: Produk,
+                attributes: ['judul_produk', 'foto_produk', 'harga',]
+            },
+            {
+                model: Variasi,
+                attributes: ['nama_variasi']
+            },
+            {
+                model: subVariasi,
+                attributes: ['nama_sub_variasi']
+            },
+            {
+                model: Alamat
+
+            }]
+        })
+        return res.status(202).json(Transaksi)
     } catch (error) {
-      res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
-  }
+}
 
 module.exports = {
     createTransaksi,
