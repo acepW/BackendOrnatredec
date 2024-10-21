@@ -6,6 +6,7 @@ const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
 const User = require("../../models/User/users");
 const Troli = require('../../models/Produk/troli');
+const { Op } = require('sequelize');
 
 const BIAYA_LAYANAN = 5000;
 
@@ -45,7 +46,7 @@ const createTransaksi = async (req, res) => {
                             {
                                 model: subVariasi,
                                 as: 'subvariasis',
-                                where: { id: item.id_subvariasi } // Menggunakan id_subvariasi untuk filter
+                                where: { id: item.id_subvariasi }
                             }
                         ]
                     }
@@ -60,14 +61,12 @@ const createTransaksi = async (req, res) => {
                 return res.status(400).json({ message: `Stok tidak cukup untuk produk dengan ID ${item.id_produk}` });
             }
 
-            // Dapatkan harga dari subvariasi
             const subVariasiItem = produkItem.variasis[0]?.subvariasis.find(sv => sv.id === item.id_subvariasi);
             const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
 
-            const itemSubTotal = (produkItem.harga + hargaSubVariasi) * item.jumlah; // Tambahkan harga produk dan subvariasi
+            const itemSubTotal = (produkItem.harga + hargaSubVariasi) * item.jumlah;
             subTotal += itemSubTotal;
 
-            // Update stok subvariasi
             if (subVariasiItem) {
                 await subVariasi.update({ stok: subVariasiItem.stok - item.jumlah }, { where: { id: subVariasiItem.id } });
             }
@@ -83,10 +82,6 @@ const createTransaksi = async (req, res) => {
                     usia: subVariasiItem ? subVariasiItem.usia : null,
                 }
             });
-            
-            const subvariasi = await subVariasi.findOne({ where: { id: subVariasiItem.id } })
-            const id_variasi = subvariasi.id_variasi
-            await produkItem.update({ jumlah: produkItem.jumlah - item.jumlah });
 
             const existingEntry = await TransaksiProduk.findOne({
                 where: {
@@ -96,18 +91,22 @@ const createTransaksi = async (req, res) => {
             });
 
             if (existingEntry) {
+                // Jika entri sudah ada, update jumlah
                 await existingEntry.update({ jumlah: existingEntry.jumlah + item.jumlah });
             } else {
+                // Jika entri belum ada, buat entri baru
                 await TransaksiProduk.create({
                     id_alamat: alamat.id,
                     user_id: userId,
                     id_transaksi: newTransaksi.id,
                     id_produk: produkItem.id,
-                    id_subvariasi: subVariasiItem.id,
-                    id_variasi : id_variasi,
+                    id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
+                    id_variasi: subVariasiItem ? subVariasiItem.id_variasi : null,
                     jumlah: item.jumlah
                 });
             }
+
+            await produkItem.update({ jumlah: produkItem.jumlah - item.jumlah });
         }
 
         const totalPembayaran = subTotal + BIAYA_LAYANAN;
@@ -148,6 +147,8 @@ const createTransaksi = async (req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan pada server' });
     }
 };
+
+
 
 // const getAllTransaksi = async (req, res) => {
 //     try {
@@ -361,6 +362,42 @@ const getTransaksiFilter = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
 }
+
+const getTransaksiDikirimDanDikemas = async (req, res) => {
+    try {
+       const status = ['dikemas', 'dikirim']
+        const TransaksiStatus = await TransaksiProduk.findAll({
+            where: {
+                status: {
+                    [Op.in]: status 
+                }
+            },
+           include: [{
+              model: User,
+              attributes : ['username']
+      },
+              {
+              model: Produk,  
+              attributes : ['judul_produk', 'foto_produk', 'harga',]
+      },
+              {
+                  model: Variasi,
+                  attributes : ['nama_variasi']
+      },
+              {
+                  model: subVariasi,
+                  attributes : ['nama_sub_variasi']
+      },
+              {
+          model: Alamat 
+          
+      }]
+    })
+        return res.status(200).json(TransaksiStatus)
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+}
   
 const troliProduk = async (req, res) => {
   const { id_produk, id_subVariasi, jumlahStok } = req.body;
@@ -424,5 +461,6 @@ module.exports = {
     troliProduk,
     // getAllTransaksi,
     getTransaksiById,
-    getTransaksiFilter
+    getTransaksiFilter,
+    getTransaksiDikirimDanDikemas
 };

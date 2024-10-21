@@ -4,7 +4,8 @@ const {
     // getAllTransaksi,
     getTransaksiById,
     getTransaksiFilter,
-    troliProduk
+    troliProduk,
+    getTransaksiDikirimDanDikemas
 } = require("../../controllers/Transaksi/transaksi");
 
 const router = express.Router();
@@ -14,7 +15,8 @@ router.post("/transaksi", protect(['user']), createTransaksi);
 router.post("/troli", protect(['user']), troliProduk)
 // router.get("/transaksi", getAllTransaksi);
 router.get("/transaksi/:id", getTransaksiById);
-router.get("/Transaksi", getTransaksiFilter)
+router.get("/Transaksi", getTransaksiFilter);
+router.get("/TransaksiFilter", getTransaksiDikirimDanDikemas);
 
 module.exports = router;
  

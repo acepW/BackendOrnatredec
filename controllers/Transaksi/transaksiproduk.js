@@ -1,5 +1,5 @@
 const path = require('path');
-const transaksi_produk = require('../../models/Transaksi/transaksiproduk'); // Import model transaksi_produk
+const transaksiProduk = require('../../models/Transaksi/transaksiproduk'); // Import model transaksiProduk
 const Produk = require('../../models/Produk/produk'); // Import model Produk jika diperlukan
 
 const Variasi = require('../../models/Produk/variasi');
@@ -13,14 +13,14 @@ const updateOrderStatus = async (req, res) => {
 
     try {
         // Validasi status
-        const validStatuses = ['dipesan', 'dikemas', 'sedang diantar', 'selesai'];
+        const validStatuses = ['dipesan', 'dikemas', 'dikirim', 'selesai'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ message: 'Status tidak valid' });
         }
 
 
         // Cari pesanan berdasarkan ID
-        const order = await transaksi_produk.findByPk(id);
+        const order = await transaksiProduk.findByPk(id);
 
         if (!order) {
             return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
@@ -41,7 +41,7 @@ const updateOrderStatus = async (req, res) => {
 
 const getAllOrders = async (req, res) => {
     try {
-        const orders = await transaksi_produk.findAll({
+        const orders = await transaksiProduk.findAll({
             where: { status: 'dipesan' },
             include: [{
                 model: Produk, // Include model Produk untuk mengambil detail produk terkait
@@ -62,11 +62,11 @@ const getAllOrders = async (req, res) => {
         for (let order of orders) {
             order.status = 'dikemas';
             await order.save();
-            console.log("transaksi_produk updated:", order); // Debugging log
+            console.log("transaksiProduk updated:", order); // Debugging log
         }
 
         // Ambil ulang semua pesanan setelah update status
-        const updatedOrders = await transaksi_produk.findAll({
+        const updatedOrders = await transaksiProduk.findAll({
             include: [{
                 model: Produk, // Mengambil produk terkait
             }]
@@ -84,7 +84,7 @@ const getAllOrders = async (req, res) => {
 
 const getAllOrdersdikemas = async (req, res) => {
     try {
-        const orders = await transaksi_produk.findAll({
+        const orders = await transaksiProduk.findAll({
             where: { status: 'dikemas' },
             include: [{
                 model: Produk, // Include model Produk untuk mengambil detail produk terkait
@@ -96,20 +96,20 @@ const getAllOrdersdikemas = async (req, res) => {
 
         // Jika tidak ada pesanan berstatus "dipesan"
         if (orders.length === 0) {
-            return res.status(200).json({ message: 'Tidak ada pesanan yang berstatus "dipesan"' });
+            return res.status(200).json({ message: 'Tidak ada pesanan yang berstatus "dikemas"' });
 
       
         }
 
         // Ubah status semua pesanan dari "dipesan" ke "dikemas"
         for (let order of orders) {
-            order.status = 'sedang diantar';
+            order.status = 'dikirim';
             await order.save();
-            console.log("transaksi_produk updated:", order); // Debugging log
+            console.log("transaksiProduk updated:", order); // Debugging log
         }
 
         // Ambil ulang semua pesanan setelah update status
-        const updatedOrders = await transaksi_produk.findAll({
+        const updatedOrders = await transaksiProduk.findAll({
             include: [{
                 model: Produk, // Mengambil produk terkait
             }]
@@ -127,8 +127,8 @@ const getAllOrdersdikemas = async (req, res) => {
 
 const getAllOrdersantar= async (req, res) => {
     try {
-        const orders = await transaksi_produk.findAll({
-            where: { status: 'sedang diantar' },
+        const orders = await transaksiProduk.findAll({
+            where: { status: 'dikirim' },
             include: [{
                 model: Produk, // Include model Produk untuk mengambil detail produk terkait
             }]
@@ -148,11 +148,11 @@ const getAllOrdersantar= async (req, res) => {
         for (let order of orders) {
             order.status = 'selesai';
             await order.save();
-            console.log("transaksi_produk updated:", order); // Debugging log
+            console.log("transaksiProduk updated:", order); // Debugging log
         }
 
         // Ambil ulang semua pesanan setelah update status
-        const updatedOrders = await transaksi_produk.findAll({
+        const updatedOrders = await transaksiProduk.findAll({
             include: [{
                 model: Produk, // Mengambil produk terkait
             }]
@@ -176,10 +176,7 @@ const getOrderById = async (req, res) => {
 
     try {
         // Cari pesanan berdasarkan id_transaksi
-
-    
-
-        const Order = await transaksi_produk.findByPk(id, {
+        const Order = await transaksiProduk.findByPk(id, {
 
             include: [{
                 model: Produk, // Include model Produk untuk mendapatkan detail produk terkait
@@ -218,7 +215,7 @@ const getOrderByIddikemas = async (req, res) => {
 
     
 
-        const Order = await transaksi_produk.findByPk(id, {
+        const Order = await transaksiProduk.findByPk(id, {
 
             include: [{
                 model: Produk, // Include model Produk untuk mendapatkan detail produk terkait
@@ -235,7 +232,7 @@ const getOrderByIddikemas = async (req, res) => {
 
         // Jika status pesanan adalah 'dipesan', ubah menjadi 'dikemas'
         if (order.status === 'dikemas') {
-            order.status = 'sedang diantar';
+            order.status = 'dikirim';
             await order.save(); // Simpan perubahan ke database
             console.log("Pesanan telah diperbarui:", order);
         }
@@ -257,7 +254,7 @@ const getOrderByIdantar = async (req, res) => {
 
     
 
-        const Order = await transaksi_produk.findByPk(id, {
+        const Order = await transaksiProduk.findByPk(id, {
 
             include: [{
                 model: Produk, // Include model Produk untuk mendapatkan detail produk terkait
@@ -273,7 +270,7 @@ const getOrderByIdantar = async (req, res) => {
         }
 
         // Jika status pesanan adalah 'dipesan', ubah menjadi 'dikemas'
-        if (order.status === 'sedang diantar') {
+        if (order.status === 'dikirim') {
             order.status = 'selesai';
             await order.save(); // Simpan perubahan ke database
             console.log("Pesanan telah diperbarui:", order);
@@ -293,7 +290,7 @@ const detail = async (req, res) => {
 
     try {
         // Cari pesanan berdasarkan id_transaksi
-        const order = await transaksi_produk.findByPk(id, {
+        const order = await transaksiProduk.findByPk(id, {
             include: [{
                 model: Produk, // Include model Produk untuk mendapatkan detail produk terkait
             }]
