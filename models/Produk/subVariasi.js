@@ -9,51 +9,51 @@ const subVariasi = db.define("subvariasi", {
         autoIncrement: true,
         primaryKey: true
     },
-    id_produk : {
+    id_produk: {
         type: DataTypes.INTEGER,
-        allowNull :false,
-           references: {
-           model: Produk,
-           key: "id"
-                }
-     },
-     id_variasi : {
+        allowNull: false,
+        references: {
+            model: Produk,
+            key: "id"
+        }
+    },
+    id_variasi: {
         type: DataTypes.INTEGER,
-        allowNull :false,
-           references: {
-           model: Variasi,
-           key: "id"
-                }
-     },
-    foto_variasi : {
+        allowNull: false,
+        references: {
+            model: Variasi,
+            key: "id"
+        }
+    },
+    foto_variasi: {
         type: DataTypes.STRING,
-        allowNull :true
+        allowNull: true
     },
     nama_sub_variasi: {
         type: DataTypes.STRING,
-        allowNull :true
+        allowNull: true
     },
-    stok : {
+    stok: {
         type: DataTypes.INTEGER,
-        allowNull :true,
+        allowNull: true,
     },
-    usia : {
+    usia: {
         type: DataTypes.STRING,
-        allowNull :true,
+        allowNull: true,
     },
-    harga : {
+    harga: {
         type: DataTypes.INTEGER,
-        allowNull :true,
+        allowNull: true,
     }
 }, {
     freezeTableName: true,
-    timestamps : true
+    timestamps: true
 });
 
-Produk.hasMany(subVariasi, { foreignKey: 'id_produk' });
+Produk.hasMany(subVariasi, { foreignKey: 'id_produk', });
 subVariasi.belongsTo(Produk, { foreignKey: 'id_produk' });
 
-Variasi.hasMany(subVariasi, { foreignKey: 'id_variasi'});
-subVariasi.belongsTo(Variasi, { foreignKey: 'id_variasi'});
+Variasi.hasMany(subVariasi, { foreignKey: 'id_variasi', as: "subvariasis" });
+subVariasi.belongsTo(Variasi, { foreignKey: 'id_variasi', as: "subvariasis" });
 
 module.exports = subVariasi;

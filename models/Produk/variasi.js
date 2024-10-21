@@ -10,30 +10,30 @@ const Variasi = db.define("variasi", {
     },
     id_produk: {
         type: DataTypes.INTEGER,
-        allowNull :false,
-           references: {
-           model: Produk,
-           key: "id"
-                }
-     },
-    foto_variasi : {
+        allowNull: false,
+        references: {
+            model: Produk,
+            key: "id"
+        }
+    },
+    foto_variasi: {
         type: DataTypes.STRING,
-        allowNull :false
+        allowNull: false
     },
     nama_variasi: {
         type: DataTypes.STRING,
-        allowNull :true
+        allowNull: true
     },
     stok: {
         type: DataTypes.INTEGER,
-        allowNull :false
+        allowNull: false
     }
 }, {
     freezeTableName: true,
     timestamps: true
 });
 
-Produk.hasMany(Variasi, { foreignKey: 'id_produk' });
-Variasi.belongsTo(Produk, { foreignKey: 'id_produk' });
+Produk.hasMany(Variasi, { foreignKey: 'id_produk', as: 'variasis' });
+Variasi.belongsTo(Produk, { foreignKey: 'id_produk', as: 'variasis' });
 
 module.exports = Variasi;
