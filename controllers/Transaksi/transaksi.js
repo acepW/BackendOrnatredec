@@ -1,7 +1,7 @@
 const Transaksi = require('../../models/Transaksi/transaksi');
 const Produk = require('../../models/Produk/produk');
 const Alamat = require('../../models/Transaksi/alamat');
-const TransaksiProduk = require('../../models/Transaksi/transaksiproduk'); // Jika menggunakan tabel pivot
+const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
 const User = require("../../models/User/users");
@@ -42,11 +42,13 @@ const createTransaksi = async (req, res) => {
                     {
                         model: Variasi,
                         as: 'variasis',
+                        attributes: ['id', 'nama_variasi'], // Ambil hanya id dan nama_variasi
                         include: [
                             {
                                 model: subVariasi,
                                 as: 'subvariasis',
-                                where: { id: item.id_subvariasi }
+                                where: { id: item.id_subvariasi },
+                                attributes: ['id', 'nama_sub_variasi', 'harga', 'usia'] // Ambil field yang dibutuhkan
                             }
                         ]
                     }
@@ -62,6 +64,8 @@ const createTransaksi = async (req, res) => {
             }
 
             const subVariasiItem = produkItem.variasis[0]?.subvariasis.find(sv => sv.id === item.id_subvariasi);
+            const variasiItem = produkItem.variasis.length > 0 ? produkItem.variasis[0] : null;
+           
             const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
 
             const itemSubTotal = (produkItem.harga + hargaSubVariasi) * item.jumlah;
@@ -74,14 +78,17 @@ const createTransaksi = async (req, res) => {
             produkDetails.push({
                 id: produkItem.id,
                 nama_produk: produkItem.judul_produk,
-                harga: produkItem.harga,
+                harga: produkItem.harga + hargaSubVariasi,
                 jumlah: item.jumlah,
-                sub_variasi: {
-                    id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
-                    ukuran_pot: subVariasiItem ? subVariasiItem.nama_sub_variasi : null,
-                    usia: subVariasiItem ? subVariasiItem.usia : null,
-                }
+                variasiItem: variasiItem ? { id: variasiItem.id, nama_variasi: variasiItem.nama_variasi } : null, // Hanya ambil id dan nama_variasi
+                sub_variasi: subVariasiItem ? {
+                    id_subvariasi: subVariasiItem.id,
+                    ukuran_pot: subVariasiItem.nama_sub_variasi,
+                    usia: subVariasiItem.usia
+                } : null
             });
+
+            await produkItem.update({ jumlah: produkItem.jumlah - item.jumlah });
 
             const existingEntry = await TransaksiProduk.findOne({
                 where: {
@@ -90,9 +97,12 @@ const createTransaksi = async (req, res) => {
                 }
             });
 
+            const totalHarga = (produkItem.harga + hargaSubVariasi) * item.jumlah;
+
             if (existingEntry) {
                 // Jika entri sudah ada, update jumlah
                 await existingEntry.update({ jumlah: existingEntry.jumlah + item.jumlah });
+                await existingEntry.update({ jumlah: existingEntry.jumlah + item.jumlah, totalHarga: existingEntry.totalHarga + totalHarga });
             } else {
                 // Jika entri belum ada, buat entri baru
                 await TransaksiProduk.create({
@@ -102,7 +112,8 @@ const createTransaksi = async (req, res) => {
                     id_produk: produkItem.id,
                     id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
                     id_variasi: subVariasiItem ? subVariasiItem.id_variasi : null,
-                    jumlah: item.jumlah
+                    jumlah: item.jumlah,
+                    totalHarga
                 });
             }
 
@@ -149,7 +160,6 @@ const createTransaksi = async (req, res) => {
 };
 
 
-
 // const getAllTransaksi = async (req, res) => {
 //     try {
 //         const transaksi = await Transaksi.findAll({
@@ -193,7 +203,7 @@ const getAllTransaksi = async (req, res) => {
             include: [
                 {
                     model: Produk,
-                    through: { attributes: ['jumlah'] },
+                    through: { attributes: ['jumlah', 'totalHarga'] },
                     attributes: ['id', 'judul_produk', 'harga']
                 },
                 {
@@ -217,7 +227,8 @@ const getAllTransaksi = async (req, res) => {
                 id: item.id,
                 nama_produk: item.judul_produk,
                 harga: item.harga,
-                jumlah: item.transaksi_produk.jumlah
+                jumlah: item.transaksi_produk.jumlah,
+                totalHarga: item.transaksi_produk.totalHarga
             })),
             alamat: transaksiItem.alamat,
             sub_total: transaksiItem.sub_total,
@@ -233,11 +244,11 @@ const getAllTransaksi = async (req, res) => {
 };
 
 const getTransaksiById = async (req, res) => {
-    try {
-        const id = req.params.id;
+    const transaksiId = req.params.id;
+    const userId = req.user.id;
 
-        const transaksi = await Transaksi.findOne({
-            where: { id: id },
+    try {
+        const transaksi = await Transaksi.findByPk(transaksiId, {
             include: [
                 {
                     model: Produk,
@@ -249,7 +260,7 @@ const getTransaksiById = async (req, res) => {
                             attributes: ['nama_variasi']
                         },
                         {
-                            model: subVariasi,  // Penulisan yang benar untuk subVariasi
+                            model: subVariasi,
                             attributes: ['nama_sub_variasi', 'usia']
                         }
                     ]
@@ -273,16 +284,15 @@ const getTransaksiById = async (req, res) => {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
         }
 
-        // Pastikan transaksi.Produk ada sebelum memanggil .map()
-        const produkList = transaksi.produks ? transaksi.produks.map(item => ({
+        const produkDetails = transaksi.produks.map(item => ({
             id: item.id,
             nama_produk: item.judul_produk,
             harga: item.harga,
-            jumlah: item.transaksi_produk.jumlah, // Pastikan ini ada di through alias
-            nama_variasi: item.variasis ? item.variasis.nama_variasi : null, // Handle jika variasi tidak ada
+            jumlah: item.transaksi_produk.jumlah,
+            nama_variasi: item.variasis ? item.variasis.nama_variasi : null,
             nama_sub_variasi: item.subVariasis ? item.subVariasis.nama_sub_variasi : null,
             usia: item.subVariasis ? item.subVariasis.usia : null
-        })) : [];
+        }));
 
         const response = {
             id: transaksi.id,
@@ -290,8 +300,8 @@ const getTransaksiById = async (req, res) => {
                 id: transaksi.User.id,
                 username: transaksi.User.username
             },
-            produk: produkList,  // Produk list yang sudah diverifikasi
-            alamat: transaksi.Alamat,
+            produk: produkDetails,
+            alamat: transaksi.alamat,
             sub_total: transaksi.sub_total,
             biaya_layanan: transaksi.biaya_layanan,
             total_pembayaran: transaksi.total_pembayaran
@@ -304,62 +314,57 @@ const getTransaksiById = async (req, res) => {
     }
 };
 
-
-
 const getTransaksiFilter = async (req, res) => {
-    const status = req.query.status
+    const { status } = req.query;
+
     try {
-    if (!status) {
-       const TransaksiStatus = await TransaksiProduk.findAll({
-           include: [{
-              model: User,
-              attributes : ['username']
-      },
-              {
-              model: Produk,  
-              attributes : ['judul_produk', 'foto_produk', 'harga',]
-      },
-              {
-                  model: Variasi,
-                  attributes : ['nama_variasi']
-      },
-              {
-                  model: subVariasi,
-                  attributes : ['nama_sub_variasi']
-      },
-              {
-          model: Alamat 
-          
-      }]
-    })
-        return res.status(200).json(TransaksiStatus)
-        } 
-       const Transaksi = await TransaksiProduk.findAll({
-        where : {status: status},
-          include: [{
-              model: User,
-              attributes : ['username']
-      },
-              {
-              model: Produk,  
-              attributes : ['judul_produk', 'foto_produk', 'harga',]
-      },
-              {
-                  model: Variasi,
-                  attributes : ['nama_variasi']
-      },
-              {
-                  model: subVariasi,
-                  attributes : ['nama_sub_variasi']
-      },
-              {
-          model: Alamat 
-          
-      }]
-       }) 
-         return res.status(202).json(Transaksi)
+        const whereClause = status ? { status } : {};
+
+        const transaksi = await Transaksi.findAll({
+            where: whereClause,
+            include: [
+                {
+                    model: Produk,
+                    through: { attributes: ['jumlah'] },
+                    attributes: ['id', 'judul_produk', 'harga']
+                },
+                {
+                    model: Alamat,
+                    attributes: [
+                        'provinsi', 'kota_kabupaten', 'kecamatan',
+                        'kelurahan_desa', 'jalan_namagedung', 'patokan',
+                        'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama'
+                    ]
+                },
+                {
+                    model: User,
+                    attributes: ['id', 'username']
+                }
+            ]
+        });
+
+        const response = transaksi.map(transaksiItem => ({
+            id: transaksiItem.id,
+            user: {
+                id: transaksiItem.User.id,
+                username: transaksiItem.User.username
+            },
+            produk: transaksiItem.Produks.map(item => ({
+                id: item.id,
+                nama_produk: item.judul_produk,
+                harga: item.harga,
+                jumlah: item.TransaksiProduk.jumlah
+            })),
+            alamat: transaksiItem.alamat,
+            sub_total: transaksiItem.sub_total,
+            biaya_layanan: transaksiItem.biaya_layanan,
+            total_pembayaran: transaksiItem.total_pembayaran
+        }));
+
+        res.status(200).json(response);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+        console.error("Error:", error);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
     }
 }
 
@@ -464,3 +469,6 @@ module.exports = {
     getTransaksiFilter,
     getTransaksiDikirimDanDikemas
 };
+
+module.exports = { createTransaksi, getAllTransaksi, getTransaksiById, getTransaksiFilter };
+

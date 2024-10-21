@@ -38,7 +38,7 @@ const Transaksi = sequelize.define("transaksi", {
     freezeTableName: true
 });
 
-Alamat.hasMany(Transaksi, { foreignKey: "id_alamat" });
+Alamat.belongsTo(Transaksi, { foreignKey: "id_alamat" });
 Transaksi.belongsTo(Alamat, { foreignKey: "id_alamat" });
 
 User.hasMany(Transaksi, { foreignKey: "user_id" });
@@ -48,4 +48,3 @@ Transaksi.belongsTo(User, { foreignKey: "user_id" });
 // Produk.belongsToMany(Transaksi, { through: TransaksiProduk, foreignKey: 'id_produk' });
 
 module.exports = Transaksi;
-

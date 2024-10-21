@@ -23,6 +23,8 @@ const Alamat = require("./models/Transaksi/alamat");
 const TransaksiProduk = require("./models/Transaksi/transaksiproduk");
 const PaymentGateway = require("./models/Transaksi/paymentgateway");
 const Report = require("./models/Forum/report");
+const Troli = require("./models/Produk/troli");
+const Ulasan = require("./models/Ulasan/ulasan");
 
 dotenv.config();
 const app = express();
@@ -46,10 +48,10 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
+
     // await Transaksi.sync({alter : true});
 })
 .catch(err => console.log('Error: ' + err));
-
 
 const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
