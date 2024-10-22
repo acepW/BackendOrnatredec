@@ -3,19 +3,18 @@ const router = require("express").Router();
 //User
 router.use("/", require("./User/loginRoutes"));
 
-router.use("/", require("./User/editUser"))
+router.use("/", require("./User/editUser"));
 
 //Produk
 router.use("/", require("./Produk/produk"));
 // router.use("/", require("./Produk/order"));
-
-
 
 //Transaksi
 router.use("/", require("./Transaksi/transaksi"));
 router.use("/", require("./Transaksi/alamat"));
 router.use("/", require("./Transaksi/paymentgateway"));
 router.use("/", require("./Transaksi/transaksiproduk"));
+router.use("/", require("./Transaksi/troli"))
 
 //Forum
 router.use("/", require("./Forum/comments"));

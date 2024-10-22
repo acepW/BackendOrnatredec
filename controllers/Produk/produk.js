@@ -4,7 +4,6 @@ const Produk = require("../../models/Produk/produk");
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
 const { where } = require('sequelize');
-const Troli = require('../../models/Produk/troli');
 
 // Konfigurasi Multer untuk penyimpanan file
 const storage = multer.diskStorage({

@@ -33,7 +33,7 @@ const Variasi = db.define("variasi", {
     timestamps: true
 });
 
-Produk.hasMany(Variasi, { foreignKey: 'id_produk', as: 'variasis' });
-Variasi.belongsTo(Produk, { foreignKey: 'id_produk', as: 'variasis' });
+Produk.hasMany(Variasi, { foreignKey: 'id_produk' });
+Variasi.belongsTo(Produk, { foreignKey: 'id_produk' });
 
 module.exports = Variasi;

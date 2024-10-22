@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/database");
-const Produk = require("../Produk/produk");
+// const Produk = require("../Produk/produk");
 const User = require("../User/users");
 const Alamat = require("./alamat");
 // const TransaksiProduk = require("./transaksiproduk");

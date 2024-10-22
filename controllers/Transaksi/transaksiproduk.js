@@ -4,6 +4,8 @@ const Produk = require('../../models/Produk/produk'); // Import model Produk jik
 
 const Variasi = require('../../models/Produk/variasi');
 const Subvariasi = require('../../models/Produk/variasi');
+const Alamat = require('../../models/Transaksi/alamat');
+const User = require('../../models/User/users');
 
 
 // Mengubah status pesanan
@@ -251,9 +253,6 @@ const getOrderByIdantar = async (req, res) => {
 
     try {
         // Cari pesanan berdasarkan id_transaksi
-
-    
-
         const Order = await transaksiProduk.findByPk(id, {
 
             include: [{
@@ -309,7 +308,26 @@ const detail = async (req, res) => {
     }
 };
 
-      
+const getDetailById = async(req, res) => {
+    const  { id } = req.params;
+    try {
+        const detail = await transaksiProduk.findOne({
+            where: { id: id },
+            include: [
+                {
+                    model: Produk,
+                    attributes : ['judul_produk', 'kategori_produk', 'harga', 'foto_produk']
+                },
+                {
+                    model: Alamat
+                },
+            ]
+        })
+        res.status(200).json(detail)
+    } catch (error) {
+        res.status(500).json({ message : error.message})
+    }
+}
 
 
 // Ekspor semua fungsi
@@ -321,5 +339,6 @@ module.exports = {
     getAllOrdersantar,
     getAllOrdersdikemas,
     getOrderByIdantar,
-    getOrderByIddikemas
+    getOrderByIddikemas,
+    getDetailById
 };

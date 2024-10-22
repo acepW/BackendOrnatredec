@@ -53,7 +53,7 @@ const subVariasi = db.define("subvariasi", {
 Produk.hasMany(subVariasi, { foreignKey: 'id_produk', });
 subVariasi.belongsTo(Produk, { foreignKey: 'id_produk' });
 
-Variasi.hasMany(subVariasi, { foreignKey: 'id_variasi', as: "subvariasis" });
-subVariasi.belongsTo(Variasi, { foreignKey: 'id_variasi', as: "subvariasis" });
+Variasi.hasMany(subVariasi, { foreignKey: 'id_variasi' });
+subVariasi.belongsTo(Variasi, { foreignKey: 'id_variasi' });
 
 module.exports = subVariasi;

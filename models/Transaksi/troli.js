@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const db = require("../../config/database");
-const Produk = require("./produk");
-const Variasi = require("./variasi");
-const subVariasi = require("./subVariasi");
+const Produk = require("../Produk/produk");
+const Variasi = require("../Produk/variasi");
+const subVariasi = require("../Produk/subVariasi");
 const User = require("../User/users");
 const Alamat = require("../Transaksi/alamat");
 
