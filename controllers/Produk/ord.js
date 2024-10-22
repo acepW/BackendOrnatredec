@@ -1,20 +1,28 @@
-// Import model pesanan (Order)
+// Import model pesanan (Order) dan model terkait
 const Order = require('../../models/Transaksi/transaksiproduk');
+const Produk = require('../../models/Produk/produk');
+const Variasi = require('../../models/Produk/variasi');
+const Subvariasi = require('../../models/Produk/subvariasi');
 
 // Mendapatkan semua pesanan dan mengubah status dari "dipesan" ke "dikemas"
 const getAllOrders = async (req, res) => {
-    console.log("Function getAllOrders is called"); // Debugging log
     try {
         // Cari semua pesanan yang masih berstatus "dipesan"
         const orders = await Order.findAll({
             where: { status: 'dipesan' },
             include: [{
-                model: Order, // Jika ada relasi produk, pastikan model ini sudah di-define di model Order
-                through: { attributes: [] } // Mengambil produk tanpa atribut tambahan dari tabel pivot
+                model: Produk,
+                as: 'produks', // Menggunakan alias yang benar
+                include: [{
+                    model: Variasi,
+                    as: 'variasis', // Alias untuk Variasi
+                    include: [{
+                        model: Subvariasi,
+                        as: 'subvariasis' // Alias untuk Subvariasi
+                    }]
+                }]
             }]
         });
-
-        console.log("Orders found:", orders); // Debugging log
 
         // Jika tidak ada pesanan berstatus "dipesan"
         if (orders.length === 0) {
@@ -25,21 +33,28 @@ const getAllOrders = async (req, res) => {
         for (let order of orders) {
             order.status = 'dikemas';
             await order.save();
-            console.log("Order updated:", order); // Debugging log
         }
 
         // Ambil ulang semua pesanan setelah update status
         const updatedOrders = await Order.findAll({
             include: [{
-                model: Order, // Mengambil produk terkait
-                through: { attributes: [] } 
+                model: Produk,
+                as: 'produks', // Alias sesuai dengan model
+                include: [{
+                    model: Variasi,
+                    as: 'variasis', // Alias sesuai dengan model Variasi
+                    include: [{
+                        model: Subvariasi,
+                        as: 'subvariasis' // Alias sesuai dengan model Subvariasi
+                    }]
+                }]
             }]
         });
 
         // Kirim respons dengan data pesanan yang sudah diperbarui
         res.status(200).json(updatedOrders);
     } catch (error) {
-        console.error('Caught error:', error); // Debugging log
+        console.error('Caught error:', error);
         res.status(500).json({ message: 'Terjadi kesalahan', error: error.message || error });
     }
 };
@@ -52,31 +67,39 @@ const getOrderById = async (req, res) => {
         // Cari pesanan berdasarkan ID
         const order = await Order.findByPk(id, {
             include: [{
-                model: Order, // Mengambil produk terkait
-                through: { attributes: [] }
+                model: Produk,
+                as: 'produks', // Alias sesuai dengan model
+                include: [{
+                    model: Variasi,
+                    as: 'variasis', // Alias sesuai dengan model Variasi
+                    include: [{
+                        model: Subvariasi,
+                        as: 'subvariasis' // Alias sesuai dengan model Subvariasi
+                    }]
+                }]
             }]
         });
 
+        // Jika pesanan tidak ditemukan
         if (!order) {
             return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
         }
 
-        // Ubah status jika "dipesan"
+        // Ubah status jika pesanan masih "dipesan"
         if (order.status === 'dipesan') {
             order.status = 'dikemas';
             await order.save();
-            console.log("Order updated:", order); // Debugging log
         }
 
         // Kirim respons dengan detail pesanan
         res.status(200).json(order);
     } catch (error) {
-        console.error('Caught error:', error); // Debugging log
+        console.error('Caught error:', error);
         res.status(500).json({ message: 'Terjadi kesalahan', error: error.message || error });
     }
 };
 
-// Ekspor semua fungsi
+// Ekspor semua fungsi controller
 module.exports = {
     getAllOrders,
     getOrderById

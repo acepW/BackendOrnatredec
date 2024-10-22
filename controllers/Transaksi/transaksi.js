@@ -277,8 +277,20 @@ const getTransaksiFilter = async (req, res) => {
             include: [
                 {
                     model: Produk,
-                    through: { attributes: ['jumlah'] },
-                    attributes: ['id', 'judul_produk', 'harga']
+                    through: { attributes: ['jumlah', 'totalHarga'] },
+                    attributes: ['id', 'judul_produk', 'harga'],
+                    include: [
+                        {
+                            model: Variasi,
+                            as: 'variasis', // Pastikan menggunakan alias yang sesuai
+                            attributes: ['nama_variasi']
+                        },
+                        {
+                            model: subVariasi,
+                            as: 'subvariasis', // Pastikan menggunakan alias yang sesuai
+                            attributes: ['nama_sub_variasi', 'usia']
+                        }
+                    ]
                 },
                 {
                     model: Alamat,
@@ -295,23 +307,38 @@ const getTransaksiFilter = async (req, res) => {
             ]
         });
 
-        const response = transaksi.map(transaksiItem => ({
-            id: transaksiItem.id,
-            user: {
-                id: transaksiItem.User.id,
-                username: transaksiItem.User.username
-            },
-            produk: transaksiItem.Produks.map(item => ({
+        if (!transaksi || transaksi.length === 0) {
+            return res.status(404).json({ message: 'Tidak ada transaksi yang ditemukan' });
+        }
+
+        const response = transaksi.map(transaksiItem => {
+            const produkDetails = transaksiItem.Produks ? transaksiItem.Produks.map(item => ({
                 id: item.id,
                 nama_produk: item.judul_produk,
                 harga: item.harga,
-                jumlah: item.TransaksiProduk.jumlah
-            })),
-            alamat: transaksiItem.alamat,
-            sub_total: transaksiItem.sub_total,
-            biaya_layanan: transaksiItem.biaya_layanan,
-            total_pembayaran: transaksiItem.total_pembayaran
-        }));
+                jumlah: item.TransaksiProduk.jumlah,
+                totalHarga: item.TransaksiProduk.totalHarga,
+                variasiItem: item.variasis ? { id: item.variasis.id, nama_variasi: item.variasis.nama_variasi } : null,
+                sub_variasi: item.subvariasis ? {
+                    id_subvariasi: item.subvariasis.id,
+                    ukuran_pot: item.subvariasis.nama_sub_variasi,
+                    usia: item.subvariasis.usia
+                } : null
+            })) : [];
+
+            return {
+                id: transaksiItem.id,
+                user: {
+                    id: transaksiItem.User.id,
+                    username: transaksiItem.User.username
+                },
+                produk: produkDetails,
+                alamat: transaksiItem.alamat,
+                sub_total: transaksiItem.sub_total,
+                biaya_layanan: transaksiItem.biaya_layanan,
+                total_pembayaran: transaksiItem.total_pembayaran
+            };
+        });
 
         res.status(200).json(response);
     } catch (error) {
