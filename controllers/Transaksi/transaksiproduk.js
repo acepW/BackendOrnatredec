@@ -194,15 +194,15 @@ const getOrderById = async (req, res) => {
         }
 
         // Jika status pesanan adalah 'dipesan', ubah menjadi 'dikemas'
-        if (order.status === 'dipesan') {
-            order.status = 'dikemas';
-            await order.save(); // Simpan perubahan ke database
-            console.log("Pesanan telah diperbarui:", order);
+        if (Order.status === 'dipesan') {
+            Order.status = 'dikemas';
+            await Order.save(); // Simpan perubahan ke database
+            console.log("Pesanan telah diperbarui:", Order);
         }
 
 
         // Kirim respons dengan data pesanan yang sudah diperbarui
-        res.status(200).json(order);
+        res.status(200).json(Order);
     } catch (error) {
         console.error('Caught error:', error); // Debugging log
         res.status(500).json({ message: 'Terjadi kesalahan', error: error.message || error });
@@ -214,9 +214,6 @@ const getOrderByIddikemas = async (req, res) => {
 
     try {
         // Cari pesanan berdasarkan id_transaksi
-
-    
-
         const Order = await transaksiProduk.findByPk(id, {
 
             include: [{
@@ -225,23 +222,20 @@ const getOrderByIddikemas = async (req, res) => {
         });
 
         // Jika pesanan tidak ditemukan
-      
-
         if (!Order) {
             return res.status(405).json({ message: 'Pesanan tidak ditemukan' });
-
         }
 
         // Jika status pesanan adalah 'dipesan', ubah menjadi 'dikemas'
-        if (order.status === 'dikemas') {
-            order.status = 'dikirim';
-            await order.save(); // Simpan perubahan ke database
-            console.log("Pesanan telah diperbarui:", order);
+        if (Order.status === 'dikemas') {
+            Order.status = 'dikirim';
+            await Order.save(); // Simpan perubahan ke database
+            console.log("Pesanan telah diperbarui:", Order);
         }
 
 
         // Kirim respons dengan data pesanan yang sudah diperbarui
-        res.status(200).json(order);
+        res.status(200).json(Order);
     } catch (error) {
         console.error('Caught error:', error); // Debugging log
         res.status(500).json({ message: 'Terjadi kesalahan', error: error.message || error });
@@ -269,15 +263,15 @@ const getOrderByIdantar = async (req, res) => {
         }
 
         // Jika status pesanan adalah 'dipesan', ubah menjadi 'dikemas'
-        if (order.status === 'dikirim') {
-            order.status = 'selesai';
-            await order.save(); // Simpan perubahan ke database
-            console.log("Pesanan telah diperbarui:", order);
+        if (Order.status === 'dikirim') {
+            Order.status = 'selesai';
+            await Order.save(); // Simpan perubahan ke database
+            console.log("Pesanan telah diperbarui:", Order);
         }
 
 
         // Kirim respons dengan data pesanan yang sudah diperbarui
-        res.status(200).json(order);
+        res.status(200).json(Order);
     } catch (error) {
         console.error('Caught error:', error); // Debugging log
         res.status(500).json({ message: 'Terjadi kesalahan', error: error.message || error });
