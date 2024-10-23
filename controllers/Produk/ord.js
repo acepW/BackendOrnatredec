@@ -2,7 +2,7 @@
 const Order = require('../../models/Transaksi/transaksiproduk');
 const Produk = require('../../models/Produk/produk');
 const Variasi = require('../../models/Produk/variasi');
-const Subvariasi = require('../../models/Produk/subvariasi');
+const Subvariasi = require("../../models/Produk/subVariasi");
 
 // Mendapatkan semua pesanan dan mengubah status dari "dipesan" ke "dikemas"
 const getAllOrders = async (req, res) => {

@@ -32,8 +32,8 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    credentials: true,
-    origin: true
+    // credentials: true,
+    // origin: true
   })
 );
 app.use(express.json());
@@ -49,9 +49,9 @@ sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
 
-    // await Transaksi.sync({alter : true});
-})
-.catch(err => console.log('Error: ' + err));
+    // await PaymentGateway.sync({ alter: true });
+  })
+  .catch(err => console.log('Error: ' + err));
 
 const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

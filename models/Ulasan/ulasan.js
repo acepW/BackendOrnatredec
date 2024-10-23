@@ -32,6 +32,14 @@ const Ulasan = db.define('ulasan', {
     komentar: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    foto: {
+        type: DataTypes.STRING, // Simpan URL atau path foto
+        allowNull: true
+    },
+    video: {
+        type: DataTypes.STRING, // Simpan URL atau path video
+        allowNull: true
     }
 }, {
     freezeTableName: true,
