@@ -2,20 +2,19 @@ const router = require("express").Router();
 
 //User
 router.use("/", require("./User/loginRoutes"));
-
 router.use("/", require("./User/editUser"));
 
 //Produk
 router.use("/", require("./Produk/produk"));
 // router.use("/", require("./Produk/order"));
 
-
-
 //Transaksi
 router.use("/", require("./Transaksi/transaksi"));
 router.use("/", require("./Transaksi/alamat"));
 router.use("/", require("./Transaksi/paymentgateway"));
 router.use("/", require("./Transaksi/transaksiproduk"));
+router.use("/", require("./Transaksi/pengeluaran"))
+router.use("/", require("./Transaksi/troli"))
 
 //Forum
 router.use("/", require("./Forum/comments"));
@@ -26,5 +25,6 @@ router.use("/", require("./Forum/report"));
 
 //olah data
 router.use("/", require("./olah data/olahDataTentangTotal"));
+router.use("/", require("./olah data/statistik"))
 
 module.exports = router;

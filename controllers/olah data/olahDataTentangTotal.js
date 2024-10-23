@@ -41,6 +41,9 @@ const totalSemua = async (req, res) => {
         const totalForumBurung = await Post.count({
             where : {kategori_forum : kategoriBurung}
         })
+        const status = 'dikemas';
+
+        const pesanan = await TransaksiProduk.count({ where: { status: status } })
 
         const totalPemesanan = await TransaksiProduk.count({})
 
@@ -57,7 +60,8 @@ const totalSemua = async (req, res) => {
         totalForumIkan,
         totalForumTanaman,
         totalPemesanan,
-        jumlahReport
+        jumlahReport,
+        pesanan
       })
     } catch (error) {
         res.status(500).json({message : error.message})

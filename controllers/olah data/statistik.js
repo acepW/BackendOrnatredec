@@ -66,15 +66,15 @@ const getMonthlyStatistics = async (req, res) => {
             currentMonth: {
                 month,
                 year,
-                totalTransactions: currentTotalTransactions,
+                totalTransaksi: currentTotalTransactions,
                 totalSubTotal: currentTotalSubTotal,
-                totalServiceFee: currentTotalServiceFee,
-                totalPayment: currentTotalPayment,
+                totalBiayaLayanan: currentTotalServiceFee,
+                totalPembayaran: currentTotalPayment,
             },
             previousMonth: {
                 month: prevMonth,
                 year: prevYear,
-                totalTransactions: previousTotalTransactions,
+                totalTransaksi: previousTotalTransactions,
             },
             comparison: {
                 totalTransactionsDifference,

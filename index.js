@@ -26,6 +26,8 @@ const Report = require("./models/Forum/report");
 const Troli = require("./models/Transaksi/troli");
 const Ulasan = require("./models/Ulasan/ulasan");
 const Kasir = require("./models/Produk/kasir");
+const Pengeluaran = require("./models/Transaksi/pengeluaran");
+const pPengeluaran = require("./models/Transaksi/petugasPengeluaran");
 
 dotenv.config();
 const app = express();
@@ -49,7 +51,7 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    await TransaksiProduk.sync({alter : true});
+    await Report.sync({alter : true});
 })
 .catch(err => console.log('Error: ' + err));
 

@@ -5,6 +5,8 @@ const User = require('../../models/User/users');
 const multer = require('multer');
 const path = require('path');
 const { where } = require('sequelize');
+const View = require('../../models/Forum/view');
+const Report = require('../../models/Forum/report');
 
 // Konfigurasi multer untuk menyimpan file
 const storage = multer.diskStorage({
@@ -392,6 +394,26 @@ const jumlahpostinganUser = async (req, res) => {
     }
 }
 
+const getforumReport = async(req, res) => {
+    const { id } = req.params;
+    try {
+        const forumReport = await Post.findOne({
+            where: { id: id },
+            include: [
+                {
+                    model: Report,
+                   include: [{ model: User, attributes: ['username'] }]
+                },
+                {
+                    model : User
+                }
+            ]
+        })
+        res.status(200).json(forumReport)
+    } catch (error) {
+        res.status(500).json({message : error.message})
+    }
+}
 
 module.exports = {
     PostUlasanForum,
@@ -407,5 +429,6 @@ module.exports = {
     simpanPostingan,
     getSimpanPostingan,
     jumlahpostinganUser,
-    PostTerpopuler
+    PostTerpopuler,
+    getforumReport
 }

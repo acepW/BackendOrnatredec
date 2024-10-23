@@ -323,7 +323,6 @@ const getDetailById = async(req, res) => {
     }
 }
 
-
 // Ekspor semua fungsi
 module.exports = {
     updateOrderStatus,
@@ -334,5 +333,5 @@ module.exports = {
     getAllOrdersdikemas,
     getOrderByIdantar,
     getOrderByIddikemas,
-    getDetailById
+    getDetailById,
 };

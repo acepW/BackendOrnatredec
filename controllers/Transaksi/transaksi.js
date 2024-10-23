@@ -63,7 +63,7 @@ const createTransaksi = async (req, res) => {
 
             const subVariasiItem = produkItem.variasis[0]?.subvariasis[0];
             const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
-            const itemSubTotal = (produkItem.harga + hargaSubVariasi) * item.jumlah;
+            const itemSubTotal = hargaSubVariasi* item.jumlah;
 
             // Update stok produk dan sub variasi
             await Promise.all([
@@ -85,12 +85,12 @@ const createTransaksi = async (req, res) => {
             await TransaksiProduk.upsert({
                 id_transaksi: newTransaksi.id,
                 user_id : userId,
-                id_alamat: alamat.id, // Pastikan ini 'id' dari model Alamat
+                id_alamat: alamat.id, 
                 id_produk: produkItem.id,
                 id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
                 id_variasi: produkItem.variasis[0]?.id,
                 jumlah: item.jumlah,
-                totalHarga: itemSubTotal // Ganti totalHarga ke itemSubTotal
+                totalHarga: itemSubTotal
             });
         }
 
@@ -319,7 +319,8 @@ const getTransaksiDikirimDanDikemas = async (req, res) => {
     try {
        const status = ['dikemas', 'dikirim']
         const TransaksiStatus = await TransaksiProduk.findAll({
-            order : [['status', 'ASC']],
+            order: [['status', 'ASC'],
+                  ['updatedAt', 'DESC']],
             where: {
                 status: {
                     [Op.in]: status 

@@ -62,10 +62,30 @@ const troliProduk = async (req, res) => {
 };
 
 const editTroli = async (req, res) => {
+  const { id } = req.params;
+  try {
+    
+  } catch (error) {
+    
+  }
+}
 
+const hapusTroli = async (req, res) => {
+  const { id } = req.params;
+  try {
+     const troli = await Troli.findByPk(id)
+    if (!troli) {
+      return res.status(404).json({ message: "troli tidak ditemukan." });
+  }
+    await Troli.destroy({ where: { id: id } })
+    res.status(200).json({message : 'sukses'})
+  } catch (error) {
+    res.status(500).json({message : error.message})
+  }
 }
 
 module.exports = {
     troliProduk,
-    editTroli
+    editTroli,
+    hapusTroli
 }

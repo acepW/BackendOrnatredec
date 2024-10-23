@@ -18,16 +18,12 @@ const Variasi = db.define("variasi", {
     },
     foto_variasi: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     nama_variasi: {
         type: DataTypes.STRING,
         allowNull: true
     },
-    stok: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    }
 }, {
     freezeTableName: true,
     timestamps: true

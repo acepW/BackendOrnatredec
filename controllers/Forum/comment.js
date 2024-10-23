@@ -120,4 +120,3 @@ const deleteComment = async (req, res) => {
         editComment,
         deleteComment
 }
-

@@ -35,6 +35,9 @@ const Report = db.define('report',{
 })
 
 Post.hasMany(Report, {foreignKey: 'id_post'});
-Report.belongsTo(Post, {foreignKey : 'id_post'});
+Report.belongsTo(Post, { foreignKey: 'id_post' });
+
+User.hasMany(Report, {foreignKey: 'user_id'});
+Report.belongsTo(User, {foreignKey : 'user_id'});
 
 module.exports = Report;

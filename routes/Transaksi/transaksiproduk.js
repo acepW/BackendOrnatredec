@@ -32,8 +32,7 @@ router.get('/diantar/status', orderController.getAllOrdersantar);
 
 // Mendapatkan pesanan berdasarkan ID dan otomatis mengubah status dari "sedang diantar" ke "selesai"
 router.get('/diantar/order/:id', orderController.getOrderByIdantar);
-
-router.get('/getDetail/:id', orderController.getDetailById)
+router.get('/getDetail/:id', orderController.getDetailById);
 
 
 module.exports = router;
