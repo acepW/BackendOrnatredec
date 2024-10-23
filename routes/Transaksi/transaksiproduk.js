@@ -16,7 +16,7 @@ router.get('/dipesan', orderController.getAllOrders);
 router.get('/dipesanByid/:id', orderController.getOrderById);
 
 //router get id tanpa rubah status
- router.get('/detail/:id', orderController.detail);
+router.get('/detail/:id', orderController.detail);
 
 router.put('/status/:id', orderController.updateOrderStatus);
 
@@ -28,7 +28,7 @@ router.get('/dipesanAll', orderController.getAllOrdersdikemas);
 router.get('/dipesan/order/:id', orderController.getOrderByIddikemas);
 
 // Mendapatkan semua pesanan dan otomatis mengubah status dari "sedang diantar" ke "selesai"
-router.get('/diantar/status', orderController.getAllOrdersantar);
+// router.get('/diantar', orderController.getAllOrdersantar);
 
 // Mendapatkan pesanan berdasarkan ID dan otomatis mengubah status dari "sedang diantar" ke "selesai"
 router.get('/diantar/order/:id', orderController.getOrderByIdantar);

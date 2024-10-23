@@ -61,7 +61,9 @@ const createTransaksi = async (req, res) => {
                 return res.status(404).json({ message: `Produk dengan ID ${item.id_produk} tidak ditemukan atau stok tidak cukup` });
             }
 
-            const subVariasiItem = produkItem.variasis[0]?.subvariasis[0];
+            const subVariasiItem = produkItem.variasis[0]?.subvariasis.find(sv => sv.id === item.id_subvariasi);
+            const variasiItem = produkItem.variasis.length > 0 ? produkItem.variasis[0] : null;
+           
             const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
             const itemSubTotal = hargaSubVariasi* item.jumlah;
 
@@ -259,57 +261,53 @@ const getTransaksiById = async (req, res) => {
 };
 
 const getTransaksiFilter = async (req, res) => {
-    const status = req.query.status
+    const { status } = req.query;
+
     try {
-    if (!status) {
-       const TransaksiStatus = await TransaksiProduk.findAll({
-           include: [{
-              model: User,
-              attributes : ['username']
-      },
-              {
-              model: Produk,  
-              attributes : ['judul_produk', 'foto_produk', 'harga',]
-      },
-              {
-                  model: Variasi,
-                  attributes : ['nama_variasi']
-      },
-              {
-                  model: subVariasi,
-                  attributes : ['nama_sub_variasi']
-      },
-              {
-          model: Alamat 
-          
-      }]
-    })
-        return res.status(200).json(TransaksiStatus)
-        } 
-       const Transaksi = await TransaksiProduk.findAll({
-        where : {status: status},
-          include: [{
-              model: User,
-              attributes : ['username']
-      },
-              {
-              model: Produk,  
-              attributes : ['judul_produk', 'foto_produk', 'harga',]
-      },
-              {
-                  model: Variasi,
-                  attributes : ['nama_variasi']
-      },
-              {
-                  model: subVariasi,
-                  attributes : ['nama_sub_variasi']
-      },
-              {
-          model: Alamat 
-          
-      }]
-       }) 
-         return res.status(202).json(Transaksi)
+        const whereClause = status ? { status } : {};
+
+        const transaksi = await Transaksi.findAll({
+            where: whereClause,
+            include: [
+                {
+                    model: Produk,
+                    through: { attributes: ['jumlah'] },
+                    attributes: ['id', 'judul_produk', 'harga']
+                },
+                {
+                    model: Alamat,
+                    attributes: [
+                        'provinsi', 'kota_kabupaten', 'kecamatan',
+                        'kelurahan_desa', 'jalan_namagedung', 'patokan',
+                        'nama_penerima', 'no_hp', 'kategori_alamat', 'alamat_pengiriman_utama'
+                    ]
+                },
+                {
+                    model: User,
+                    attributes: ['id', 'username']
+                }
+            ]
+        });
+
+        const response = transaksi.map(transaksiItem => ({
+            id: transaksiItem.id,
+            user: {
+                id: transaksiItem.User.id,
+                username: transaksiItem.User.username
+            },
+            produk: transaksiItem.Produks.map(item => ({
+                id: item.id,
+                nama_produk: item.judul_produk,
+                harga: item.harga,
+                jumlah: item.TransaksiProduk.jumlah
+            })),
+            alamat: transaksiItem.alamat,
+            sub_total: transaksiItem.sub_total,
+            biaya_layanan: transaksiItem.biaya_layanan,
+            total_pembayaran: transaksiItem.total_pembayaran
+        }));
+
+        res.status(200).json(response);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -317,41 +315,98 @@ const getTransaksiFilter = async (req, res) => {
 
 const getTransaksiDikirimDanDikemas = async (req, res) => {
     try {
-       const status = ['dikemas', 'dikirim']
+        const status = ['dikemas', 'dikirim']
         const TransaksiStatus = await TransaksiProduk.findAll({
             order: [['status', 'ASC'],
                   ['updatedAt', 'DESC']],
             where: {
                 status: {
-                    [Op.in]: status 
+                    [Op.in]: status
                 }
             },
-           include: [{
-              model: User,
-              attributes : ['username']
-      },
-              {
-              model: Produk,  
-              attributes : ['judul_produk', 'foto_produk', 'harga',]
-      },
-              {
-                  model: Variasi,
-                  attributes : ['nama_variasi']
-      },
-              {
-                  model: subVariasi,
-                  attributes : ['nama_sub_variasi']
-      },
-              {
-          model: Alamat 
-          
-      }]
-    })
+            include: [{
+                model: User,
+                attributes: ['username']
+            },
+            {
+                model: Produk,
+                attributes: ['judul_produk', 'foto_produk', 'harga',]
+            },
+            {
+                model: Variasi,
+                attributes: ['nama_variasi']
+            },
+            {
+                model: subVariasi,
+                attributes: ['nama_sub_variasi']
+            },
+            {
+                model: Alamat
+
+            }]
+        })
         return res.status(200).json(TransaksiStatus)
     } catch (error) {
-      res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 }
+  
+const troliProduk = async (req, res) => {
+  const { id_produk, id_subVariasi, jumlahStok } = req.body;
+  const id_User = req.user.id;
+
+  try {
+    const userid = await User.findByPk(id_User);
+    if (!userid) {
+      return res.status(400).json({ message: 'User tidak ditemukan' });
+    }
+
+    const alamat = await Alamat.findOne({ where: { userId: id_User } });
+
+    const produk = await Produk.findByPk(id_produk);
+    if (!produk) {
+      return res.status(400).json({ message: 'Produk tidak ditemukan' });
+    }
+
+    const subvariasi = await subVariasi.findByPk(id_subVariasi);
+    if (!subvariasi) {
+      return res.status(400).json({ message: 'Sub Variasi tidak ditemukan' });
+    }
+
+    const variasi = subvariasi.id_variasi;
+
+    const troliProduk = await Troli.findOne({ where: { id_User: id_User, id_produk: id_produk, id_subVariasi: id_subVariasi } });
+
+    if (!troliProduk) {
+      const troli = await Troli.create({
+        id_User: id_User,
+        id_produk,
+        id_alamat: alamat.id,
+        id_variasi: variasi,
+        id_subVariasi,
+        jumlahStok: jumlahStok
+      });
+
+      return res.status(200).json(troli);
+    }
+
+    const jumlahBaru = troliProduk.jumlahStok + jumlahStok;
+
+    await Troli.update({
+      jumlahStok: jumlahBaru
+    }, {
+      where: { id: troliProduk.id }
+    });
+
+    const TroliUpdate = await Troli.findByPk(troliProduk.id);
+
+    res.status(202).json(TroliUpdate);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 module.exports = {
     createTransaksi,
@@ -361,4 +416,5 @@ module.exports = {
     getTransaksiDikirimDanDikemas
 };
 
+module.exports = { createTransaksi, getAllTransaksi, getTransaksiById, getTransaksiFilter };
 

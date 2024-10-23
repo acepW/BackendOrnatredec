@@ -1,7 +1,6 @@
 const path = require('path');
 const transaksiProduk = require('../../models/Transaksi/transaksiproduk'); // Import model transaksiProduk
 const Produk = require('../../models/Produk/produk'); // Import model Produk jika diperlukan
-
 const Variasi = require('../../models/Produk/variasi');
 const Subvariasi = require('../../models/Produk/variasi');
 const Alamat = require('../../models/Transaksi/alamat');
@@ -22,21 +21,21 @@ const updateOrderStatus = async (req, res) => {
 
 
         // Cari pesanan berdasarkan ID
-        const order = await transaksiProduk.findByPk(id);
+        const Order = await transaksiProduk.findByPk(id);
 
-        if (!order) {
+        if (!Order) {
             return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
 
         }
 
         // Ubah status pesanan
-        order.status = status;
-        await order.save();
+        Order.status = status;
+        await Order.save();
 
-        res.status(200).json({ message: 'Status pesanan berhasil diperbarui', order });
+        res.status(200).json({ message: 'Status pesanan berhasil diperbarui', Order });
     } catch (error) {
 
-        console.error('Error updating order status:', error); // Log error yang lebih spesifik
+        console.error('Error updating Order status:', error); // Log error yang lebih spesifik
         res.status(500).json({ message: 'Terjadi kesalahan saat memperbarui status pesanan', error: error.message });
     }
 }
@@ -57,14 +56,14 @@ const getAllOrders = async (req, res) => {
         if (orders.length === 0) {
             return res.status(200).json({ message: 'Tidak ada pesanan yang berstatus "dipesan"' });
 
-      
+
         }
 
         // Ubah status semua pesanan dari "dipesan" ke "dikemas"
-        for (let order of orders) {
-            order.status = 'dikemas';
-            await order.save();
-            console.log("transaksiProduk updated:", order); // Debugging log
+        for (let Order of orders) {
+            Order.status = 'dikemas';
+            await Order.save();
+            console.log("transaksiProduk updated:", Order); // Debugging log
         }
 
         // Ambil ulang semua pesanan setelah update status
@@ -100,14 +99,14 @@ const getAllOrdersdikemas = async (req, res) => {
         if (orders.length === 0) {
             return res.status(200).json({ message: 'Tidak ada pesanan yang berstatus "dikemas"' });
 
-      
+
         }
 
         // Ubah status semua pesanan dari "dipesan" ke "dikemas"
-        for (let order of orders) {
-            order.status = 'dikirim';
-            await order.save();
-            console.log("transaksiProduk updated:", order); // Debugging log
+        for (let Order of orders) {
+            Order.status = 'dikirim';
+            await Order.save();
+            console.log("transaksiProduk updated:", Order); // Debugging log
         }
 
         // Ambil ulang semua pesanan setelah update status
@@ -125,50 +124,47 @@ const getAllOrdersdikemas = async (req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan saat mengambil atau memperbarui pesanan', error: error.message });
 
     }
+
 }
+// const getAllOrdersantar = async (req, res) => {
+//     try {
+//         const orders = await transaksiProduk.findAll({
+//             where: { status: 'dikirim' },
+//             include: [{
+//                 model: Produk,
+//                 // Include model Produk untuk mengambil detail produk terkait
+//             }]
+//         });
 
-const getAllOrdersantar= async (req, res) => {
-    try {
-        const orders = await transaksiProduk.findAll({
-            where: { status: 'dikirim' },
-            include: [{
-                model: Produk, // Include model Produk untuk mengambil detail produk terkait
-            }]
-        });
+//         console.log("Orders found:", orders); // Debugging log
 
-        console.log("Orders found:", orders); // Debugging log
+//         // Jika tidak ada pesanan berstatus "dikirim"
+//         if (orders.length === 0) {
+//             return res.status(200).json({ message: 'Tidak ada pesanan yang berstatus "dikirim"' });
+//         }
 
+//         // Ubah status semua pesanan dari "dikirim" ke "selesai"
+//         for (let order of orders) {
+//             order.status = 'selesai';
+//             await order.save();
+//             console.log("transaksiProduk updated:", order); // Debugging log
+//         }
 
-        // Jika tidak ada pesanan berstatus "dipesan"
-        if (orders.length === 0) {
-            return res.status(200).json({ message: 'Tidak ada pesanan yang berstatus "dipesan"' });
+//         // Ambil ulang semua pesanan setelah update status
+//         const updatedOrders = await transaksiProduk.findAll({
+//             include: [{
+//                 model: Produk,
+//                 // Mengambil produk terkait
+//             }]
+//         });
 
-      
-        }
-
-        // Ubah status semua pesanan dari "dipesan" ke "dikemas"
-        for (let order of orders) {
-            order.status = 'selesai';
-            await order.save();
-            console.log("transaksiProduk updated:", order); // Debugging log
-        }
-
-        // Ambil ulang semua pesanan setelah update status
-        const updatedOrders = await transaksiProduk.findAll({
-            include: [{
-                model: Produk, // Mengambil produk terkait
-            }]
-        });
-
-        // Kirim respons dengan data pesanan yang sudah diperbarui
-
-        res.status(200).json(updatedOrders);
-    } catch (error) {
-        console.error('Error fetching or updating orders:', error); // Log error yang lebih spesifik
-        res.status(500).json({ message: 'Terjadi kesalahan saat mengambil atau memperbarui pesanan', error: error.message });
-
-    }
-}
+//         // Kirim respons dengan data pesanan yang sudah diperbarui
+//         res.status(200).json(updatedOrders);
+//     } catch (error) {
+//         console.error('Error fetching or updating orders:', error); // Log error yang lebih spesifik
+//         res.status(500).json({ message: 'Terjadi kesalahan saat mengambil atau memperbarui pesanan', error: error.message });
+//     }
+// }
 
 
 
@@ -186,7 +182,7 @@ const getOrderById = async (req, res) => {
         });
 
         // Jika pesanan tidak ditemukan
-      
+
 
         if (!Order) {
             return res.status(405).json({ message: 'Pesanan tidak ditemukan' });
@@ -222,6 +218,7 @@ const getOrderByIddikemas = async (req, res) => {
         });
 
         // Jika pesanan tidak ditemukan
+
         if (!Order) {
             return res.status(405).json({ message: 'Pesanan tidak ditemukan' });
         }
@@ -255,7 +252,7 @@ const getOrderByIdantar = async (req, res) => {
         });
 
         // Jika pesanan tidak ditemukan
-      
+
 
         if (!Order) {
             return res.status(405).json({ message: 'Pesanan tidak ditemukan' });
@@ -283,24 +280,25 @@ const detail = async (req, res) => {
 
     try {
         // Cari pesanan berdasarkan id_transaksi
-        const order = await transaksiProduk.findByPk(id, {
+        const Order = await transaksiProduk.findByPk(id, {
             include: [{
                 model: Produk, // Include model Produk untuk mendapatkan detail produk terkait
             }]
         });
 
         // Jika pesanan tidak ditemukan
-        if (!order) {
+        if (!Order) {
             return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
         }
 
         // Kirim respons dengan data pesanan tanpa mengubah status
-        res.status(200).json(order);
+        res.status(200).json(Order);
     } catch (error) {
         console.error('Caught error:', error); // Debugging log
         res.status(500).json({ message: 'Terjadi kesalahan', error: error.message || error });
     }
 };
+
 
 const getDetailById = async(req, res) => {
     const  { id } = req.params;
@@ -329,7 +327,7 @@ module.exports = {
     getAllOrders,
     getOrderById,
     detail,
-    getAllOrdersantar,
+    // getAllOrdersantar,
     getAllOrdersdikemas,
     getOrderByIdantar,
     getOrderByIddikemas,

@@ -16,6 +16,9 @@ router.use("/", require("./Transaksi/transaksiproduk"));
 router.use("/", require("./Transaksi/pengeluaran"))
 router.use("/", require("./Transaksi/troli"))
 
+//Ulasan
+router.use("/", require("./Ulasan/ulasan"));
+
 //Forum
 router.use("/", require("./Forum/comments"));
 router.use("/", require("./Forum/posts"));

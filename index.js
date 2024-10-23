@@ -35,8 +35,8 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    credentials: true,
-    origin: true
+    // credentials: true,
+    // origin: true
   })
 );
 app.use(express.json());
@@ -51,7 +51,8 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    await Report.sync({alter : true});
+
+    // await Transaksi.sync({alter : true});
 })
 .catch(err => console.log('Error: ' + err));
 

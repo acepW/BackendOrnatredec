@@ -8,6 +8,7 @@ const MIDTRANS_URL = 'https://app.sandbox.midtrans.com/snap/v1/transactions'; //
 const MIDTRANS_STATUS_URL = 'https://api.sandbox.midtrans.com/v2'; // Base URL for Midtrans status
 const SERVER_KEY = process.env.MIDTRANS_SERVER_KEY; // Ambil dari .env
 
+// Membuat transaksi pembayaran dan mendapatkan token dari Midtrans
 const createPaymentGateway = async (req, res) => {
     const { id_transaksi, payment_method } = req.body;
 
@@ -22,6 +23,7 @@ const createPaymentGateway = async (req, res) => {
 
         const generatedOrderId = `transaksi-${transaksi.id}-${Date.now()}`;
 
+        // Payload yang dikirim ke Midtrans untuk mendapatkan token pembayaran
         const payload = {
             transaction_details: {
                 order_id: generatedOrderId,
@@ -40,6 +42,7 @@ const createPaymentGateway = async (req, res) => {
             enabled_payments: [payment_method],
         };
 
+        // Mengirim request ke Midtrans
         const response = await axios.post(MIDTRANS_URL, payload, {
             headers: {
                 'Content-Type': 'application/json',
@@ -47,28 +50,13 @@ const createPaymentGateway = async (req, res) => {
             },
         });
 
-        console.log("Full Midtrans Response:", JSON.stringify(response.data, null, 2));
+        const { token, order_id } = response.data;
 
-        const { token, redirect_url, order_id } = response.data;
-
-        // Simpan informasi pembayaran di database
-        const paymentData = await PaymentGateway.create({
-            id_transaksi: transaksi.id,
-            order_id: order_id || generatedOrderId,
-            payment_url: redirect_url,
-            payment_method: payment_method,
-            token: token,
-            status: 'pending', // Set status awal sebagai 'pending' sebelum memeriksa status selanjutnya
-        });
-
-        console.log(paymentData);
-        
-
+        // Kirim token ke frontend untuk Snap Popup
         res.status(200).json({
             message: 'Payment created successfully',
-            payment_url: paymentData.payment_url,
-            order_id: paymentData.order_id,
-            transaction_status: paymentData.status
+            token: token,
+            order_id: order_id || generatedOrderId,
         });
     } catch (error) {
         console.error("Error:", error.response ? error.response.data : error.message);
@@ -76,32 +64,26 @@ const createPaymentGateway = async (req, res) => {
     }
 };
 
-const checkPaymentStatus = async (req, res) => {
-    const { order_id } = req.params;
+// Endpoint untuk menyimpan data pembayaran setelah berhasil
+const savePaymentData = async (req, res) => {
+    const { order_id, id_transaksi, payment_method, token } = req.body;
 
     try {
-        // Cek status transaksi di Midtrans
-        const response = await axios.get(`${MIDTRANS_STATUS_URL}/${order_id}/status`, {
-            headers: {
-                'Authorization': `Basic ${Buffer.from(SERVER_KEY + ':').toString('base64')}`,
-            },
+        await PaymentGateway.create({
+            id_transaksi,
+            order_id,
+            payment_method,
+            token,
+            status: 'success' // Atur status sebagai 'success'
         });
-
-        const status = response.data.transaction_status;
-
-        // Update status transaksi di database
-        await PaymentGateway.update({ status: status }, {
-            where: { order_id: order_id }
-        });
-
-        res.status(200).json({ status });
+        res.status(200).json({ message: 'Payment data saved successfully' });
     } catch (error) {
-        console.error("Error:", error.response ? error.response.data : error.message);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server', error: error.response ? error.response.data : error.message });
+        console.error("Error:", error);
+        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
     }
 };
 
 module.exports = {
     createPaymentGateway,
-    checkPaymentStatus
+    savePaymentData, // Tambahkan ini
 };

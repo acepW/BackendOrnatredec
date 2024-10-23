@@ -15,14 +15,10 @@ const PaymentGateway = db.define("payment_gateway", {
         type: DataTypes.STRING, // Pastikan tipe datanya string
         allowNull: false,
     },
-    payment_url: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
     payment_method: {
         type: DataTypes.STRING
     },
-    order_id : {
+    order_id: {
         type: DataTypes.STRING,
         allowNull: false,
     },
