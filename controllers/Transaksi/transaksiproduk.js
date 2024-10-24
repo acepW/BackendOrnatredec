@@ -19,13 +19,20 @@ const updateOrderStatus = async (req, res) => {
             return res.status(400).json({ message: 'Status tidak valid' });
         }
 
-
         // Cari pesanan berdasarkan ID
         const Order = await transaksiProduk.findByPk(id);
 
         if (!Order) {
             return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
+        }
 
+        // Cek status pembayaran dari tabel PaymentGateway berdasarkan id_transaksi
+        const payment = await PaymentGateway.findOne({
+            where: { id_transaksi: Order.id_transaksi }
+        });
+
+        if (!payment || payment.status !== 'success') {
+            return res.status(403).json({ message: 'Status pesanan tidak bisa diubah karena pembayaran belum selesai' });
         }
 
         // Ubah status pesanan
@@ -34,11 +41,10 @@ const updateOrderStatus = async (req, res) => {
 
         res.status(200).json({ message: 'Status pesanan berhasil diperbarui', Order });
     } catch (error) {
-
-        console.error('Error updating Order status:', error); // Log error yang lebih spesifik
+        console.error('Error updating Order status:', error);
         res.status(500).json({ message: 'Terjadi kesalahan saat memperbarui status pesanan', error: error.message });
     }
-}
+};
 
 const getAllOrders = async (req, res) => {
     try {
