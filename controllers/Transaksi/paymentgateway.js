@@ -5,7 +5,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const MIDTRANS_URL = 'https://app.sandbox.midtrans.com/snap/v1/transactions'; // Endpoint Snap Midtrans
-const MIDTRANS_STATUS_URL = 'https://api.sandbox.midtrans.com/v2'; // Base URL for Midtrans status
+// const MIDTRANS_STATUS_URL = 'https://api.sandbox.midtrans.com/v2'; // Base URL for Midtrans status
 const SERVER_KEY = process.env.MIDTRANS_SERVER_KEY; // Ambil dari .env
 
 // Membuat transaksi pembayaran dan mendapatkan token dari Midtrans
@@ -13,9 +13,7 @@ const createPaymentGateway = async (req, res) => {
     const { id_transaksi, payment_method } = req.body;
 
     try {
-        const transaksi = await Transaksi.findByPk(id_transaksi, {
-            include: [{ model: Produk }]
-        });
+        const transaksi = await Transaksi.findByPk(id_transaksi)
 
         if (!transaksi) {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
@@ -33,12 +31,12 @@ const createPaymentGateway = async (req, res) => {
                 first_name: 'Nama',
                 email: 'email@example.com',
             },
-            item_details: (transaksi.produk || []).map(item => ({
-                id: item.id.toString(),
-                price: item.harga,
-                quantity: item.jumlah,
-                name: item.nama_produk,
-            })),
+            // item_details: (transaksi.produk || []).map(item => ({
+            //     id: item.id.toString(),
+            //     price: item.harga,
+            //     quantity: item.jumlah,
+            //     name: item.nama_produk,
+            // })),
             enabled_payments: [payment_method],
         };
 

@@ -1,6 +1,6 @@
 const express = require("express");
 const { beriUlasan } = require("../../controllers/Ulasan/ulasan");
-const upload = require('../../middlewares/multer'); // Import multer
+const upload = require('../../middlewares/Multer'); // Import multer
 const router = express.Router();
 const protect = require('../../middlewares/authMiddleware');
 

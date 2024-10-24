@@ -402,7 +402,7 @@ const getforumReport = async(req, res) => {
             include: [
                 {
                     model: Report,
-                   include: [{ model: User, attributes: ['username'] }]
+                   include: [{ model: User, attributes: ['username', 'photoprofile'] }]
                 },
                 {
                     model : User

@@ -5,7 +5,6 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const sequelize = require("./config/database");
 const routes = require('./routes/router');
-const Users = require("./models/User/users");
 const Produk = require('./models/Produk/produk');
 const Usia = require('./models/Produk/subVariasi');
 const Variasi = require('./models/Produk/variasi');
@@ -35,10 +34,12 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    // credentials: true,
-    // origin: true
+    credentials: true,
+    origin: true
   })
 );
+
+
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -51,8 +52,7 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-
-    // await Transaksi.sync({alter : true});
+    // await Variasi.sync({alter : true});
 })
 .catch(err => console.log('Error: ' + err));
 
