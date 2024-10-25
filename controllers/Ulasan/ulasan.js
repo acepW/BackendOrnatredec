@@ -1,6 +1,7 @@
 const Order = require('../../models/Transaksi/transaksiproduk');
 const Produk = require('../../models/Produk/produk');
 const Ulasan = require('../../models/Ulasan/ulasan');
+const path = require('path');
 
 // Fungsi untuk memberikan ulasan setelah status selesai
 const beriUlasan = async (req, res) => {
@@ -9,17 +10,22 @@ const beriUlasan = async (req, res) => {
     const userId = req.user.id;
 
     try {
+        // Cari transaksi produk berdasarkan ID
         const transaksiProduk = await Order.findByPk(id_transaksi_produk, {
             include: [{ model: Produk }]
         });
 
+        // Cek apakah transaksi produk ditemukan
         if (!transaksiProduk) {
             return res.status(404).json({ message: 'Transaksi produk tidak ditemukan' });
         }
+
+        // Cek apakah status transaksi sudah selesai
         if (transaksiProduk.status !== 'selesai') {
             return res.status(400).json({ message: 'Ulasan hanya dapat diberikan setelah status pesanan "selesai"' });
         }
 
+        // Cek apakah user sudah memberikan ulasan untuk produk ini
         const existingUlasan = await Ulasan.findOne({
             where: {
                 id_produk: transaksiProduk.id_produk,
@@ -35,12 +41,21 @@ const beriUlasan = async (req, res) => {
         // const baseUrl = `${req.protocol}://${req.get('host')}`;
 
         // Dapatkan path foto dan video dari req.files dan ubah menjadi URL
-        const fotoPath = req.files.foto ? req.files.foto[0].path : null;
-        const videoPath = req.files.video ? req.files.video[0].path : null;
+        let fotoPath = req.files.foto ? req.files.foto[0].path : null;
+        let videoPath = req.files.video ? req.files.video[0].path : null;
 
-        const fotoUrl = fotoPath ? `/${fotoPath}` : null;
-        const videoUrl = videoPath ? `/${videoPath}` : null;
+        // Konversi backslash ke forward slash agar sesuai dengan URL
+        if (fotoPath) {
+            fotoPath = fotoPath.split(path.sep).join('/');
+        }
+        if (videoPath) {
+            videoPath = videoPath.split(path.sep).join('/');
+        }
+        // Konversi path lokal menjadi URL yang dapat diakses
+        const fotoUrl = fotoPath ? `${baseUrl}/${fotoPath}` : null;
+        const videoUrl = videoPath ? `${baseUrl}/${videoPath}` : null;
 
+        // Buat ulasan baru dan simpan ke database
         const ulasanBaru = await Ulasan.create({
             id_produk: transaksiProduk.id_produk,
             id_user: userId,
@@ -50,6 +65,7 @@ const beriUlasan = async (req, res) => {
             video: videoUrl  // Simpan URL di database
         });
 
+        // Kirim respon berhasil
         return res.status(201).json({
             message: 'Ulasan berhasil diberikan',
             ulasan: ulasanBaru
