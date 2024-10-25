@@ -52,7 +52,7 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    // await Variasi.sync({alter : true});
+    // await sequelize.sync();
 })
 .catch(err => console.log('Error: ' + err));
 

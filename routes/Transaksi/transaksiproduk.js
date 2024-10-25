@@ -3,6 +3,8 @@
 const express = require('express');
 const router = express.Router();
 const orderController = require('../../controllers/Transaksi/transaksiproduk');
+const protect = require('../../middlewares/authMiddleware');
+
 
 // Endpoint untuk mengubah status pesanan
 
@@ -33,6 +35,8 @@ router.get('/dipesan/order/:id', orderController.getOrderByIddikemas);
 // Mendapatkan pesanan berdasarkan ID dan otomatis mengubah status dari "sedang diantar" ke "selesai"
 router.get('/diantar/order/:id', orderController.getOrderByIdantar);
 router.get('/getDetail/:id', orderController.getDetailById);
+router.get('/getSelesai', protect(['user']), orderController.statusSelesaiPerid);
+router.get('/riwayat', orderController.riwayatTransaksi)
 
 
 module.exports = router;

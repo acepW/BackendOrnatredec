@@ -3,6 +3,7 @@ const path = require('path');
 const Produk = require("../../models/Produk/produk");
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
+const Ulasan = require('../../models/Ulasan/ulasan');
 
 // Konfigurasi Multer untuk penyimpanan file
 const storage = multer.diskStorage({
@@ -191,6 +192,9 @@ const getProdukbyId = async (req, res) => {
           {
             model: Variasi,
             include: [{ model: subVariasi }],
+          },
+          {
+            model : Ulasan
           }
         ]
       });

@@ -32,14 +32,14 @@ const beriUlasan = async (req, res) => {
         }
 
         // Dapatkan base URL dari request
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        // const baseUrl = `${req.protocol}://${req.get('host')}`;
 
         // Dapatkan path foto dan video dari req.files dan ubah menjadi URL
         const fotoPath = req.files.foto ? req.files.foto[0].path : null;
         const videoPath = req.files.video ? req.files.video[0].path : null;
 
-        const fotoUrl = fotoPath ? `${baseUrl}/${fotoPath}` : null;
-        const videoUrl = videoPath ? `${baseUrl}/${videoPath}` : null;
+        const fotoUrl = fotoPath ? `/${fotoPath}` : null;
+        const videoUrl = videoPath ? `/${videoPath}` : null;
 
         const ulasanBaru = await Ulasan.create({
             id_produk: transaksiProduk.id_produk,
@@ -60,6 +60,16 @@ const beriUlasan = async (req, res) => {
     }
 };
 
+const getUlasan = async (req, res) => {
+    try {
+        const ulasan = await Ulasan.findAll()
+        res.status(200).json(ulasan)
+    } catch (error) {
+         return res.status(500).json({ message: 'Terjadi kesalahan', error: error.message });
+    }
+}
+
 module.exports = {
-    beriUlasan
+    beriUlasan,
+    getUlasan
 };
