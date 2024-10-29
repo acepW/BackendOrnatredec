@@ -4,7 +4,7 @@ require('dotenv').config();
 protect = (roles = []) => {
   return (req, res, next) => {
     const token = req.cookies.token;
-    
+
     if (!token) {
       return res.status(401).json({ success: false, message: 'Login dulu guys' });
     }
@@ -19,7 +19,7 @@ protect = (roles = []) => {
 
       next();
     } catch (error) {
-      res.status(401).json({ message : error.message });
+      res.status(401).json({ message: error.message });
     }
   };
 };

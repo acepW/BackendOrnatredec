@@ -50,7 +50,7 @@ const PostUlasanForum = async (req, res) => {
             userId: id,
             judul : judul,
             desc: desc,
-            img: url,
+            fotoKonten: url,
             jumlahTanggapan,
             kategori_forum : kategori_forum,
             jumlahView,
@@ -84,7 +84,7 @@ const editPostingan = async (req, res) => {
         judul : judul,
         desc : desc,
         kategori_forum : kategori_forum,
-        img : url
+        fotoKonten : url
        },{
         where : {id : id}
        }
@@ -249,9 +249,11 @@ const filterKategori = async (req, res) => {
 const getOnePost = async (req, res) => {
     const idPost = req.params.id; 
     const id = req.user.id;
+    const limit = parseInt(req.query.limit)
+    const page = parseInt(req.query.page) 
+    const offset = (page - 1) * limit;
     try {
         const post = await Post.findAll({
-            where : {kategori_forum : kategori},
             limit: limit,
             offset: offset,
             include: [
@@ -294,7 +296,6 @@ const getOnePost = async (req, res) => {
             })
             
             res.json(post);
-        res.json({ post });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -373,7 +374,11 @@ const getSimpanPostingan = async (req, res) => {
 const   PostTerpopuler = async (req, res) => {
     try {
         const populer = await Post.findAll({
-            order : [['jumlahTanggapan', 'DESC']]
+            order: [['jumlahTanggapan', 'DESC']],
+            include: [{
+                model: User,
+                attributes : ['username', 'photoProfile']
+            }]
         })
         res.status(200).json(populer)
     } catch (error) {
@@ -402,7 +407,7 @@ const getforumReport = async(req, res) => {
             include: [
                 {
                     model: Report,
-                   include: [{ model: User, attributes: ['username'] }]
+                   include: [{ model: User, attributes: ['username', 'photoprofile'] }]
                 },
                 {
                     model : User

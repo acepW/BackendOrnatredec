@@ -1,6 +1,8 @@
 const sequelize = require('../../config/database'); // Sesuaikan path dengan konfigurasi database
 const Transaksi = require('../../models/Transaksi/transaksi');
 const { Op } = require('sequelize');
+const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
+const Produk = require('../../models/Produk/produk');
 
 // Fungsi untuk mendapatkan bulan dan tahun sebelumnya
 const getPreviousMonthYear = (month, year) => {
@@ -47,7 +49,97 @@ const getMonthlyStatistics = async (req, res) => {
             });
             return transaksi[0];
         };
-
+        const transaksi_produk = await TransaksiProduk.sum('jumlah',{
+                 where: {
+                    createdAt: {
+                        [Op.between]: [startDate, endDate],
+                    }
+                },
+          })
+        const statusTanaman = 'tanaman';
+        const ProdukTanaman = await TransaksiProduk.sum('jumlah',{
+                include: {
+                    model: Produk,
+                    where: {
+                        kategori_produk: statusTanaman
+                },
+                    attributes: [] 
+                },
+                    where: {
+                        createdAt: {
+                            [Op.between]: [startDate, endDate],
+                        }
+                    },
+            })
+        const totalTanaman = await TransaksiProduk.sum('totalHarga',{
+            include: {
+                model: Produk,
+                where: {
+                    kategori_produk: statusTanaman
+                }
+            },
+                 where: {
+                    createdAt: {
+                        [Op.between]: [startDate, endDate],
+                    }
+                },
+        })
+        const statusIkan = 'ikan';
+        const ProdukIkan = await TransaksiProduk.sum('jumlah',{
+            include: {
+                model: Produk,
+                where: {
+                 kategori_produk: statusIkan
+        },
+            },
+                 where: {
+                    createdAt: {
+                        [Op.between]: [startDate, endDate],
+                    }
+                },
+        })
+         const totalIkan = await TransaksiProduk.sum('totalHarga',{
+            include: {
+                model: Produk,
+                where: {
+                    kategori_produk: statusIkan
+                }
+            },
+                 where: {
+                    createdAt: {
+                        [Op.between]: [startDate, endDate],
+                    }
+                },
+         })
+        
+        const statusBurung = 'burung';
+        const ProdukBurung = await TransaksiProduk.sum('jumlah',{
+            include: {
+                model: Produk,
+                where: {
+                    kategori_produk: statusBurung
+                }
+            },
+                 where: {
+                    createdAt: {
+                        [Op.between]: [startDate, endDate],
+                    }
+                },
+        })
+         const totalBurung = await TransaksiProduk.sum('totalHarga',{
+            include: {
+                model: Produk,
+                where: {
+                    kategori_produk: statusBurung
+                }
+            },
+                 where: {
+                    createdAt: {
+                        [Op.between]: [startDate, endDate],
+                    }
+                },
+        })
+        
         const [currentMonthData, previousMonthData] = await Promise.all([
             fetchTransaksiData(startDate, endDate),
             fetchTransaksiData(prevStartDate, prevEndDate),
@@ -71,6 +163,13 @@ const getMonthlyStatistics = async (req, res) => {
                 totalBiayaLayanan: currentTotalServiceFee,
                 totalPembayaran: currentTotalPayment,
             },
+            totalProdukTerjual: transaksi_produk,
+            totalProdukTanaman: ProdukTanaman,
+            totalProdukIkan: ProdukIkan,
+            totalProdukBurung: ProdukBurung,
+            totalHargaTanaman: totalTanaman,
+            totalHargaBurung: totalBurung,
+            totalHargaIkan: totalIkan,
             previousMonth: {
                 month: prevMonth,
                 year: prevYear,

@@ -72,6 +72,10 @@ const TransaksiProduk = sequelize.define("transaksi_produk", {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    statusPembayaran: {
+         type: DataTypes.STRING, 
+        defaultValue: 'pending',
+    },
 }, {
     freezeTableName: true,
     timestamps: true,

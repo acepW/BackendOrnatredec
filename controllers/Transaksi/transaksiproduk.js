@@ -19,22 +19,29 @@ const updateOrderStatus = async (req, res) => {
             return res.status(400).json({ message: 'Status tidak valid' });
         }
 
-
         // Cari pesanan berdasarkan ID
-        const Order = await transaksiProduk.findByPk(id);
+        const order = await TransaksiProduk.findByPk(id);
 
-        if (!Order) {
+        if (!order) {
             return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
+        }
 
+        // Cek status pembayaran dari tabel PaymentGateway berdasarkan id_transaksi
+        const payment = await PaymentGateway.findOne({
+            where: { id_transaksi: order.id_transaksi } // Menggunakan id_transaksi dari order
+        });
+
+        // Periksa apakah status pembayaran belum berhasil
+        if (!payment || payment.status !== 'success') {
+            return res.status(403).json({ message: 'Status pesanan tidak bisa diubah karena pembayaran belum selesai' });
         }
 
         // Ubah status pesanan
-        Order.status = status;
-        await Order.save();
+        order.status = status;
+        await order.save();
 
-        res.status(200).json({ message: 'Status pesanan berhasil diperbarui', Order });
+        res.status(200).json({ message: 'Status pesanan berhasil diperbarui', order });
     } catch (error) {
-
         console.error('Error updating Order status:', error); // Log error yang lebih spesifik
         res.status(500).json({ message: 'Terjadi kesalahan saat memperbarui status pesanan', error: error.message });
     }
@@ -321,6 +328,31 @@ const getDetailById = async(req, res) => {
     }
 }
 
+const statusSelesaiPerid = async (req, res) => {
+    const { id } = req.user;
+    const status = 'selesai'
+    try {
+        const transaksi = await transaksiProduk.findAll({
+            where : {user_id : id, status : status}
+        })
+        res.status(200).json(transaksi)
+    } catch (error) {
+        res.status(500).json({ message : error.message})
+    }
+}
+
+const riwayatTransaksi = async (req, res) => {
+    const status = 'selesai'
+    try {
+        const transaksi = await transaksiProduk.findAll({
+            where : {status : status}
+        })
+        res.status(200).json(transaksi)
+    } catch (error) {
+        res.status(500).json({ message : error.message})
+    }
+}
+
 // Ekspor semua fungsi
 module.exports = {
     updateOrderStatus,
@@ -332,4 +364,6 @@ module.exports = {
     getOrderByIdantar,
     getOrderByIddikemas,
     getDetailById,
+    statusSelesaiPerid,
+    riwayatTransaksi
 };

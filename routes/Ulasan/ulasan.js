@@ -1,6 +1,6 @@
 const express = require("express");
-const { beriUlasan } = require("../../controllers/Ulasan/ulasan");
-const upload = require('../../middlewares/multer'); // Import multer
+const { beriUlasan, getUlasan } = require("../../controllers/Ulasan/ulasan");
+const upload = require('../../middlewares/Multer'); // Import multer
 const router = express.Router();
 const protect = require('../../middlewares/authMiddleware');
 
@@ -11,5 +11,7 @@ router.post(
     upload.fields([{ name: 'foto', maxCount: 1 }, { name: 'video', maxCount: 1 }]),
     beriUlasan
 );
+
+router.get('/ulasan', getUlasan)
 
 module.exports = router;

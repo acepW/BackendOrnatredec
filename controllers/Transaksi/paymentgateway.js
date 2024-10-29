@@ -2,10 +2,11 @@ const PaymentGateway = require('../../models/Transaksi/paymentgateway');
 const Transaksi = require('../../models/Transaksi/transaksi');
 const Produk = require("../../models/Produk/produk");
 const axios = require('axios');
+const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 require('dotenv').config();
 
 const MIDTRANS_URL = 'https://app.sandbox.midtrans.com/snap/v1/transactions'; // Endpoint Snap Midtrans
-const MIDTRANS_STATUS_URL = 'https://api.sandbox.midtrans.com/v2'; // Base URL for Midtrans status
+// const MIDTRANS_STATUS_URL = 'https://api.sandbox.midtrans.com/v2'; // Base URL for Midtrans status
 const SERVER_KEY = process.env.MIDTRANS_SERVER_KEY; // Ambil dari .env
 
 // Membuat transaksi pembayaran dan mendapatkan token dari Midtrans
@@ -13,9 +14,7 @@ const createPaymentGateway = async (req, res) => {
     const { id_transaksi, payment_method } = req.body;
 
     try {
-        const transaksi = await Transaksi.findByPk(id_transaksi, {
-            include: [{ model: Produk }]
-        });
+        const transaksi = await Transaksi.findByPk(id_transaksi)
 
         if (!transaksi) {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
@@ -33,12 +32,12 @@ const createPaymentGateway = async (req, res) => {
                 first_name: 'Nama',
                 email: 'email@example.com',
             },
-            item_details: (transaksi.produk || []).map(item => ({
-                id: item.id.toString(),
-                price: item.harga,
-                quantity: item.jumlah,
-                name: item.nama_produk,
-            })),
+            // item_details: (transaksi.produk || []).map(item => ({
+            //     id: item.id.toString(),
+            //     price: item.harga,
+            //     quantity: item.jumlah,
+            //     name: item.nama_produk,
+            // })),
             enabled_payments: [payment_method],
         };
 
@@ -76,6 +75,14 @@ const savePaymentData = async (req, res) => {
             token,
             status: 'success' // Atur status sebagai 'success'
         });
+
+        const status = 'success';
+        await TransaksiProduk.update({
+            statusPembayaran : status
+        }, {
+            where : {id_transaksi : id_transaksi}
+        })
+        
         res.status(200).json({ message: 'Payment data saved successfully' });
     } catch (error) {
         console.error("Error:", error);
