@@ -52,7 +52,7 @@ sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
 
-    // await Transaksi.sync({alter : true});
+    // await Transaksi.sync({alter:true});
 })
 .catch(err => console.log('Error: ' + err));
 

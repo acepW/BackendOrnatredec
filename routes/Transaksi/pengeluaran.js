@@ -1,8 +1,11 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const controllerPengeluaran = require('../../controllers/olah data/pengeluaran');
+const { createPengeluaran, reportPerbulan } = require("../../controllers/olah data/pengeluaran"); // Pastikan path ini sesuai
 
-router.post('/pengeluaran', controllerPengeluaran.createPengeluaran);
-router.get('/report', controllerPengeluaran.reportPerbulan)
+// Route untuk membuat pengeluaran baru
+router.post("/create", createPengeluaran);
+
+// Route untuk mendapatkan laporan pengeluaran dan transaksi per bulan
+router.get("/report", reportPerbulan);
 
 module.exports = router;
