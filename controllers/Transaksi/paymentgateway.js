@@ -67,6 +67,7 @@ const savePaymentData = async (req, res) => {
     const { order_id, id_transaksi, payment_method, token } = req.body;
 
     try {
+        // Simpan data ke PaymentGateway
         await PaymentGateway.create({
             id_transaksi,
             order_id,
@@ -74,6 +75,13 @@ const savePaymentData = async (req, res) => {
             token,
             status: 'success' // Atur status sebagai 'success'
         });
+
+        // Update field payment_method di Transaksi
+        await Transaksi.update(
+            { payment_method: payment_method },
+            { where: { id: id_transaksi } }
+        );
+
         res.status(200).json({ message: 'Payment data saved successfully' });
     } catch (error) {
         console.error("Error:", error);
