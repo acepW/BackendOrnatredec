@@ -23,7 +23,7 @@ const Produk = db.define("produk", {
         type: DataTypes.INTEGER,
         allowNull : true
     },
-    jumlah: {
+    jumlahProduk: {
         type: DataTypes.INTEGER,
         allowNull : true
     },

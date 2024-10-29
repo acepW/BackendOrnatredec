@@ -52,8 +52,8 @@ const beriUlasan = async (req, res) => {
             videoPath = videoPath.split(path.sep).join('/');
         }
         // Konversi path lokal menjadi URL yang dapat diakses
-        const fotoUrl = fotoPath ? `${baseUrl}/${fotoPath}` : null;
-        const videoUrl = videoPath ? `${baseUrl}/${videoPath}` : null;
+        const fotoUrl = fotoPath ? `/${fotoPath}` : null;
+        const videoUrl = videoPath ? `/${videoPath}` : null;
 
         // Buat ulasan baru dan simpan ke database
         const ulasanBaru = await Ulasan.create({

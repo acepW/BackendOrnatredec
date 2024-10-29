@@ -264,6 +264,7 @@ const getTransaksiById = async (req, res) => {
 const getTransaksiFilter = async (req, res) => {
     const status = req.query.status
     try {
+    const statusPembayaran = 'succes';
     if (!status) {
        const TransaksiStatus = await TransaksiProduk.findAll({
            include: [{
@@ -291,7 +292,8 @@ const getTransaksiFilter = async (req, res) => {
         return res.status(200).json(TransaksiStatus , paymentGateway)
         } 
        const Transaksi = await TransaksiProduk.findAll({
-        where : {status: status},
+           where: { status: status },
+           order : [['statusPembayaran', 'ASC']],
           include: [{
               model: User,
               attributes : ['username']
