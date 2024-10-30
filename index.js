@@ -52,9 +52,11 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    // await Produk.sync({ alter: true });
-  })
-  .catch(err => console.log('Error: ' + err));
+
+
+    // await Transaksi.sync({alter:true});
+})
+.catch(err => console.log('Error: ' + err));
 
 const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
