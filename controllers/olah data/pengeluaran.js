@@ -106,4 +106,4 @@ const reportPerbulan = async (req, res) => {
 module.exports = {
     createPengeluaran,
     reportPerbulan
-};
+}; 
