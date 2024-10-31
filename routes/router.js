@@ -13,7 +13,6 @@ router.use("/", require("./Transaksi/transaksi"));
 router.use("/", require("./Transaksi/alamat"));
 router.use("/", require("./Transaksi/paymentgateway"));
 router.use("/", require("./Transaksi/transaksiproduk"));
-router.use("/", require("./Transaksi/pengeluaran"))
 router.use("/", require("./Transaksi/troli"))
 
 //Ulasan
@@ -28,6 +27,8 @@ router.use("/", require("./Forum/report"));
 
 //olah data
 router.use("/", require("./olah data/olahDataTentangTotal"));
-router.use("/", require("./olah data/statistik"))
+router.use("/", require("./olah data/statistik"));
+router.use("/", require("./olah data/pengeluaran"));
+router.use("/", require("./olah data/permintaan"));
 
 module.exports = router;

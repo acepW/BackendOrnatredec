@@ -205,7 +205,7 @@ const reportPerbulan = async (req, res) => {
             totalBeliBurung: beliBurung,
             totalBeli: totalBeli,
             totalJual: totalJual,
-            totalUntngIkan: totalUntungIkan,
+            totalUntungIkan: totalUntungIkan,
             totalUntungBurung: totalUntungBurung,
             totalUntungTanaman: totalUntungTanaman,
             totalUntung: totalUntung,
