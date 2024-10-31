@@ -28,11 +28,8 @@ router.use("/", require("./Forum/report"));
 //olah data
 router.use("/", require("./olah data/olahDataTentangTotal"));
 router.use("/", require("./olah data/statistik"));
-<<<<<<< HEAD
 router.use("/", require("./olah data/pengeluaran"));
 router.use("/", require("./olah data/permintaan"));
-=======
 router.use("/", require("./olah data/statistikForum"));
->>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
 
 module.exports = router;

@@ -265,56 +265,6 @@ const getTransaksiById = async (req, res) => {
 const getTransaksiFilter = async (req, res) => {
     const status = req.query.status
     try {
-<<<<<<< HEAD
-    const statusPembayaran = 'succes';
-    if (!status) {
-       const TransaksiStatus = await TransaksiProduk.findAll({
-           include: [{
-              model: User,
-              attributes : ['username']
-      },
-              {
-              model: Produk,  
-              attributes : ['judul_produk', 'foto_produk', 'harga',]
-      },
-              {
-                  model: Variasi,
-                  attributes : ['nama_variasi']
-      },
-              {
-                  model: subVariasi,
-                  attributes : ['nama_sub_variasi']
-      },
-              {
-          model: Alamat 
-
-      }]
-       })
-        const paymentGateway = await PaymentGateway.findAll()
-        return res.status(200).json(TransaksiStatus , paymentGateway)
-        } 
-       const Transaksi = await TransaksiProduk.findAll({
-           where: { status: status },
-           order : [['statusPembayaran', 'ASC']],
-          include: [{
-              model: User,
-              attributes : ['username']
-      },
-              {
-              model: Produk,  
-              attributes : ['judul_produk', 'foto_produk', 'harga',]
-      },
-              {
-                  model: Variasi,
-                  attributes : ['nama_variasi']
-      },
-              {
-                  model: subVariasi,
-                  attributes : ['nama_sub_variasi']
-      },
-              {
-          model: Alamat 
-=======
         if (!status) {
             const TransaksiStatus = await TransaksiProduk.findAll({
                 include: [{
@@ -361,7 +311,6 @@ const getTransaksiFilter = async (req, res) => {
             },
             {
                 model: Alamat
->>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
 
             }]
         })
@@ -370,6 +319,7 @@ const getTransaksiFilter = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
 
 const getTransaksiDikirimDanDikemas = async (req, res) => {
     try {

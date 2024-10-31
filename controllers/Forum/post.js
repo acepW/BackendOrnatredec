@@ -80,7 +80,6 @@ const editPostingan = async (req, res) => {
             res.status(404).json({ message: "maaf kamu tidak bisa mengedit postingan" });
         }
 
-<<<<<<< HEAD
        await Post.update({
         judul : judul,
         desc : desc,
@@ -90,17 +89,6 @@ const editPostingan = async (req, res) => {
         where : {id : id}
        }
     )
-=======
-        await Post.update({
-            judul: judul,
-            desc: desc,
-            kategori_forum: kategori_forum,
-            img: url
-        }, {
-            where: { id: id }
-        }
-        )
->>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
 
         const updatedPost = await Post.findByPk(id);
 
@@ -266,10 +254,7 @@ const getOnePost = async (req, res) => {
     const offset = (page - 1) * limit;
     try {
         const post = await Post.findAll({
-<<<<<<< HEAD
-=======
             where: { kategori_forum: kategori },
->>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
             limit: limit,
             offset: offset,
             include: [
@@ -301,10 +286,7 @@ const getOnePost = async (req, res) => {
                 userId: id,
                 postId: idPost,
             })
-<<<<<<< HEAD
-            
             res.json(post);
-=======
         }
 
         jumlahview = await View.count({ where: { postId: idPost } })
@@ -317,7 +299,6 @@ const getOnePost = async (req, res) => {
 
         res.json(post);
         res.json({ post });
->>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -396,15 +377,11 @@ const getSimpanPostingan = async (req, res) => {
 const PostTerpopuler = async (req, res) => {
     try {
         const populer = await Post.findAll({
-<<<<<<< HEAD
             order: [['jumlahTanggapan', 'DESC']],
             include: [{
                 model: User,
                 attributes : ['username', 'photoProfile']
             }]
-=======
-            order: [['jumlahTanggapan', 'DESC']]
->>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
         })
         res.status(200).json(populer)
     } catch (error) {
