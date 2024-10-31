@@ -47,15 +47,15 @@ const User = sequelize.define('User', {
     type: DataTypes.DATEONLY,
     allowNull: true,
   },
-  status : {
-    type : DataTypes.ENUM ('terblokir', 'tidak terblokir'),
-    allowNull : false,
-    defaultValue : 'tidak terblokir' 
+  status: {
+    type: DataTypes.ENUM('terblokir', 'tidak terblokir'),
+    allowNull: false,
+    defaultValue: 'tidak terblokir'
   },
-  statusAktif : {
-    type : DataTypes.ENUM ('aktif', 'tidak aktif'),
-    allowNull : false,
-    defaultValue : 'aktif'
+  statusAktif: {
+    type: DataTypes.ENUM('aktif', 'tidak aktif'),
+    allowNull: false,
+    defaultValue: 'aktif'
   }
   // backgroundProfile: {
   //   type: DataTypes.STRING, // URL untuk background foto profil
@@ -63,9 +63,9 @@ const User = sequelize.define('User', {
   // },
 
 
-},{
-  freezeTableName : true,
-  timestamps : true
+}, {
+  freezeTableName: true,
+  timestamps: true
 }, {
   hooks: {
     beforeCreate: async (user) => {

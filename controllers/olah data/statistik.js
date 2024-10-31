@@ -6,12 +6,12 @@ const { Op } = require('sequelize');
 const getPreviousMonthYear = (month, year) => {
     let prevMonth = parseInt(month, 10) - 1;
     let prevYear = parseInt(year, 10);
-    
+
     if (prevMonth === 0) {
         prevMonth = 12;
         prevYear -= 1;
     }
-    
+
     return { month: prevMonth, year: prevYear };
 };
 
@@ -22,8 +22,8 @@ const getMonthlyStatistics = async (req, res) => {
         return res.status(400).json({ message: 'Bulan dan tahun harus valid.' });
     }
 
-    const startDate = new Date(year, month - 1, 1);  
-    const endDate = new Date(year, month, 0);        
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
 
     const { month: prevMonth, year: prevYear } = getPreviousMonthYear(month, year);
     const prevStartDate = new Date(prevYear, prevMonth - 1, 1);
@@ -86,5 +86,6 @@ const getMonthlyStatistics = async (req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan saat mengambil statistik bulanan.', error: error.message });
     }
 };
-module.exports ={
-    getMonthlyStatistics}
+module.exports = {
+    getMonthlyStatistics
+}
