@@ -1,5 +1,5 @@
 const Post = require('../../models/Forum/posts');
-const Comment = require('../../models/Forum/comments'); 
+const Comment = require('../../models/Forum/comments');
 const Reply = require('../../models/Forum/reply');
 const User = require('../../models/User/users');
 const multer = require('multer');
@@ -32,27 +32,27 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Inisialisasi multer dengan konfigurasi penyimpanan
-const upload = multer({ 
+const upload = multer({
     storage: storage,
     limits: { fileSize: 1000000 }, // Batas ukuran file dalam byte (1MB)
-    fileFilter: fileFilter 
+    fileFilter: fileFilter
 });
 
 const PostUlasanForum = async (req, res) => {
     const { judul, desc, kategori_forum } = req.body;
     const { id } = req.user;
-    const url = req.file ? `/uploads/${req.file.filename}` : null; 
+    const url = req.file ? `/uploads/${req.file.filename}` : null;
     let jumlahTanggapan = 0;
     let jumlahView = 0;
-     let jumlahReport = 0
+    let jumlahReport = 0
     try {
         const post = await Post.create({
             userId: id,
-            judul : judul,
+            judul: judul,
             desc: desc,
             fotoKonten: url,
             jumlahTanggapan,
-            kategori_forum : kategori_forum,
+            kategori_forum: kategori_forum,
             jumlahView,
             jumlahReport
 
@@ -66,12 +66,12 @@ const PostUlasanForum = async (req, res) => {
 
 const editPostingan = async (req, res) => {
     const id = req.params.id
-    const {desc, judul, kategori_forum} = req.body
+    const { desc, judul, kategori_forum } = req.body
     const userID = req.user.id;
-    const url = req.file ? `/uploads/${req.file.filename}` : null; 
+    const url = req.file ? `/uploads/${req.file.filename}` : null;
     try {
         const postIduser = await Post.findByPk(id);
-        
+
         if (!postIduser) {
             return res.status(404).json({ message: "postingan tidak ditemukan." });
         }
@@ -80,6 +80,7 @@ const editPostingan = async (req, res) => {
             res.status(404).json({ message: "maaf kamu tidak bisa mengedit postingan" });
         }
 
+<<<<<<< HEAD
        await Post.update({
         judul : judul,
         desc : desc,
@@ -89,8 +90,19 @@ const editPostingan = async (req, res) => {
         where : {id : id}
        }
     )
+=======
+        await Post.update({
+            judul: judul,
+            desc: desc,
+            kategori_forum: kategori_forum,
+            img: url
+        }, {
+            where: { id: id }
+        }
+        )
+>>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
 
-    const updatedPost = await Post.findByPk(id);
+        const updatedPost = await Post.findByPk(id);
 
         res.json(updatedPost)
     } catch (error) {
@@ -102,16 +114,16 @@ const getPost = async (req, res) => {
     try {
         const post = await Post.findAll({
             include: [
-                { 
-                    model: User, 
-                    attributes: ['username'] 
+                {
+                    model: User,
+                    attributes: ['username']
                 },
-                { 
-                    model: Comment, 
+                {
+                    model: Comment,
                     include: [
                         { model: User, attributes: ['username'] },
-                        { 
-                            model: Reply, 
+                        {
+                            model: Reply,
                             include: [{ model: User, attributes: ['username'] }]
                         }
                     ]
@@ -125,21 +137,21 @@ const getPost = async (req, res) => {
 };
 
 const getPostKategoriTanaman = async (req, res) => {
-   const kategori = 'tanaman';
+    const kategori = 'tanaman';
     try {
         const post = await Post.findAll({
-            where : {kategori_forum : kategori},
+            where: { kategori_forum: kategori },
             include: [
-                { 
-                    model: User, 
-                    attributes: ['username'] 
+                {
+                    model: User,
+                    attributes: ['username']
                 },
-                { 
-                    model: Comment, 
+                {
+                    model: Comment,
                     include: [
                         { model: User, attributes: ['username'] },
-                        { 
-                            model: Reply, 
+                        {
+                            model: Reply,
                             include: [{ model: User, attributes: ['username'] }]
                         }
                     ]
@@ -156,18 +168,18 @@ const getPostKategoriIkan = async (req, res) => {
     const kategori = 'ikan';
     try {
         const post = await Post.findAll({
-            where : {kategori_forum : kategori},
+            where: { kategori_forum: kategori },
             include: [
-                { 
-                    model: User, 
-                    attributes: ['username'] 
+                {
+                    model: User,
+                    attributes: ['username']
                 },
-                { 
-                    model: Comment, 
+                {
+                    model: Comment,
                     include: [
                         { model: User, attributes: ['username'] },
-                        { 
-                            model: Reply, 
+                        {
+                            model: Reply,
                             include: [{ model: User, attributes: ['username'] }]
                         }
                     ]
@@ -184,18 +196,18 @@ const getPostKategoriBurung = async (req, res) => {
     const kategori = 'burung';
     try {
         const post = await Post.findAll({
-            where : {kategori_forum : kategori},
+            where: { kategori_forum: kategori },
             include: [
-                { 
-                    model: User, 
-                    attributes: ['username'] 
+                {
+                    model: User,
+                    attributes: ['username']
                 },
-                { 
-                    model: Comment, 
+                {
+                    model: Comment,
                     include: [
                         { model: User, attributes: ['username'] },
-                        { 
-                            model: Reply, 
+                        {
+                            model: Reply,
                             include: [{ model: User, attributes: ['username'] }]
                         }
                     ]
@@ -211,27 +223,27 @@ const getPostKategoriBurung = async (req, res) => {
 const filterKategori = async (req, res) => {
     const kategori = req.query.kategori
     const limit = parseInt(req.query.limit)
-    const page = parseInt(req.query.page) 
+    const page = parseInt(req.query.page)
     const offset = (page - 1) * limit;
 
     try {
         const post = await Post.findAll({
-            where : {kategori_forum : kategori},
+            where: { kategori_forum: kategori },
             limit: limit,
             offset: offset,
             include: [
-                { 
-                    model: User, 
-                    attributes: ['username', 'photoProfile'] 
+                {
+                    model: User,
+                    attributes: ['username', 'photoProfile']
                 },
-                { 
-                    model: Comment, 
+                {
+                    model: Comment,
                     limit: 5,
                     offset: 0,
                     include: [
                         { model: User, attributes: ['username'] },
-                        { 
-                            model: Reply, 
+                        {
+                            model: Reply,
                             limit: 5,
                             offset: 0,
                             include: [{ model: User, attributes: ['username'] }]
@@ -247,28 +259,32 @@ const filterKategori = async (req, res) => {
 };
 
 const getOnePost = async (req, res) => {
-    const idPost = req.params.id; 
+    const idPost = req.params.id;
     const id = req.user.id;
     const limit = parseInt(req.query.limit)
     const page = parseInt(req.query.page) 
     const offset = (page - 1) * limit;
     try {
         const post = await Post.findAll({
+<<<<<<< HEAD
+=======
+            where: { kategori_forum: kategori },
+>>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
             limit: limit,
             offset: offset,
             include: [
-                { 
-                    model: User, 
-                    attributes: ['username'] 
+                {
+                    model: User,
+                    attributes: ['username']
                 },
-                { 
-                    model: Comment, 
+                {
+                    model: Comment,
                     limit: 5,
                     offset: 0,
                     include: [
                         { model: User, attributes: ['username'] },
-                        { 
-                            model: Reply, 
+                        {
+                            model: Reply,
                             limit: 5,
                             offset: 0,
                             include: [{ model: User, attributes: ['username'] }]
@@ -277,25 +293,31 @@ const getOnePost = async (req, res) => {
                 }
             ]
         });
-    
-            const view = await View.findOne({where : {userId : id, postId : idPost}})
-    
-            if (!view) {
-                await View.create({
-                    userId : id,
-                    postId : idPost,
-                })
-            }
 
-            jumlahview = await View.count({where : {postId : idPost}})
+        const view = await View.findOne({ where: { userId: id, postId: idPost } })
 
-            await Post.update({
-                jumlahView : jumlahview
-            }, {
-                where :  {id : idPost}
+        if (!view) {
+            await View.create({
+                userId: id,
+                postId: idPost,
             })
+<<<<<<< HEAD
             
             res.json(post);
+=======
+        }
+
+        jumlahview = await View.count({ where: { postId: idPost } })
+
+        await Post.update({
+            jumlahView: jumlahview
+        }, {
+            where: { id: idPost }
+        })
+
+        res.json(post);
+        res.json({ post });
+>>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -308,7 +330,7 @@ const deletePost = async (req, res) => {
     const userRole = req.user.role;
     try {
         const post = await Post.findByPk(id);
-        
+
         if (!post) {
             return res.status(404).json({ message: "Komentar tidak ditemukan." });
         }
@@ -317,9 +339,9 @@ const deletePost = async (req, res) => {
             return res.status(403).json({ message: "Maaf, kamu tidak bisa menghapus komen ini." });
         }
 
-        await Post.destroy({where: {id:id} })
-        await Comment.destroy({where: {postId: id} })
-        await Reply.destroy({where: {postId: id} })
+        await Post.destroy({ where: { id: id } })
+        await Comment.destroy({ where: { postId: id } })
+        await Reply.destroy({ where: { postId: id } })
 
         res.status(200).json({ message: "Delete successful" });
     } catch (error) {
@@ -330,19 +352,19 @@ const deletePost = async (req, res) => {
 };
 
 const simpanPostingan = async (req, res) => {
-    const { id } = req.user; 
+    const { id } = req.user;
     const { idPost } = req.body;
 
     try {
-        const post = await Post.findOne({ where : {id : idPost}})
+        const post = await Post.findOne({ where: { id: idPost } })
 
-        if(!post){
-            res.status(400).json({ message : "maaf postingan tidak ditemukan" })
+        if (!post) {
+            res.status(400).json({ message: "maaf postingan tidak ditemukan" })
         }
 
-        const simpanan = await simpanPost.findAll({ where : {userId : id}})
-        if(simpanan.postId === idPost){
-            res.status(403).json({ message : "maaf postingan sudah ada" })
+        const simpanan = await simpanPost.findAll({ where: { userId: id } })
+        if (simpanan.postId === idPost) {
+            res.status(403).json({ message: "maaf postingan sudah ada" })
         }
 
         const simpan = await simpanPost.create({
@@ -351,55 +373,59 @@ const simpanPostingan = async (req, res) => {
         });
         res.status(200).json(simpan);
     } catch (error) {
-        res.status(500).json({ message : error.message })
+        res.status(500).json({ message: error.message })
     }
 }
 
 const getSimpanPostingan = async (req, res) => {
-    const { id } = req.user; 
+    const { id } = req.user;
     try {
-        const simpananPostingan = await simpanPost.findAll({where : {userId : id}})
+        const simpananPostingan = await simpanPost.findAll({ where: { userId: id } })
 
         if (simpananPostingan.length === 0) {
-            return res.status(505).json({ message : "maaf anda tidak memiliki simpanan postingan" })
+            return res.status(505).json({ message: "maaf anda tidak memiliki simpanan postingan" })
         }
 
         res.status(200).json(simpananPostingan);
     } catch (error) {
-        res.status(500).json({ message : error.message })
+        res.status(500).json({ message: error.message })
     }
 }
 
 
-const   PostTerpopuler = async (req, res) => {
+const PostTerpopuler = async (req, res) => {
     try {
         const populer = await Post.findAll({
+<<<<<<< HEAD
             order: [['jumlahTanggapan', 'DESC']],
             include: [{
                 model: User,
                 attributes : ['username', 'photoProfile']
             }]
+=======
+            order: [['jumlahTanggapan', 'DESC']]
+>>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
         })
         res.status(200).json(populer)
     } catch (error) {
-        res.status(500).json({ message : error.message })
-    }
-}
-    
-const jumlahpostinganUser = async (req, res) => {
-    const id = req.user.id;
-    try {
-        const postingan = await Post.findAll({where : {userId : id}})
-        if (postingan.length === 0) {
-            return res.status(404).json({ message : "kamu belum memposting apapun di forum" })
-        }
-        res.status(200).json(postingan)
-    } catch (error) {
-        res.status(500).json({ message : error.message })
+        res.status(500).json({ message: error.message })
     }
 }
 
-const getforumReport = async(req, res) => {
+const jumlahpostinganUser = async (req, res) => {
+    const id = req.user.id;
+    try {
+        const postingan = await Post.findAll({ where: { userId: id } })
+        if (postingan.length === 0) {
+            return res.status(404).json({ message: "kamu belum memposting apapun di forum" })
+        }
+        res.status(200).json(postingan)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+const getforumReport = async (req, res) => {
     const { id } = req.params;
     try {
         const forumReport = await Post.findOne({
@@ -407,16 +433,16 @@ const getforumReport = async(req, res) => {
             include: [
                 {
                     model: Report,
-                   include: [{ model: User, attributes: ['username', 'photoprofile'] }]
+                    include: [{ model: User, attributes: ['username', 'photoprofile'] }]
                 },
                 {
-                    model : User
+                    model: User
                 }
             ]
         })
         res.status(200).json(forumReport)
     } catch (error) {
-        res.status(500).json({message : error.message})
+        res.status(500).json({ message: error.message })
     }
 }
 

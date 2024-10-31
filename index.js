@@ -53,9 +53,16 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    // await detailPermintaan.sync({alter : true});
+<<<<<<<<< Temporary merge branch 1
+    // await sequelize.sync({ alter: true });
+  })
+  .catch(err => console.log('Error: ' + err));
+=========
+
+    // await Transaksi.sync({alter:true});
 })
 .catch(err => console.log('Error: ' + err));
+>>>>>>>>> Temporary merge branch 2
 
 const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

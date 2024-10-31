@@ -33,6 +33,9 @@ const Transaksi = sequelize.define("transaksi", {
     },
     total_pembayaran: {
         type: DataTypes.INTEGER
+    },
+    payment_method: { // Tambahkan field ini
+        type: DataTypes.STRING
     }
 }, {
     freezeTableName: true

@@ -12,7 +12,7 @@ const PaymentGateway = require('../../models/Transaksi/paymentgateway');
 const createTransaksi = async (req, res) => {
     const { produk } = req.body;
     const userId = req.user.id;
-    
+
     try {
         const BIAYA_LAYANAN = 2500;
         // Temukan user dan alamat
@@ -25,10 +25,10 @@ const createTransaksi = async (req, res) => {
         if (!alamat) {
             return res.status(404).json({ message: 'Alamat tidak ditemukan' });
         }
-        
+
         const idAlamat = alamat.id;
         console.log(idAlamat);
-        
+
         // Buat transaksi baru
         const newTransaksi = await Transaksi.create({
             user_id: userId,
@@ -64,9 +64,9 @@ const createTransaksi = async (req, res) => {
 
             const subVariasiItem = produkItem.variasis[0]?.subvariasis.find(sv => sv.id === item.id_subvariasi);
             const variasiItem = produkItem.variasis.length > 0 ? produkItem.variasis[0] : null;
-           
+
             const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
-            const itemSubTotal = hargaSubVariasi* item.jumlah;
+            const itemSubTotal = hargaSubVariasi * item.jumlah;
 
             // Update stok produk dan sub variasi
             await Promise.all([
@@ -87,8 +87,8 @@ const createTransaksi = async (req, res) => {
 
             await TransaksiProduk.upsert({
                 id_transaksi: newTransaksi.id,
-                user_id : userId,
-                id_alamat: alamat.id, 
+                user_id: userId,
+                id_alamat: alamat.id,
                 id_produk: produkItem.id,
                 id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
                 id_variasi: produkItem.variasis[0]?.id,
@@ -216,23 +216,26 @@ const getTransaksiById = async (req, res) => {
     const transaksiId = req.params.id;
     try {
         const transaksi = await Transaksi.findOne({
-            where : {id : transaksiId},
+            where: { id: transaksiId },
+            attributes: ['id', 'user_id', 'id_alamat', 'sub_total', 'biaya_layanan', 'total_pembayaran', 'payment_method'], // Tambahkan payment_method di sini
             include: [
                 {
                     model: TransaksiProduk,
                     include: [
-                         {
-                    model: Produk,
-                    attributes: ['id', 'judul_produk', 'harga'],
+                        {
+                            model: Produk,
+                            attributes: ['id', 'judul_produk', 'harga'],
                         },
-                 {
+                        {
                             model: Variasi,
                             attributes: ['nama_variasi']
                         },
                         {
                             model: subVariasi,
                             attributes: ['nama_sub_variasi', 'usia']
-                        },
+                        }
+                    ]
+                },
                 {
                     model: Alamat,
                     attributes: [
@@ -245,9 +248,7 @@ const getTransaksiById = async (req, res) => {
                     model: User,
                     attributes: ['id', 'username']
                 }
-                    ]
-            },
-         ]
+            ]
         });
 
         if (!transaksi) {
@@ -264,6 +265,7 @@ const getTransaksiById = async (req, res) => {
 const getTransaksiFilter = async (req, res) => {
     const status = req.query.status
     try {
+<<<<<<< HEAD
     const statusPembayaran = 'succes';
     if (!status) {
        const TransaksiStatus = await TransaksiProduk.findAll({
@@ -312,12 +314,60 @@ const getTransaksiFilter = async (req, res) => {
       },
               {
           model: Alamat 
+=======
+        if (!status) {
+            const TransaksiStatus = await TransaksiProduk.findAll({
+                include: [{
+                    model: User,
+                    attributes: ['username']
+                },
+                {
+                    model: Produk,
+                    attributes: ['judul_produk', 'foto_produk', 'harga',]
+                },
+                {
+                    model: Variasi,
+                    attributes: ['nama_variasi']
+                },
+                {
+                    model: subVariasi,
+                    attributes: ['nama_sub_variasi']
+                },
+                {
+                    model: Alamat
 
-      }]
-       }) 
-         return res.status(202).json(Transaksi)
+                }]
+            })
+            const paymentGateway = await PaymentGateway.findAll()
+            return res.status(200).json(TransaksiStatus, paymentGateway)
+        }
+        const Transaksi = await TransaksiProduk.findAll({
+            where: { status: status },
+            include: [{
+                model: User,
+                attributes: ['username']
+            },
+            {
+                model: Produk,
+                attributes: ['judul_produk', 'foto_produk', 'harga',]
+            },
+            {
+                model: Variasi,
+                attributes: ['nama_variasi']
+            },
+            {
+                model: subVariasi,
+                attributes: ['nama_sub_variasi']
+            },
+            {
+                model: Alamat
+>>>>>>> 9ce65e3f6bcc8f8aaa4a8c4f8e058251d0a46fe8
+
+            }]
+        })
+        return res.status(202).json(Transaksi)
     } catch (error) {
-      res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -326,7 +376,7 @@ const getTransaksiDikirimDanDikemas = async (req, res) => {
         const status = ['dikemas', 'dikirim']
         const TransaksiStatus = await TransaksiProduk.findAll({
             order: [['status', 'ASC'],
-                  ['updatedAt', 'DESC']],
+            ['updatedAt', 'DESC']],
             where: {
                 status: {
                     [Op.in]: status
@@ -358,7 +408,7 @@ const getTransaksiDikirimDanDikemas = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
-  
+
 
 module.exports = {
     createTransaksi,
