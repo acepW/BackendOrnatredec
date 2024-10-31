@@ -52,9 +52,7 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-
-
-    // await Transaksi.sync({alter:true});
+    // await pPengeluaran.sync({alter:true});
 })
 .catch(err => console.log('Error: ' + err));
 
