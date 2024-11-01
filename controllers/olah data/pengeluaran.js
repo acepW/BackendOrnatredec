@@ -6,6 +6,7 @@ const { Op } = require("sequelize");
 const User = require("../../models/User/users");
 const TransaksiProduk = require("../../models/Transaksi/transaksiproduk");
 const Produk = require("../../models/Produk/produk");
+const detailPermintaan = require("../../models/Transaksi/detailPermintaan");
 
 const createPengeluaran = async (req, res) => {
     const { kategori_produk, nama_penjual, no_penjual, pengeluaran } = req.body;
@@ -179,6 +180,14 @@ const reportPerbulan = async (req, res) => {
                 }, 
             },
         })
+        const status = 'ya';
+        const totalBiayaDarurat = await detailPermintaan.sum('total', {
+             where: {
+                createdAt: {
+                    [Op.between]: [startDate, endDate],
+                }, status : status
+            },
+        })
 
         const totalBeli = beliIkan + beliBurung + beliTanaman;
         const totalJual = totalBurung + totalIkan + totalTanaman;
@@ -186,7 +195,8 @@ const reportPerbulan = async (req, res) => {
         const totalUntungBurung = totalBurung - beliBurung;
         const totalUntungTanaman = totalTanaman - beliTanaman;
         const totalUntung = totalUntungBurung + totalUntungIkan + totalUntungTanaman;
-        const Subtotal = totalUntung + totalBiayaLayanan;
+        const totalUntungLayanan = totalBiayaLayanan - totalBiayaDarurat;
+        const Subtotal = totalUntung + totalBiayaLayanan - totalBiayaDarurat;
 
         const reportData = {
             month: moment(startDate).format('MMMM YYYY'),
@@ -210,7 +220,9 @@ const reportPerbulan = async (req, res) => {
             totalUntungTanaman: totalUntungTanaman,
             totalUntung: totalUntung,
             totalBiayalayanan: totalBiayaLayanan,
-            subTotalKeuntungan : Subtotal
+            totalBiayaDarurat: totalBiayaDarurat,
+            totalUntungLayanan : totalUntungLayanan,
+            subTotalKeuntungan: Subtotal,
         };
         // console.log(Pemasukkan);
         
@@ -224,4 +236,4 @@ const reportPerbulan = async (req, res) => {
 module.exports = {
     createPengeluaran,
     reportPerbulan
-};
+}; 

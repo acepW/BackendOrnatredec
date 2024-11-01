@@ -1,39 +1,12 @@
-const sequelize = require('../../config/database'); // Sesuaikan path dengan konfigurasi database
+const sequelize = require('../../config/database');
 const Transaksi = require('../../models/Transaksi/transaksi');
 const { Op } = require('sequelize');
 const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 const Produk = require('../../models/Produk/produk');
+
 const getYearlyStatistics = async (req, res) => {
     const { year } = req.params;
 
-<<<<<<< HEAD
-// Fungsi untuk mendapatkan bulan dan tahun sebelumnya
-const getPreviousMonthYear = (month, year) => {
-    let prevMonth = parseInt(month, 10) - 1;
-    let prevYear = parseInt(year, 10);
-
-    if (prevMonth === 0) {
-        prevMonth = 12;
-        prevYear -= 1;
-    }
-
-    return { month: prevMonth, year: prevYear };
-};
-
-const getMonthlyStatistics = async (req, res) => {
-    const { month, year } = req.params;
-
-    if (!month || !year || isNaN(month) || isNaN(year)) {
-        return res.status(400).json({ message: 'Bulan dan tahun harus valid.' });
-    }
-
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
-
-    const { month: prevMonth, year: prevYear } = getPreviousMonthYear(month, year);
-    const prevStartDate = new Date(prevYear, prevMonth - 1, 1);
-    const prevEndDate = new Date(prevYear, prevMonth, 0);
-=======
     if (!year || isNaN(year)) {
         return res.status(400).json({ message: 'Tahun harus valid.' });
     }
@@ -41,7 +14,6 @@ const getMonthlyStatistics = async (req, res) => {
     const statisticsByMonth = [];
     const startOfYear = new Date(year, 0, 1);
     const endOfYear = new Date(year, 11, 31);
->>>>>>> dc39ca93a8993c6b142637f7dc0c532bdf537679
 
     try {
         for (let month = 1; month <= 12; month++) {
@@ -63,21 +35,82 @@ const getMonthlyStatistics = async (req, res) => {
                     },
                     raw: true,
                 });
-                return transaksi[0] || {};
+
+                const transaksi_produk = await TransaksiProduk.sum('jumlah', { 
+                    where: { createdAt: { [Op.between]: [startDate, endDate] } } 
+                });
+
+                const ProdukTanaman = await TransaksiProduk.sum('jumlah', {
+                    include: {
+                        model: Produk,
+                        where: { kategori_produk: 'tanaman' },
+                        attributes: []
+                    },
+                    where: { createdAt: { [Op.between]: [startDate, endDate] } }
+                });
+
+                const totalTanaman = await TransaksiProduk.sum('totalHarga', {
+                    include: {
+                        model: Produk,
+                        where: { kategori_produk: 'tanaman' }
+                    },
+                    where: { createdAt: { [Op.between]: [startDate, endDate] } }
+                });
+
+                const ProdukIkan = await TransaksiProduk.sum('jumlah', {
+                    include: {
+                        model: Produk,
+                        where: { kategori_produk: 'ikan' },
+                        attributes: []
+                    },
+                    where: { createdAt: { [Op.between]: [startDate, endDate] } }
+                });
+
+                const totalIkan = await TransaksiProduk.sum('totalHarga', {
+                    include: {
+                        model: Produk,
+                        where: { kategori_produk: 'ikan' }
+                    },
+                    where: { createdAt: { [Op.between]: [startDate, endDate] } }
+                });
+
+                const ProdukBurung = await TransaksiProduk.sum('jumlah', {
+                    include: {
+                        model: Produk,
+                        where: { kategori_produk: 'burung' },
+                        attributes: []
+                    },
+                    where: { createdAt: { [Op.between]: [startDate, endDate] } }
+                });
+
+                const totalBurung = await TransaksiProduk.sum('totalHarga', {
+                    include: {
+                        model: Produk,
+                        where: { kategori_produk: 'burung' }
+                    },
+                    where: { createdAt: { [Op.between]: [startDate, endDate] } }
+                });
+
+                return {
+                    totalTransactions: transaksi[0]?.totalTransactions || 0,
+                    totalSubTotal: transaksi[0]?.totalSubTotal || 0,
+                    totalServiceFee: transaksi[0]?.totalServiceFee || 0,
+                    totalPayment: transaksi[0]?.totalPayment || 0,
+                    transaksi_produk: transaksi_produk || 0,
+                    ProdukTanaman: ProdukTanaman || 0,
+                    totalTanaman: totalTanaman || 0,
+                    ProdukIkan: ProdukIkan || 0,
+                    totalIkan: totalIkan || 0,
+                    ProdukBurung: ProdukBurung || 0,
+                    totalBurung: totalBurung || 0,
+                };
             };
 
             const currentMonthData = await fetchTransaksiData(startDate, endDate);
-            const totalTransactions = parseInt(currentMonthData.totalTransactions, 10) || 0;
-            const totalSubTotal = parseInt(currentMonthData.totalSubTotal, 10) || 0;
-            const totalServiceFee = parseInt(currentMonthData.totalServiceFee, 10) || 0;
-            const totalPayment = parseInt(currentMonthData.totalPayment, 10) || 0;
 
             statisticsByMonth.push({
                 month,
-                totalTransactions,
-                totalSubTotal,
-                totalServiceFee,
-                totalPayment,
+                ...currentMonthData
             });
         }
 
@@ -91,15 +124,7 @@ const getMonthlyStatistics = async (req, res) => {
         res.status(500).json({ message: 'Terjadi kesalahan saat mengambil statistik tahunan.', error: error.message });
     }
 };
-<<<<<<< HEAD
-module.exports = {
-    getMonthlyStatistics
-}
-=======
-
 
 module.exports = {
     getYearlyStatistics
 };
-//cobaa
->>>>>>> dc39ca93a8993c6b142637f7dc0c532bdf537679
