@@ -10,22 +10,23 @@ const getYearlyStatistics = async (req, res) => {
         return res.status(400).json({ message: 'Tahun harus valid.' });
     }
 
-    const statisticsByMonth = [];
-    const startOfYear = new Date(year, 0, 1);
-    const endOfYear = new Date(year, 11, 31);
+    const monthlyStatistics = [];
 
     try {
         for (let month = 1; month <= 12; month++) {
             const startDate = new Date(year, month - 1, 1);
             const endDate = new Date(year, month, 0);
 
-            const fetchTransaksiData = async (startDate, endDate) => {
-                const transaksi = await Transaksi.findAll({
+            const prevStartDate = new Date(year, month - 2, 1);
+            const prevEndDate = new Date(year, month - 1, 0);
+
+            const fetchTransactionData = async (startDate, endDate) => {
+                const result = await Transaksi.findAll({
                     attributes: [
                         [sequelize.fn('COUNT', sequelize.col('id')), 'totalTransactions'],
                         [sequelize.fn('SUM', sequelize.col('sub_total')), 'totalSubTotal'],
                         [sequelize.fn('SUM', sequelize.col('biaya_layanan')), 'totalServiceFee'],
-                        [sequelize.fn('SUM', sequelize.col('total_pembayaran')), 'totalPayment'],
+                        [sequelize.fn('SUM', sequelize.col('total_pembayaran')), 'totalPayment']
                     ],
                     where: {
                         createdAt: {
@@ -34,34 +35,42 @@ const getYearlyStatistics = async (req, res) => {
                     },
                     raw: true,
                 });
-                return transaksi[0] || {};
+                return {
+                    totalTransactions: parseInt(result[0]?.totalTransactions, 10) || 0,
+                    totalSubTotal: parseInt(result[0]?.totalSubTotal, 10) || 0,
+                    totalServiceFee: parseInt(result[0]?.totalServiceFee, 10) || 0,
+                    totalPayment: parseInt(result[0]?.totalPayment, 10) || 0
+                };
             };
 
-            const currentMonthData = await fetchTransaksiData(startDate, endDate);
-            const totalTransactions = parseInt(currentMonthData.totalTransactions, 10) || 0;
-            const totalSubTotal = parseInt(currentMonthData.totalSubTotal, 10) || 0;
-            const totalServiceFee = parseInt(currentMonthData.totalServiceFee, 10) || 0;
-            const totalPayment = parseInt(currentMonthData.totalPayment, 10) || 0;
+            const currentMonthData = await fetchTransactionData(startDate, endDate);
+            const prevMonthData = month > 1 ? await fetchTransactionData(prevStartDate, prevEndDate) : null;
 
-            statisticsByMonth.push({
+            const transactionsDifference = prevMonthData
+                ? currentMonthData.totalTransactions - prevMonthData.totalTransactions
+                : 0;
+
+            monthlyStatistics.push({
                 month,
-                totalTransactions,
-                totalSubTotal,
-                totalServiceFee,
-                totalPayment,
+                ...currentMonthData,
+                differences: {
+                    transactionsDifference
+                }
             });
         }
 
         res.status(200).json({
             year,
-            monthlyStatistics: statisticsByMonth,
+            monthlyStatistics
         });
 
     } catch (error) {
-        console.error('Error fetching yearly statistics:', error);
+        console.error('Error fetching yearly statistics with comparison:', error);
         res.status(500).json({ message: 'Terjadi kesalahan saat mengambil statistik tahunan.', error: error.message });
     }
 };
+
+
 
 
 module.exports = {
