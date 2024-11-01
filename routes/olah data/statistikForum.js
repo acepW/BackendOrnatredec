@@ -1,9 +1,9 @@
 const express = require("express");
-const { getForumPostStatisticsForYearAll } = require('../../controllers/olah data/statistikForum');
+const { getForumPostStatisticsForYear } = require('../../controllers/olah data/statistikForum');
 
 const router = express.Router();
 
 // Route untuk mendapatkan statistik postingan per tahun (semua bulan)
-router.get('/statistik/:year', getForumPostStatisticsForYearAll);
+router.get('/statistik/:year', getForumPostStatisticsForYear);
 
 module.exports = router;

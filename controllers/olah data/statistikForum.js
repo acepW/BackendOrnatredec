@@ -3,7 +3,7 @@ const Post = require("../../models/Forum/posts");
 const { Op } = require("sequelize");
 
 // Statistik per tahun (semua bulan)
-const getForumPostStatisticsForYearAll = async (req, res) => {
+const getForumPostStatisticsForYear = async (req, res) => {
     try {
         const { year } = req.params;
 
@@ -56,5 +56,5 @@ const getForumPostStatisticsForYearAll = async (req, res) => {
 };
 
 module.exports = {
-    getForumPostStatisticsForYearAll,
+    getForumPostStatisticsForYear,
 };
