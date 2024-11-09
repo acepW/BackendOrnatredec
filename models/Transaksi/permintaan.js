@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize")
 const sequelize = require("../../config/database");
 const User = require("../User/users");
 
-const pPengeluaran = sequelize.define('pPengeluaran', {
+const Permintaan = sequelize.define('permintaan', {
     id: {
         primaryKey: true,
         autoIncrement: true,
@@ -18,30 +18,18 @@ const pPengeluaran = sequelize.define('pPengeluaran', {
     },
     nama_petugas: {
         type: DataTypes.STRING,
-        allowNull : false
+        allowNull: false,
     },
     subTotal: {
         type: DataTypes.INTEGER,
-        allowNull : false
-    },
-    nama_penjual: {
-        type: DataTypes.STRING,
-        allowNull : false
-    },
-    no_penjual: {
-        type: DataTypes.STRING,
-        allowNull : false
-    },
-    kategori_produk: {
-        type : DataTypes.ENUM('tanaman', 'ikan', 'burung'),
-        allowNull : false
+        allowNull: false,
     }
 }, {
     freezeTableName: true,
     timestamps : true
 })
 
-User.hasMany(pPengeluaran, { foreignKey: 'userId' });
-pPengeluaran.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Permintaan, { foreignKey: 'userId' });
+Permintaan.belongsTo(User, { foreignKey: 'userId' });
 
-module.exports = pPengeluaran;
+module.exports = Permintaan;

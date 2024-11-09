@@ -50,7 +50,7 @@ const PostUlasanForum = async (req, res) => {
             userId: id,
             judul: judul,
             desc: desc,
-            img: url,
+            fotoKonten: url,
             jumlahTanggapan,
             kategori_forum: kategori_forum,
             jumlahView,
@@ -80,15 +80,15 @@ const editPostingan = async (req, res) => {
             res.status(404).json({ message: "maaf kamu tidak bisa mengedit postingan" });
         }
 
-        await Post.update({
-            judul: judul,
-            desc: desc,
-            kategori_forum: kategori_forum,
-            img: url
-        }, {
-            where: { id: id }
-        }
-        )
+       await Post.update({
+        judul : judul,
+        desc : desc,
+        kategori_forum : kategori_forum,
+        fotoKonten : url
+       },{
+        where : {id : id}
+       }
+    )
 
         const updatedPost = await Post.findByPk(id);
 
@@ -249,6 +249,9 @@ const filterKategori = async (req, res) => {
 const getOnePost = async (req, res) => {
     const idPost = req.params.id;
     const id = req.user.id;
+    const limit = parseInt(req.query.limit)
+    const page = parseInt(req.query.page) 
+    const offset = (page - 1) * limit;
     try {
         const post = await Post.findAll({
             where: { kategori_forum: kategori },
@@ -283,6 +286,7 @@ const getOnePost = async (req, res) => {
                 userId: id,
                 postId: idPost,
             })
+            res.json(post);
         }
 
         jumlahview = await View.count({ where: { postId: idPost } })
@@ -373,7 +377,11 @@ const getSimpanPostingan = async (req, res) => {
 const PostTerpopuler = async (req, res) => {
     try {
         const populer = await Post.findAll({
-            order: [['jumlahTanggapan', 'DESC']]
+            order: [['jumlahTanggapan', 'DESC']],
+            include: [{
+                model: User,
+                attributes : ['username', 'photoProfile']
+            }]
         })
         res.status(200).json(populer)
     } catch (error) {

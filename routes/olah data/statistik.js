@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const statisticsController = require('../../controllers/olah data/statistik');
-
-// Route untuk mendapatkan statistik bulanan
-router.get('/sales/:month/:year', statisticsController.getMonthlyStatistics);
-
+const {getYearlyStatistics} = require('../../controllers/olah data/statistik');
+//lll
+// Route untuk mendapatkan statistik tahunan
+router.get('/statistics/yearly/:year', getYearlyStatistics);
 module.exports = router;

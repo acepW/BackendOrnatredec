@@ -22,7 +22,6 @@ router.delete('/logout', protect(['user', 'admin', 'super admin', 'kasir']), log
 //get user
 router.get('/getdanFilterUser', getUserFilter)
 
-
 //blokir user
 router.put('/blokir/:id', BlokirUser)
 

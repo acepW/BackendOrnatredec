@@ -38,7 +38,7 @@ const beriUlasan = async (req, res) => {
         }
 
         // Dapatkan base URL dari request
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        // const baseUrl = `${req.protocol}://${req.get('host')}`;
 
         // Dapatkan path foto dan video dari req.files dan ubah menjadi URL
         let fotoPath = req.files.foto ? req.files.foto[0].path : null;
@@ -51,10 +51,9 @@ const beriUlasan = async (req, res) => {
         if (videoPath) {
             videoPath = videoPath.split(path.sep).join('/');
         }
-
         // Konversi path lokal menjadi URL yang dapat diakses
-        const fotoUrl = fotoPath ? `${baseUrl}/${fotoPath}` : null;
-        const videoUrl = videoPath ? `${baseUrl}/${videoPath}` : null;
+        const fotoUrl = fotoPath ? `/${fotoPath}` : null;
+        const videoUrl = videoPath ? `/${videoPath}` : null;
 
         // Buat ulasan baru dan simpan ke database
         const ulasanBaru = await Ulasan.create({
@@ -77,6 +76,16 @@ const beriUlasan = async (req, res) => {
     }
 };
 
+const getUlasan = async (req, res) => {
+    try {
+        const ulasan = await Ulasan.findAll()
+        res.status(200).json(ulasan)
+    } catch (error) {
+         return res.status(500).json({ message: 'Terjadi kesalahan', error: error.message });
+    }
+}
+
 module.exports = {
-    beriUlasan
+    beriUlasan,
+    getUlasan
 };

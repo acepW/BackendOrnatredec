@@ -2,6 +2,7 @@ const PaymentGateway = require('../../models/Transaksi/paymentgateway');
 const Transaksi = require('../../models/Transaksi/transaksi');
 const Produk = require("../../models/Produk/produk");
 const axios = require('axios');
+const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 require('dotenv').config();
 
 const MIDTRANS_URL = 'https://app.sandbox.midtrans.com/snap/v1/transactions'; // Endpoint Snap Midtrans
@@ -76,7 +77,13 @@ const savePaymentData = async (req, res) => {
             status: 'success' // Atur status sebagai 'success'
         });
 
-        // Update field payment_method di Transaksi
+        const status = 'success';
+        await TransaksiProduk.update({
+            statusPembayaran : status
+        }, {
+            where : {id_transaksi : id_transaksi}
+        })
+        
         await Transaksi.update(
             { payment_method: payment_method },
             { where: { id: id_transaksi } }
