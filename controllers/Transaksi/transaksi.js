@@ -320,7 +320,6 @@ const getTransaksiFilter = async (req, res) => {
     }
 }
 
-
 const getTransaksiDikirimDanDikemas = async (req, res) => {
     try {
         const status = ['dikemas', 'dikirim']
@@ -357,7 +356,8 @@ const getTransaksiDikirimDanDikemas = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-};
+}
+
 
 module.exports = {
     createTransaksi,

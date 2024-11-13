@@ -15,4 +15,7 @@ router.get("/TransaksiFilter", getTransaksiDikirimDanDikemas);
 // router.get("/transaksi", getAllTransaksi);
 router.get("/transaksi/:id", protect(['user']), getTransaksiById);
 
+router.get("/transaksi/:id", protect(['user']), getTransaksiById);
+// router.get("/transaksi", getAllTransaksi);
+
 module.exports = router;
