@@ -3,63 +3,42 @@ const User   = require('../../models/User/users');
 const Comment   = require('../../models/Forum/comments');
  const  Notification   = require('../../models/Forum/notification');
   const Reply  = require('../../models/Forum/reply'); // Pastikan mengimpor model Notification
-  const CreateComment = async (req, res, io) => {
-    const { postId, desc } = req.body;
-    const { id } = req.user;
-
+  
+  const CreateComment = async (req, res) => {
+    const { postId, content } = req.body;
+    const userId = req.user.id; // ID pengguna yang membuat komentar
+  
     try {
-        let Balasan = 0;
-        const comment = await Comment.create({
-            userId: id,
-            postId,
-            desc,
-            balasan: Balasan,
+      // Buat komentar
+      const comment = await Comment.create({
+        userId,
+        postId,
+        content,
+      });
+  
+      // Cari postingan terkait
+      const post = await Post.findByPk(postId);
+      if (!post) {
+        return res.status(404).json({ message: "Postingan tidak ditemukan." });
+      }
+  
+      // Buat notifikasi untuk pemilik postingan
+      if (post.userId !== userId) {
+        await Notification.create({
+          userId: post.userId, // Pemilik postingan
+          type: "comment", // Tipe notifikasi
+          message: `Komentar baru pada postingan Anda: "${content}"`,
+          referenceId: comment.id, // ID komentar
+          referenceType: "comment", // Tipe referensi
         });
-
-        const commentCount = await Comment.count({ where: { postId: postId } });
-        const replyCount = await Reply.count({ where: { postId: postId } });
-
-        const jumlahTanggapan = commentCount + replyCount;
-
-        await Post.update(
-            { jumlahTanggapan: jumlahTanggapan },
-            { where: { id: postId } }
-        );
-
-        // **Kirim notifikasi ke pemilik postingan**
-        const post = await Post.findByPk(postId, { include: [{ model: User }] });
-        if (post && post.User) {
-            const postOwnerId = post.User.id;
-
-            // Simpan notifikasi ke tabel Notification
-            await Notification.create({
-                type: 'comment',
-                message: `User ${req.user.name} commented on your post.`,
-                userId: postOwnerId,
-                referenceId: comment.id,
-                read: false
-            }).then(() => {
-                console.log("Notifikasi berhasil disimpan!");
-            }).catch((err) => {
-                console.error("Error menyimpan notifikasi: ", err);
-            });
-            
-
-            // Emit notifikasi ke frontend
-            io.to(postOwnerId).emit("receive_notification", {
-                type: "comment",
-                message: `User ${req.user.name} commented on your post.`,
-                postId: postId,
-                commentId: comment.id,
-                desc,
-            });
-        }
-
-        res.json(comment);
+      }
+  
+      res.status(201).json(comment);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
     }
-};
+  };
+  
 
 // Fungsi untuk menghapus komentar
 const deleteComment = async (req, res) => {
@@ -98,7 +77,24 @@ const deleteComment = async (req, res) => {
   }
 };
 
+const getNotifications = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const notifications = await Notification.findAll({
+      where: { userId: userId },
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json(notifications);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 module.exports = {
   CreateComment,
-  deleteComment
+  deleteComment,
+  getNotifications
 }

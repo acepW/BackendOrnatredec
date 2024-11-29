@@ -31,7 +31,7 @@ const Comments = db.define('comments',{
     },
     balasan : {
         type : DataTypes.INTEGER,
-        allowNull : false,
+        // allowNull : false,
     }
 },{
     freezeTableName : true,
