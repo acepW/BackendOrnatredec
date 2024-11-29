@@ -76,7 +76,17 @@ const updateStatusPermintaan = async (req, res) => {
     }
 }
 
+const getPermintaan = async (req, res) => {
+    try {
+        const permintaan = await detailPermintaan.findAll()
+        res.status(200).json(permintaan)
+    } catch (error) {
+        res.status(500).json({message : error.message})
+    }
+}
+
 module.exports = {
     createPermintaan,
-    updateStatusPermintaan
+    updateStatusPermintaan,
+    getPermintaan
 }

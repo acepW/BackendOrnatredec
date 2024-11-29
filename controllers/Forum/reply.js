@@ -2,7 +2,7 @@ const Post = require('../../models/Forum/posts');
 const Comment = require('../../models/Forum/comments'); 
 const Reply = require('../../models/Forum/reply');
 
- const createReply = async (req, res) => {
+ const createReply = async (req, res) => {        
         const {commentId, desc} = req.body
         const {id} = req.user
         try {

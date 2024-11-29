@@ -2,6 +2,7 @@ const Post = require('../../models/Forum/posts');
 const Comment = require('../../models/Forum/comments'); 
 const Reply = require('../../models/Forum/reply');
 const User = require('../../models/User/users');
+const Comments = require('../../models/Forum/comments');
 
 const CreateComment = async (req, res) => {
     const {postId, desc} = req.body
@@ -113,10 +114,24 @@ const deleteComment = async (req, res) => {
     }
 };
 
+const getOneComment = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const coment = await Comments.findByPk(id)
+        if (!coment) {
+           return res.status(400).json({ message: "komen tidak ditemukan" });
+        }
+        return res.status(200).json(coment)
+    } catch (error) {
+        res.status(500).json({ message : error.message})
+    }
+}
+
 
     module.exports = {
         CreateComment,
         GetComment,
         editComment,
-        deleteComment
+        deleteComment,
+        getOneComment
 }

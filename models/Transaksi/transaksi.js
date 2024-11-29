@@ -20,6 +20,7 @@ const Transaksi = sequelize.define("transaksi", {
     },
     id_alamat: {
         type: DataTypes.INTEGER,
+        allowNull : true,
         references: {
             model: Alamat,
             key: "id"
@@ -34,8 +35,14 @@ const Transaksi = sequelize.define("transaksi", {
     total_pembayaran: {
         type: DataTypes.INTEGER
     },
-    payment_method: { // Tambahkan field ini
+    payment_method: { 
         type: DataTypes.STRING
+    },
+    metode_transaksi: {
+        type: DataTypes.ENUM("online","offline")
+    },
+    metode_pembayaran: {
+        type: DataTypes.ENUM("dana", "gopay", "m-banking", "ovo", "sea bank"),
     }
 }, {
     freezeTableName: true

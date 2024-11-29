@@ -28,7 +28,7 @@ const beriUlasan = async (req, res) => {
         // Cek apakah user sudah memberikan ulasan untuk produk ini
         const existingUlasan = await Ulasan.findOne({
             where: {
-                id_produk: transaksiProduk.id_produk,
+                id_transaksiProduk : transaksiProduk.id,
                 id_user: userId
             }
         });
@@ -57,6 +57,7 @@ const beriUlasan = async (req, res) => {
 
         // Buat ulasan baru dan simpan ke database
         const ulasanBaru = await Ulasan.create({
+            id_transaksiProduk : transaksiProduk.id,
             id_produk: transaksiProduk.id_produk,
             id_user: userId,
             rating: rating,
@@ -64,6 +65,53 @@ const beriUlasan = async (req, res) => {
             foto: fotoUrl,  // Simpan URL di database
             video: videoUrl  // Simpan URL di database
         });
+
+        const rating5 = await Ulasan.count({
+            where : {id_produk : ulasanBaru.id_produk, rating : '5'}
+        })
+        console.log(rating5);
+        
+        const rating4 = await Ulasan.count({
+            where : {id_produk : ulasanBaru.id_produk, rating : '4'}
+        })
+        console.log(rating4);
+        
+        const rating3 = await Ulasan.count({
+            where : {id_produk : ulasanBaru.id_produk, rating : '3'}
+        })
+        console.log(rating3);
+        
+        const rating2 = await Ulasan.count({
+            where : {id_produk : ulasanBaru.id_produk, rating : '2'}
+        })
+        console.log(rating2);
+        
+        const rating1 = await Ulasan.count({
+            where : {id_produk : ulasanBaru.id_produk, rating : '1'}
+        })
+        console.log(rating1);
+        
+
+        const jumlahUlasan = await Ulasan.count({
+            where : {id_produk : ulasanBaru.id_produk}
+        })
+
+        const jumlah5 = rating5 * 5;
+        const jumlah4 = rating4 * 4;
+        const jumlah3 = rating3 * 3;
+        const jumlah2 = rating2 * 2; 
+        const jumlah1 = rating1 * 1;
+        
+        const totalRating = (jumlah1 + jumlah2 + jumlah3 + jumlah4 + jumlah5) / jumlahUlasan;
+
+        console.log(totalRating);
+        
+
+        await Produk.update({
+            ratingProduk : totalRating
+        }, {
+            where : {id : ulasanBaru.id_produk}
+        })
 
         // Kirim respon berhasil
         return res.status(201).json({
