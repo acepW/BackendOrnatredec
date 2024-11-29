@@ -1,5 +1,5 @@
-const { Sequelize, DataTypes } = require('sequelize');
-const db = require('../../config/database');
+const { Sequelize, DataTypes, INTEGER } = require('sequelize');
+const db = require('../../config/config');
 const User = require('../User/users');
 const Post = require('./posts');
 
@@ -31,7 +31,7 @@ const Comments = db.define('comments',{
     },
     balasan : {
         type : DataTypes.INTEGER,
-        allowNull : false,
+        // allowNull : false,
     }
 },{
     freezeTableName : true,

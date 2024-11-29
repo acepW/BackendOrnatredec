@@ -2,47 +2,79 @@ const Post = require('../../models/Forum/posts');
 const Comment = require('../../models/Forum/comments'); 
 const Reply = require('../../models/Forum/reply');
 
- const createReply = async (req, res) => {        
-        const {commentId, desc} = req.body
-        const {id} = req.user
-        try {
-            const comment = await Comment.findOne({ where: { id: commentId } });
+// const createReply = async (req, res) => {
+//     const { commentId, desc } = req.body
+//     const { id } = req.user
+//     try {
+//         const comment = await Comment.findOne({ where: { id: commentId } });
 
-            if (!comment) {
-                return res.status(403).json({ message: "Komentar tidak ditemukan." });
-            }
+//         if (!comment) {
+//             return res.status(403).json({ message: "Komentar tidak ditemukan." });
+//         }
 
-            const postId = comment.postId;
-            const reply = await Reply.create({
-                userId : id,
-                commentId,
-                postId,
-                desc
-            })
+//         const postId = comment.postId;
+//         const reply = await Reply.create({
+//             userId: id,
+//             commentId,
+//             postId,
+//             desc
+//         })
 
-            const commentCount = await Comment.count({ where: { postId: postId } });
-            const replyCount = await Reply.count({ where: { postId: postId } });
+//         const commentCount = await Comment.count({ where: { postId: postId } });
+//         const replyCount = await Reply.count({ where: { postId: postId } });
     
-            const jumlahTanggapan = commentCount + replyCount;
+//         const jumlahTanggapan = commentCount + replyCount;
     
-            await Post.update(
-                { jumlahTanggapan: jumlahTanggapan },
-                { where: { id: postId } }
-            );
+//         await Post.update(
+//             { jumlahTanggapan: jumlahTanggapan },
+//             { where: { id: postId } }
+//         );
 
-            const jumlahBalasan = await Reply.count({ where: { commentId: commentId } });
-            await Comment.update({
-                balasan : jumlahBalasan
-            }, {
-                where : {id: commentId}
-            })
+//         const jumlahBalasan = await Reply.count({ where: { commentId: commentId } });
+//         await Comment.update({
+//             balasan: jumlahBalasan
+//         }, {
+//             where: { id: commentId }
+//         })
 
-            res.json(reply)
-        } catch (error) {
-            res.status(500).json({message : error.message})
-        }
+//         res.json(reply)
+//     } catch (error) {
+//         res.status(500).json({ message: error.message })
+//     }
+// }
+const createReply = async (req, res) => {
+    const { commentId, content } = req.body;
+    const userId = req.user.id; // User yang membuat balasan
+  
+    try {
+      // Buat balasan
+      const reply = await Reply.create({
+        userId: userId,
+        commentId: commentId,
+        content: content,
+      });
+  
+      // Cari komentar terkait
+      const comment = await Comment.findByPk(commentId, { include: [User] });
+      if (!comment) {
+        return res.status(404).json({ message: "Komentar tidak ditemukan." });
+      }
+  
+      // Tambahkan notifikasi untuk pemilik komentar
+      if (comment.userId !== userId) {
+        await Notification.create({
+          userId: comment.userId, // User yang akan menerima notifikasi
+          postId: comment.postId,
+          message: `Balasan baru pada komentar Anda: "${content}"`,
+        });
+      }
+  
+      res.status(201).json(reply);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-
+};
+  
     const editReply = async (req, res) => {
         const id = req.params.id
         const {desc} = req.body
