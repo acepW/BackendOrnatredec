@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const db = require('../../config/database');
+const db = require('../../config/config');
 const Produk = require('./produk'); // Import model Produk
 
 // Model Kasir

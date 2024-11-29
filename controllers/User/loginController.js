@@ -1,4 +1,4 @@
-const db = require('../../config/database');
+const db = require('../../config/config');
 const bcrypt = require('bcryptjs');
 const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
@@ -54,7 +54,7 @@ const login = async (req, res) => {
   const { username, password } = req.body;
   
   try {
-    const user = await User.findOne({ where: { username }, include : [{model : Alamat}] });
+    const user = await User.findOne({ where: { username }});
     
     if (!user) {
       return res.status(401).json({ success: false, message: 'username tidak ditemukan' });

@@ -1,4 +1,4 @@
-const sequelize = require('../../config/database'); // Sesuaikan path dengan konfigurasi database
+const sequelize = require('../../config/config'); // Sesuaikan path dengan konfigurasi database
 const Transaksi = require('../../models/Transaksi/transaksi');
 const { Op } = require('sequelize');
 const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');

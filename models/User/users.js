@@ -1,8 +1,15 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const bcrypt = require('bcryptjs');
-const sequelize = require('../../config/database'); // Import konfigurasi database
+const sequelize = require('../../config/config'); // Import konfigurasi database
+const Notification = require('../../models/notif'); // Import model Notification
+const Alamat = require('../Transaksi/alamat');
 
-const User = sequelize.define('User', {
+const User = sequelize.define('user', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
   username: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -11,6 +18,10 @@ const User = sequelize.define('User', {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true,
+    },
   },
   password: {
     type: DataTypes.STRING,
@@ -25,53 +36,41 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
   alamat: {
-    type: DataTypes.STRING, // Alamat disimpan sebagai string
-    allowNull: true, // Alamat bisa tidak diisi
+    type: DataTypes.STRING,
+    allowNull: true,
   },
-
-  // photoProfile: {
-  //   type: DataTypes.STRING, // URL untuk foto profil
-  //   allowNull: true, // Foto profil bisa tidak diisi
-  // },
-  // background_fotoProfil: {
-  //   type: DataTypes.STRING, // URL untuk background foto profil
-  //   allowNull: true, // Foto profil bisa tidak diisi
-  // },
-
   photoProfile: {
-    type: DataTypes.STRING, // URL untuk foto profil
-    allowNull: true, // Foto profil bisa tidak diisi
+    type: DataTypes.STRING,
+    allowNull: true,
   },
-
   tanggalLahir: {
     type: DataTypes.DATEONLY,
     allowNull: true,
   },
-  status : {
-    type : DataTypes.ENUM ('terblokir', 'tidak terblokir'),
-    allowNull : false,
-    defaultValue : 'tidak terblokir' 
+  status: {
+    type: DataTypes.ENUM('terblokir', 'tidak terblokir'),
+    allowNull: false,
+    defaultValue: 'tidak terblokir',
   },
-  statusAktif : {
-    type : DataTypes.ENUM ('aktif', 'tidak aktif'),
-    allowNull : false,
-    defaultValue : 'aktif'
-  }
-  // backgroundProfile: {
-  //   type: DataTypes.STRING, // URL untuk background foto profil
-  //   allowNull: true, // Foto profil bisa tidak diisi
-  // },
-
-
-},{
-  freezeTableName : true,
-  timestamps : true
+  statusAktif: {
+    type: DataTypes.ENUM('aktif', 'tidak aktif'),
+    allowNull: false,
+    defaultValue: 'aktif',
+  },
 }, {
+  freezeTableName: true,
+  timestamps: true,
   hooks: {
     beforeCreate: async (user) => {
       user.password = await bcrypt.hash(user.password, 10);
     },
   },
 });
+
+// Relasi User dengan Notification
+
+
+// Alamat.hasMany(User, { foreignKey: 'userId' });
+// User.belongsTo(Alamat, { foreignKey: 'userId' });
 
 module.exports = User;

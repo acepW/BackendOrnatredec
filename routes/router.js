@@ -25,6 +25,7 @@ router.use("/", require("./Forum/posts"));
 router.use("/", require("./Forum/view"));
 router.use("/", require("./Forum/reply"));
 router.use("/", require("./Forum/report"));
+router.use("/", require ("./Forum/notificationRoutes"))
 
 //olah data
 router.use("/", require("./olah data/olahDataTentangTotal"));
