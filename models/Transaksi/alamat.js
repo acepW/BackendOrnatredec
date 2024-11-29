@@ -1,4 +1,4 @@
-const {DataTypes} = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../../config/database");
 const User = require("../User/users");
 
@@ -8,49 +8,49 @@ const Alamat = sequelize.define("alamat", {
         autoIncrement: true,
         primaryKey: true
     },
-    userId : {
-        type : DataTypes.INTEGER,
-        allowNull : false,
-        references : {
-            model : User,
-            key : 'id'
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: User,
+            key: 'id'
         }
     },
     provinsi: {
         type: DataTypes.STRING,
-        allowNull : false,
+        allowNull: false,
     },
     kota_kabupaten: {
         type: DataTypes.STRING,
-        allowNull : false,
+        allowNull: false,
     },
     kecamatan: {
         type: DataTypes.STRING,
-        allowNull : false,
+        allowNull: false,
     },
     kelurahan_desa: {
         type: DataTypes.STRING,
-        allowNull : false,
+        allowNull: false,
     },
     jalan_namagedung: {
         type: DataTypes.STRING,
-        allowNull : false,
+        allowNull: false,
     },
     rtrw: {
         type: DataTypes.STRING,
-        allowNull : false,
+        allowNull: false,
     },
     patokan: {
         type: DataTypes.STRING,
-        allowNull : false,
+        allowNull: false,
     },
     nama_penerima: {
         type: DataTypes.STRING,
-        allowNull : false,
+        allowNull: false,
     },
     no_hp: {
         type: DataTypes.INTEGER,
-        allowNull : false,
+        allowNull: false,
     },
     kategori_alamat: {
         type: DataTypes.ENUM,

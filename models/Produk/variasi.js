@@ -10,16 +10,20 @@ const Variasi = db.define("variasi", {
     },
     id_produk: {
         type: DataTypes.INTEGER,
-        allowNull :false,
-           references: {
-           model: Produk,
-           key: "id"
-                }
-     },
+        allowNull: false,
+        references: {
+            model: Produk,
+            key: "id"
+        }
+    },
+    foto_variasi: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     nama_variasi: {
         type: DataTypes.STRING,
         allowNull: true
-    }
+    },
 }, {
     freezeTableName: true,
     timestamps: true

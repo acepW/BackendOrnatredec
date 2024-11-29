@@ -96,8 +96,8 @@ const detailUser = async (req, res) => {
       desc: post.desc,
       fotoKonten: post.fotoKonten,
       userId: post.userId,
-      kategori_forum: post.kategori_forum,
-      jumlahTanggapan: post.jumlahTanggapan,
+      kategori_forum: post.kategori_forum,  
+      jumlahTanggapan: post.jumlahTanggapan, 
       jumlahView: post.jumlahView,
       jumlahReport: post.jumlahReport,
       createdAt: moment(post.createdAt).format('YYYY-MM-DD') 

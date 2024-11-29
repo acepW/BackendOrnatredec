@@ -5,7 +5,6 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const sequelize = require("./config/database");
 const routes = require('./routes/router');
-const Users = require("./models/User/users");
 const Produk = require('./models/Produk/produk');
 const Usia = require('./models/Produk/subVariasi');
 const Variasi = require('./models/Produk/variasi');
@@ -23,7 +22,12 @@ const Alamat = require("./models/Transaksi/alamat");
 const TransaksiProduk = require("./models/Transaksi/transaksiproduk");
 const PaymentGateway = require("./models/Transaksi/paymentgateway");
 const Report = require("./models/Forum/report");
-const Troli = require("./models/Produk/troli");
+const Troli = require("./models/Transaksi/troli");
+const Ulasan = require("./models/Ulasan/ulasan");
+const Pengeluaran = require("./models/Transaksi/pengeluaran");
+const pPengeluaran = require("./models/Transaksi/petugasPengeluaran");
+const Permintaan = require("./models/Transaksi/permintaan");
+const detailPermintaan = require("./models/Transaksi/detailPermintaan");
 
 dotenv.config();
 const app = express();
@@ -35,6 +39,7 @@ app.use(
     origin: true
   })
 );
+
 
 app.use(express.json());
 app.use(bodyParser.json());
@@ -48,10 +53,9 @@ app.use('/api', routes);
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    // await Troli.sync({alter : true});
+    // await Transaksi.sync({alter : true});
   })
   .catch(err => console.log('Error: ' + err));
 
-
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

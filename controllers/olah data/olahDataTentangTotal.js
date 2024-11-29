@@ -1,4 +1,5 @@
 const Post = require("../../models/Forum/posts");
+const Report = require("../../models/Forum/report");
 const Produk = require("../../models/Produk/produk");
 const TransaksiProduk = require("../../models/Transaksi/transaksiproduk");
 const User = require("../../models/User/users");
@@ -40,8 +41,13 @@ const totalSemua = async (req, res) => {
         const totalForumBurung = await Post.count({
             where : {kategori_forum : kategoriBurung}
         })
+        const status = 'dikemas';
+
+        const pesanan = await TransaksiProduk.count({ where: { status: status } })
 
         const totalPemesanan = await TransaksiProduk.count({})
+
+        const jumlahReport = await Report.count({})
 
       res.status(200).json({
         totalProduk,
@@ -53,7 +59,9 @@ const totalSemua = async (req, res) => {
         totalForumBurung,
         totalForumIkan,
         totalForumTanaman,
-        totalPemesanan
+        totalPemesanan,
+        jumlahReport,
+        pesanan
       })
     } catch (error) {
         res.status(500).json({message : error.message})

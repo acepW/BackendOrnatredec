@@ -3,8 +3,7 @@ const path = require('path');
 const Produk = require("../../models/Produk/produk");
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
-const { where } = require('sequelize');
-const Troli = require('../../models/Produk/troli');
+const Ulasan = require('../../models/Ulasan/ulasan');
 
 // Konfigurasi Multer untuk penyimpanan file
 const storage = multer.diskStorage({
@@ -42,66 +41,68 @@ const createProduk = async (req, res) => {
   //   if (err) {
   //     return res.status(400).json({ message: err.message });
   //   }
-  const foto_produk = req.file ? `/uploads/${req.file.filename}` : null; 
-    const {
+  const foto_produk = req.file ? `/uploads/${req.file.filename}` : null;
+  const {
+    judul_produk,
+    deskripsi_produk,
+    harga,
+    variasi,
+    kategori_produk,
+  } = req.body;
+
+  try {
+    let jumlahStok = 0;
+    let rating = 0;
+
+    console.log(foto_produk);
+
+    const newProduk = await Produk.create({
       judul_produk,
       deskripsi_produk,
+      foto_produk,
       harga,
-      variasi,
-      kategori_produk, 
-    } = req.body;
+      jumlahProduk: jumlahStok,
+      kategori_produk,
+      ratingProduk : rating
+    });
 
-    try {
-      let jumlahStok = 0;
-      
-      console.log(foto_produk);
-      
-      const newProduk = await Produk.create({
-        judul_produk,
-        deskripsi_produk,
-        foto_produk,
-        harga,
-        jumlah: jumlahStok,
-        kategori_produk,
-      });
-
-      if (variasi) {
-        const variasiArray = JSON.parse(variasi);
-        // const variasiArray = Array.isArray(variasi) ? variasi : [];
-         for (let index = 0; index < variasiArray.length; index++) {
-          const newVariasi = await Variasi.create({
-            id_produk: newProduk.id,
-             nama_variasi: variasiArray[index].nama_variasi,
-           });
-  
-              const subVariasiArray = variasiArray[index].sub_variasi || [];
-              for (let i = 0; i < subVariasiArray.length; i++) {
-               await subVariasi.create({
-                id_produk: newProduk.id,
-                id_variasi: newVariasi.id,
-                nama_sub_variasi: subVariasiArray[i].nama_sub_variasi,
-                usia : subVariasiArray[i].usia,
-                stok: subVariasiArray[i].stok,
-                harga: subVariasiArray[i].harga,
-                // foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][i].filename : null
+    if (variasi) {
+      const variasiArray = JSON.parse(variasi);
+      // const variasiArray = Array.isArray(variasi) ? variasi : [];
+      for (let index = 0; index < variasiArray.length; index++) {
+        const newVariasi = await Variasi.create({
+          id_produk: newProduk.id,
+          nama_variasi: variasiArray[index].nama_variasi,
         });
-        jumlahStok += parseInt(subVariasiArray[i].stok);
-        console.log(jumlahStok);
-        
-      }
-    }
-      }
-     
-  await newProduk.update({
-    jumlah: jumlahStok,
-  });
 
-      res.status(200).json(newProduk);
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: error.message});
+        const subVariasiArray = variasiArray[index].sub_variasi || [];
+        for (let i = 0; i < subVariasiArray.length; i++) {
+          await subVariasi.create({
+            id_produk: newProduk.id,
+            id_variasi: newVariasi.id,
+            nama_sub_variasi: subVariasiArray[i].nama_sub_variasi,
+            usia: subVariasiArray[i].usia,
+            stok: subVariasiArray[i].stok,
+            harga: subVariasiArray[i].harga,
+            // foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][i].filename : null
+          });
+          jumlahStok += parseInt(subVariasiArray[i].stok);
+          console.log(jumlahStok);
+
+        }
+      }
     }
-  };
+
+    await newProduk.update({
+      jumlahProduk: jumlahStok,
+    });
+
+    res.status(200).json(newProduk);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 
 const editProduk = async (req, res) => {
@@ -110,136 +111,139 @@ const editProduk = async (req, res) => {
   //     return res.status(400).json({ message: err.message });
   //   }
   const foto_produk = req.file ? `/uploads/${req.file.filename}` : null;
-    const { id } = req.params;
-    const {
+  const { id } = req.params;
+  const {
+    judul_produk,
+    deskripsi_produk,
+    harga,
+    variasi,
+    kategori_produk,
+  } = req.body;
+
+  try {
+    let jumlahStok = 0;
+
+    const produk = await Produk.findByPk(id);
+    if (!produk) {
+      return res.status(404).json({ message: 'Produk tidak ditemukan' });
+    }
+
+    await Produk.update({
       judul_produk,
       deskripsi_produk,
+      foto_produk,
       harga,
-      variasi,
+      jumlahProduk: jumlahStok,
       kategori_produk,
-    } = req.body;
+    }, {
+      where: { id: id }
+    });
 
-    try {
-      let jumlahStok = 0;
-
-      const produk = await Produk.findByPk(id);
-      if (!produk) {
-        return res.status(404).json({ message: 'Produk tidak ditemukan' });
-      }
-
-       await Produk.update({
-        judul_produk,
-        deskripsi_produk,
-        foto_produk,
-        harga,
-        jumlah: jumlahStok,
-        kategori_produk,
-      },{
-          where: { id: id }
+    if (variasi) {
+      const variasiArray = JSON.parse(variasi);
+      // const variasiArray = Array.isArray(variasi) ? variasi : [];
+      await Variasi.destroy({ where: { id_produk: id } });
+      for (let index = 0; index < variasiArray.length; index++) {
+        const newVariasi = await Variasi.create({
+          id_produk: id,
+          nama_variasi: variasiArray[index].nama_variasi,
         });
 
-        if (variasi) {
-          const variasiArray = JSON.parse(variasi);
-          // const variasiArray = Array.isArray(variasi) ? variasi : [];
-          await Variasi.destroy({ where: { id_produk: id } });
-           for (let index = 0; index < variasiArray.length; index++) {
-            const newVariasi = await Variasi.create({
-              id_produk: id,
-               nama_variasi: variasiArray[index].nama_variasi,
-             });
-    
-                const subVariasiArray = variasiArray[index].sub_variasi || [];
-                await subVariasi.destroy({ where: { id_produk: id } });
-                for (let i = 0; i < subVariasiArray.length; i++) {
-                 await subVariasi.create({
-                  id_produk: id,
-                  id_variasi: newVariasi.id,
-                  nama_sub_variasi: subVariasiArray[i].nama_sub_variasi,
-                  usia : subVariasiArray[i].usia,
-                  stok: subVariasiArray[i].stok,
-                  harga: subVariasiArray[i].harga,
-                  // foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][i].filename : null
+        const subVariasiArray = variasiArray[index].sub_variasi || [];
+        await subVariasi.destroy({ where: { id_produk: id } });
+        for (let i = 0; i < subVariasiArray.length; i++) {
+          await subVariasi.create({
+            id_produk: id,
+            id_variasi: newVariasi.id,
+            nama_sub_variasi: subVariasiArray[i].nama_sub_variasi,
+            usia: subVariasiArray[i].usia,
+            stok: subVariasiArray[i].stok,
+            harga: subVariasiArray[i].harga,
+            // foto_variasi: req.files['foto_variasi'] ? req.files['foto_variasi'][i].filename : null
           });
           jumlahStok += parseInt(subVariasiArray[i].stok);
           console.log(jumlahStok);
-          
+
         }
       }
-        }
-    
-      await Produk.update({
-            jumlah: jumlahStok,
-          }, {
-            where: { id: id }
-          });
-    
-    
-      const updatedProduk = await Produk.findByPk(id);
-
-      res.status(200).json(updatedProduk);
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message : error.message});
     }
-  }
 
-  const getProdukbyId = async (req, res) => {
-    const id_produk = req.params.id
-    try {
-      const produk = await Produk.findOne(
-        {
-          where : {id : id_produk},
+    await Produk.update({
+      jumlahProduk: jumlahStok,
+    }, {
+      where: { id: id }
+    });
+
+
+    const updatedProduk = await Produk.findByPk(id);
+
+    res.status(200).json(updatedProduk);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+}
+
+const getProdukbyId = async (req, res) => {
+  const id_produk = req.params.id
+  try {
+    const produk = await Produk.findOne(
+      {
+        where: { id: id_produk },
         include: [
           {
             model: Variasi,
-            include: [{ model: subVariasi}],
+            include: [{ model: subVariasi }],
+          },
+          {
+            model : Ulasan
           }
         ]
       });
-      // console.log(produk);
-      
-      res.json(produk);
-    } catch (error) {
-      console.error(error); // Log error untuk debugging
-      res.status(500).json({ message: error.message });
-    }
-  };
+    // console.log(produk);
 
-  const getProdukFilter = async (req, res) => {
-    const kategori = req.query.kategori
-    try {
-      const produk = await Produk.findAll({
-        where : {kategori_produk: kategori},
-      
-      include : [ {
-          model : Variasi,
-          include: [{ model: subVariasi}],
+    res.json(produk);
+  } catch (error) {
+    console.error(error); // Log error untuk debugging
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getProdukFilter = async (req, res) => {
+  const kategori = req.query.kategori
+  try {
+    const produk = await Produk.findAll({
+      where: { kategori_produk: kategori },
+
+      include: [{
+        model: Variasi,
+        include: [{ model: subVariasi }],
       }]
     })
     return res.status(200).json(produk)
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
+}
 
 const filterKategoriProduk = async (req, res) => {
   const kategori = req.query.kategori
   try {
     if (!kategori) {
       const semuaProduk = await Produk.findAll({
-        include : [ {
-          model : Variasi,
-          include: [{ model: subVariasi}],
-      }]
+        include: [{
+          model: Variasi,
+          include: [{ model: subVariasi }],
+        }]
       })
-    return res.status(202).json(semuaProduk)
-    } 
-      const produk = await Produk.findAll({
-        where : {kategori_produk: kategori},
-      
-      include : [ {
-          model : Variasi,
-          include: [{ model: subVariasi}],
+      return res.status(202).json(semuaProduk)
+    }
+    const produk = await Produk.findAll({
+      where: { kategori_produk: kategori },
+
+      include: [{
+        model: Variasi,
+        include: [{ model: subVariasi }],
       }]
     })
     return res.status(200).json(produk)
@@ -248,54 +252,23 @@ const filterKategoriProduk = async (req, res) => {
   }
 }
 
-const hapusProduk = async (req , res) => {
-  const idproduk  = req.params.id;
+const hapusProduk = async (req, res) => {
+  const idproduk = req.params.id;
   try {
     const produk = await Produk.findByPk(idproduk)
     if (!produk) {
       return res.status(404).json({ message: "Produk tidak ditemukan." });
-  }
+    }
 
-    await Produk.destroy({where : {id : idproduk}})
-    await subVariasi.destroy({where : {id_produk : idproduk}})
-    await Variasi.destroy({where : {id_produk : idproduk}})
+    await Produk.destroy({ where: { id: idproduk } })
+    await subVariasi.destroy({ where: { id_produk: idproduk } })
+    await Variasi.destroy({ where: { id_produk: idproduk } })
 
-    res.status(200).json({message :"sukses"})
+    res.status(200).json({ message: "sukses" })
   } catch (error) {
-    res.status(500).json({message : error.message})
+    res.status(500).json({ message: error.message })
   }
 }
-
-const troliProduk = async (req, res) => {
-  const { id_produk, id_subVariasi } = req.body; 
-  const id_User = req.user.id; 
-  
-  try {
-    const produk = await Produk.findByPk(id_produk);
-    if (!produk) {
-      return res.status(400).json({ message: 'Produk tidak ditemukan' });
-    }
-
-    const subVariasi = await subVariasi.findByPk(id_subVariasi);
-    if (!subVariasi) {
-      return res.status(400).json({ message: 'Sub Variasi tidak ditemukan' });
-    }
-
-    const variasi = await subVariasi.id_variasi
-
-    const troli = await Troli.create({
-      id_User,
-      id_produk,
-      id_variasi : variasi,
-      id_subVariasi,
-      jumlahStok
-    });
-
-    res.status(200).json(troli);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
 
 module.exports = {
@@ -306,5 +279,4 @@ module.exports = {
   getProdukFilter,
   upload,
   hapusProduk,
-  troliProduk,
 };

@@ -1,18 +1,21 @@
 const express = require("express");
 const {
     createTransaksi,
-    // getAllTransaksi,
     getTransaksiById,
-    getTransaksiFilter
+    getTransaksiFilter,
+    getTransaksiDikirimDanDikemas,
+    createTransaksiKasir
 } = require("../../controllers/Transaksi/transaksi");
 
 const router = express.Router();
-const  protect  = require('../../middlewares/authMiddleware');
+const protect = require('../../middlewares/authMiddleware');
+const verifyToken = require("../../middlewares/auth");
 
-router.post("/transaksi",protect(['user']), createTransaksi);
+router.post("/transaksi", protect(['user']), createTransaksi);
+router.post("/transaksiKasir", verifyToken, createTransaksiKasir);
+router.get("/Transaksi", getTransaksiFilter);
+router.get("/TransaksiFilter", getTransaksiDikirimDanDikemas);
 // router.get("/transaksi", getAllTransaksi);
-router.get("/transaksi/:id", getTransaksiById);
-router.get("/Transaksi", getTransaksiFilter)
+router.get("/transaksi/:id", protect(['user']), getTransaksiById);
 
 module.exports = router;
- 

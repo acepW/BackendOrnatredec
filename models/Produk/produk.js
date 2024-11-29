@@ -23,13 +23,18 @@ const Produk = db.define("produk", {
         type: DataTypes.INTEGER,
         allowNull : true
     },
-    jumlah: {
+    jumlahProduk: {
         type: DataTypes.INTEGER,
         allowNull : true
     },
     kategori_produk : {
         type : DataTypes.ENUM('tanaman', 'ikan', 'burung'),
         allowNull : true
+    },
+    ratingProduk: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+        defaultValue : 0
     }
 }, {
     freezeTableName: true,
