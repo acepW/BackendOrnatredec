@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const db = require("../../config/database");
+const db = require("../../config/config");
 
 const Produk = db.define("produk", {
     id: {
@@ -30,6 +30,11 @@ const Produk = db.define("produk", {
     kategori_produk : {
         type : DataTypes.ENUM('tanaman', 'ikan', 'burung'),
         allowNull : true
+    },
+    ratingProduk: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+        defaultValue : 0
     }
 }, {
     freezeTableName: true,

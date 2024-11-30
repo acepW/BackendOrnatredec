@@ -5,6 +5,8 @@ const Variasi = require('../../models/Produk/variasi');
 const Subvariasi = require('../../models/Produk/variasi');
 const Alamat = require('../../models/Transaksi/alamat');
 const User = require('../../models/User/users');
+const cron = require('node-cron');
+const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 
 
 // Mengubah status pesanan
@@ -50,45 +52,37 @@ const updateOrderStatus = async (req, res) => {
 const getAllOrders = async (req, res) => {
     try {
         const orders = await transaksiProduk.findAll({
-            where: { status: 'dipesan' },
-            include: [{
-                model: Produk, // Include model Produk untuk mengambil detail produk terkait
-            }]
+            where: { status: 'dipesan', statusPembayaran: 'success' },
+            include: [{ model: Produk }] // Include detail produk terkait
         });
 
         console.log("Orders found:", orders); // Debugging log
 
-
         // Jika tidak ada pesanan berstatus "dipesan"
         if (orders.length === 0) {
             return res.status(200).json({ message: 'Tidak ada pesanan yang berstatus "dipesan"' });
-
-
         }
 
         // Ubah status semua pesanan dari "dipesan" ke "dikemas"
-        for (let Order of orders) {
-            Order.status = 'dikemas';
-            await Order.save();
-            console.log("transaksiProduk updated:", Order); // Debugging log
+        for (let order of orders) {
+            order.status = 'dikemas';
+            await order.save();
+            console.log("transaksiProduk updated:", order); // Debugging log
         }
 
         // Ambil ulang semua pesanan setelah update status
         const updatedOrders = await transaksiProduk.findAll({
-            include: [{
-                model: Produk, // Mengambil produk terkait
-            }]
+            include: [{ model: Produk }] // Mengambil produk terkait
         });
 
         // Kirim respons dengan data pesanan yang sudah diperbarui
-
-        res.status(200).json(updatedOrders);
+        res.status(200).json({ message: 'Pesanan berhasil diperbarui ke status "dikemas"', data: updatedOrders });
     } catch (error) {
         console.error('Error fetching or updating orders:', error); // Log error yang lebih spesifik
         res.status(500).json({ message: 'Terjadi kesalahan saat mengambil atau memperbarui pesanan', error: error.message });
-
     }
-}
+};
+
 
 const getAllOrdersdikemas = async (req, res) => {
     try {
@@ -335,11 +329,26 @@ const statusSelesaiPerid = async (req, res) => {
         const transaksi = await transaksiProduk.findAll({
             where : {user_id : id, status : status}
         })
+        
         res.status(200).json(transaksi)
     } catch (error) {
         res.status(500).json({ message : error.message})
     }
 }
+
+cron.schedule('0 0 */2 * *', async () => { // menit, jam, hari, bulan, hari dalam minggu
+    const status = 'dikirim'
+  try {
+      await TransaksiProduk.update(
+      {status : 'selesai'},
+      { where: { status : status } }
+    );
+    console.log('Status diperbarui setelah 2 hari tidak dikonfirmasi');
+  } catch (error) {
+    console.error('Gagal memperbarui status:', error);
+  }
+});
+
 
 const riwayatTransaksi = async (req, res) => {
     const status = 'selesai'

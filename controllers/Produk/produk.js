@@ -54,6 +54,7 @@ const createProduk = async (req, res) => {
 
   try {
     let jumlahStok = 0;
+    let rating = 0;
 
     console.log(foto_produk);
 
@@ -62,8 +63,9 @@ const createProduk = async (req, res) => {
       deskripsi_produk,
       foto_produk,
       harga,
-      jumlah: jumlahStok,
+      jumlahProduk: jumlahStok,
       kategori_produk,
+      ratingProduk : rating
     });
 
     if (variasi) {
@@ -94,7 +96,7 @@ const createProduk = async (req, res) => {
     }
 
     await newProduk.update({
-      jumlah: jumlahStok,
+      jumlahProduk: jumlahStok,
     });
 
     res.status(200).json(newProduk);
@@ -133,7 +135,7 @@ const editProduk = async (req, res) => {
       deskripsi_produk,
       foto_produk,
       harga,
-      jumlah: jumlahStok,
+      jumlahProduk: jumlahStok,
       kategori_produk,
     }, {
       where: { id: id }
@@ -169,7 +171,7 @@ const editProduk = async (req, res) => {
     }
 
     await Produk.update({
-      jumlah: jumlahStok,
+      jumlahProduk: jumlahStok,
     }, {
       where: { id: id }
     });

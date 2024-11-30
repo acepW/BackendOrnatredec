@@ -12,13 +12,15 @@ const getYearlyStatistics = async (req, res) => {
     }
 
     const statisticsByMonth = [];
-    const startOfYear = new Date(year, 0, 1);
-    const endOfYear = new Date(year, 11, 31);
+
 
     try {
         for (let month = 1; month <= 12; month++) {
             const startDate = new Date(year, month - 1, 1);
             const endDate = new Date(year, month, 0);
+
+            const prevStartDate = new Date(year, month - 2, 1);
+            const prevEndDate = new Date(year, month - 1, 0);
 
             const fetchTransaksiData = async (startDate, endDate) => {
                 const transaksi = await Transaksi.findAll({
@@ -90,6 +92,20 @@ const getYearlyStatistics = async (req, res) => {
                     },
                     where: { createdAt: { [Op.between]: [startDate, endDate] } }
                 });
+                const methodOnline = "online";
+                const totalTransaksiOnline = await Transaksi.count({
+                    where: {
+                        createdAt: { [Op.between]: [startDate, endDate] },
+                        metode_transaksi : methodOnline 
+                    }
+                });
+                const methodOffline = "offline";
+                const totalTransaksiOffline = await Transaksi.count({
+                    where: {
+                        createdAt: { [Op.between]: [startDate, endDate] },
+                        metode_transaksi : methodOffline 
+                    }
+                });
 
                 return {
                     totalTransactions: transaksi[0]?.totalTransactions || 0,
@@ -103,14 +119,22 @@ const getYearlyStatistics = async (req, res) => {
                     totalIkan: totalIkan || 0,
                     ProdukBurung: ProdukBurung || 0,
                     totalBurung: totalBurung || 0,
+                    totalTransaksiOffline: totalTransaksiOffline || 0,
+                    totalTransaksiOnline: totalTransaksiOnline || 0,
                 };
             };
 
             const currentMonthData = await fetchTransaksiData(startDate, endDate);
+            const prevMonthData = month > 1 ? await fetchTransaksiData(prevStartDate, prevEndDate) : null;
 
+            const perbandingan = prevMonthData
+                ? currentMonthData.totalTransactions - prevMonthData.totalTransactions
+                : 0;
+            
             statisticsByMonth.push({
                 month,
-                ...currentMonthData
+                ...currentMonthData,
+                    perbandingan
             });
         }
 

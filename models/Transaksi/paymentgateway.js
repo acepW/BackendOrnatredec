@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const db = require("../../config/database");
+const db = require("../../config/config");
 const Transaksi = require("./transaksi");
 
 const PaymentGateway = db.define("payment_gateway", {

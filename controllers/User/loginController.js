@@ -1,4 +1,4 @@
-const db = require('../../config/database');
+const db = require('../../config/config');
 const bcrypt = require('bcryptjs');
 const User = require('../../models/User/users');
 const jwt = require('jsonwebtoken');
@@ -54,7 +54,7 @@ const login = async (req, res) => {
   const { username, password } = req.body;
   
   try {
-    const user = await User.findOne({ where: { username }, include : [{model : Alamat}] });
+    const user = await User.findOne({ where: { username }});
     
     if (!user) {
       return res.status(401).json({ success: false, message: 'username tidak ditemukan' });
@@ -76,19 +76,18 @@ const login = async (req, res) => {
         {where : {id : user.id}}
     )
     
-// Generate JWT without expiration
+
 const token = jwt.sign(
   { id: user.id, role: user.role },
-  process.env.SECRET_KEY // No expiration time
+  process.env.SECRET_KEY 
 );
 
-// Set token akses tanpa refresh token
 res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path: "/" }); 
 
 
-    res.status(200).json({ success: true, message: 'Login successful', user });
+    res.status(200).json({ message: 'Login successful', user, token});
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 

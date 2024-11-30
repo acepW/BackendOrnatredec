@@ -104,21 +104,21 @@ const getPost = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ['username']
+                    attributes: ['username', 'photoProfile']
                 },
                 {
                     model: Comment,
                     include: [
-                        { model: User, attributes: ['username'] },
+                        { model: User, attributes: ['username', 'photoProfile'] },
                         {
                             model: Reply,
-                            include: [{ model: User, attributes: ['username'] }]
+                            include: [{ model: User, attributes: ['username','photoProfile'] }]
                         }
                     ]
                 }
             ]
         });
-        res.json({ post });
+        res.json(post);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -215,8 +215,37 @@ const filterKategori = async (req, res) => {
     const offset = (page - 1) * limit;
 
     try {
+        if (!kategori) {
+         const postingan = await Post.findAll({
+            order: [['createdAt', 'DESC']],
+            limit: limit,
+            offset: offset,
+            include: [
+                {
+                    model: User,
+                    attributes: ['username', 'photoProfile']
+                },
+                {
+                    model: Comment,
+                    limit: 10,
+                    offset: 0,
+                    include: [
+                        { model: User, attributes: ['username', 'photoProfile'] },
+                        {
+                            model: Reply,
+                            limit: 10,
+                            offset: 0,
+                            include: [{ model: User, attributes: ['username', 'photoProfile'] }]
+                        }
+                    ]
+                }
+            ]
+        });
+        return res.json(postingan); 
+        }
         const post = await Post.findAll({
             where: { kategori_forum: kategori },
+            order: [['createdAt', 'DESC']],
             limit: limit,
             offset: offset,
             include: [
@@ -240,7 +269,7 @@ const filterKategori = async (req, res) => {
                 }
             ]
         });
-        res.json(post);
+        return res.json(post);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -249,30 +278,30 @@ const filterKategori = async (req, res) => {
 const getOnePost = async (req, res) => {
     const idPost = req.params.id;
     const id = req.user.id;
-    const limit = parseInt(req.query.limit)
-    const page = parseInt(req.query.page) 
-    const offset = (page - 1) * limit;
+    // const limit = parseInt(req.query.limit)
+    // const page = parseInt(req.query.page) 
+    // const offset = (page - 1) * limit;
     try {
-        const post = await Post.findAll({
-            where: { kategori_forum: kategori },
-            limit: limit,
-            offset: offset,
+        const post = await Post.findOne({
+            where: { id: idPost },
+            // limit: limit,
+            // offset: offset,
             include: [
                 {
                     model: User,
-                    attributes: ['username']
+                    attributes: ['username', 'photoProfile']
                 },
                 {
                     model: Comment,
-                    limit: 5,
-                    offset: 0,
+                    // limit: 5,
+                    // offset: 0,
                     include: [
-                        { model: User, attributes: ['username'] },
+                        { model: User, attributes: ['username', 'photoProfile'] },
                         {
                             model: Reply,
-                            limit: 5,
-                            offset: 0,
-                            include: [{ model: User, attributes: ['username'] }]
+                            // limit: 5,
+                            // offset: 0,
+                            include: [{ model: User, attributes: ['username', 'photoProfile'] }]
                         }
                     ]
                 }
@@ -286,7 +315,7 @@ const getOnePost = async (req, res) => {
                 userId: id,
                 postId: idPost,
             })
-            res.json(post);
+           return res.json(post);
         }
 
         jumlahview = await View.count({ where: { postId: idPost } })
@@ -297,8 +326,8 @@ const getOnePost = async (req, res) => {
             where: { id: idPost }
         })
 
-        res.json(post);
-        res.json({ post });
+       return res.status(200).json(post);
+        // res.json({ post });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -375,15 +404,28 @@ const getSimpanPostingan = async (req, res) => {
 
 
 const PostTerpopuler = async (req, res) => {
+    const {kategori} = req.query
     try {
-        const populer = await Post.findAll({
+        if (!kategori) {
+            const populer = await Post.findAll({
+            // where: { kategori_forum: kategori },
             order: [['jumlahTanggapan', 'DESC']],
             include: [{
                 model: User,
                 attributes : ['username', 'photoProfile']
             }]
         })
-        res.status(200).json(populer)
+        return res.status(200).json(populer)
+        }
+        const populerKategori = await Post.findAll({
+            where: { kategori_forum: kategori },
+            order: [['jumlahTanggapan', 'DESC']],
+            include: [{
+                model: User,
+                attributes : ['username', 'photoProfile']
+            }]
+        })
+        return res.status(200).json(populerKategori)
     } catch (error) {
         res.status(500).json({ message: error.message })
     }

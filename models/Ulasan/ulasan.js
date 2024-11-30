@@ -1,7 +1,8 @@
 const { DataTypes } = require('sequelize');
-const db = require('../../config/database');
+const db = require('../../config/config');
 const Produk = require('../Produk/produk');
 const User = require('../User/users');
+const TransaksiProduk = require('../Transaksi/transaksiproduk');
 
 const Ulasan = db.define('ulasan', {
     id: {
@@ -40,6 +41,14 @@ const Ulasan = db.define('ulasan', {
     video: {
         type: DataTypes.STRING, // Simpan URL atau path video
         allowNull: true
+    },
+    id_transaksiProduk: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: TransaksiProduk,
+            key: 'id'
+        }
     }
 }, {
     freezeTableName: true,
@@ -53,4 +62,6 @@ Ulasan.belongsTo(Produk, { foreignKey: 'id_produk' }); // Satu ulasan terkait de
 User.hasMany(Ulasan, { foreignKey: 'id_user' }); // Satu user bisa memberikan banyak ulasan
 Ulasan.belongsTo(User, { foreignKey: 'id_user' }); // Satu ulasan terkait dengan satu user
 
+TransaksiProduk.hasMany(Ulasan, { foreignKey: 'id_transaksiProduk' }); 
+Ulasan.belongsTo(TransaksiProduk, { foreignKey: 'id_transaksiProduk' }); 
 module.exports = Ulasan;

@@ -12,19 +12,19 @@ const troliProduk = async (req, res) => {
   try {
     const userid = await User.findByPk(id_User);
     if (!userid) {
-      return res.status(400).json({ message: 'User tidak ditemukan' });
+      return res.status(404).json({ message: 'User tidak ditemukan' });
     }
 
     const alamat = await Alamat.findOne({ where: { userId: id_User } });
 
     const produk = await Produk.findByPk(id_produk);
     if (!produk) {
-      return res.status(400).json({ message: 'Produk tidak ditemukan' });
+      return res.status(401).json({ message: 'Produk tidak ditemukan' });
     }
 
     const subvariasi = await subVariasi.findByPk(id_subVariasi);
     if (!subvariasi) {
-      return res.status(400).json({ message: 'Sub Variasi tidak ditemukan' });
+      return res.status(402).json({ message: 'Sub Variasi tidak ditemukan' });
     }
 
     const variasi = subvariasi.id_variasi;
@@ -63,10 +63,39 @@ const troliProduk = async (req, res) => {
 
 const editTroli = async (req, res) => {
   const { id } = req.params;
+  const { id_produk, id_subVariasi, jumlahStok } = req.body;
   try {
+    const troli = await Troli.findByPk(id)
+    if (!troli) {
+       return res.status(400).json({ message: 'Troli tidak ditemukan' });
+    }
 
+    const produk = await Produk.findByPk(id_produk);
+    if (!produk) {
+      return res.status(400).json({ message: 'Produk tidak ditemukan' });
+    }
+
+    const subvariasi = await subVariasi.findByPk(id_subVariasi);
+    if (!subvariasi) {
+      return res.status(400).json({ message: 'Sub Variasi tidak ditemukan' });
+    }
+
+    const variasi = subvariasi.id_variasi;
+
+    await Troli.update({
+        id_produk,
+        id_variasi: variasi,
+        id_subVariasi,
+        jumlahStok: jumlahStok
+    }, {
+      where : {id : id}
+    })
+
+    const troliUpdate = await Troli.findByPk(id)
+
+    res.status(202).json(troliUpdate);
   } catch (error) {
-
+    res.status(500).json({ message: error.message });
   }
 }
 
@@ -84,8 +113,20 @@ const hapusTroli = async (req, res) => {
   }
 }
 
+const getTroli = async (req, res) => {
+  const id = req.user.id;
+  try {
+    const troli = await Troli.findAll({
+      where : {id_User : id}
+    })
+    res.status(200).json(troli)
+  } catch (error) {
+    res.status(500).json({ message : error.message})
+  }
+}
 module.exports = {
   troliProduk,
   editTroli,
-  hapusTroli
+  hapusTroli,
+  getTroli
 }

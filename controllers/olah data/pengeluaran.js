@@ -196,10 +196,10 @@ const reportPerbulan = async (req, res) => {
         const totalUntungTanaman = totalTanaman - beliTanaman;
         const totalUntung = totalUntungBurung + totalUntungIkan + totalUntungTanaman;
         const totalUntungLayanan = totalBiayaLayanan - totalBiayaDarurat;
-        const Subtotal = totalUntung + totalBiayaLayanan - totalBiayaDarurat;
+        const Subtotal = totalUntung + totalBiayaLayanan + totalBiayaDarurat;
 
         const reportData = {
-            month: moment(startDate).format('MMMM YYYY'),
+            month: moment(startDate).format('MMMM YYYY'),  
             // transaksi,
             // Pemasukkan,
             Transaksi : transaksi,
@@ -233,7 +233,19 @@ const reportPerbulan = async (req, res) => {
     }
 };
 
+const getReport = async (req, res) => {
+    try {
+        const pengeluaran = await pPengeluaran.findAll({
+            include : [{model : Pengeluaran}]
+        })
+        res.status(200).json(pengeluaran)
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 module.exports = {
     createPengeluaran,
-    reportPerbulan
+    reportPerbulan,
+    getReport
 }; 

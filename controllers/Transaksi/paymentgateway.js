@@ -3,6 +3,8 @@ const Transaksi = require('../../models/Transaksi/transaksi');
 const Produk = require("../../models/Produk/produk");
 const axios = require('axios');
 const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
+const User = require('../../models/User/users');
+const Alamat = require('../../models/Transaksi/alamat');
 require('dotenv').config();
 
 const MIDTRANS_URL = 'https://app.sandbox.midtrans.com/snap/v1/transactions'; // Endpoint Snap Midtrans
@@ -68,6 +70,20 @@ const savePaymentData = async (req, res) => {
     const { order_id, id_transaksi, payment_method, token } = req.body;
 
     try {
+        const idTransaksi = await Transaksi.findByPk(id_transaksi)
+        if (!idTransaksi) {
+            return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
+        }
+        const user = await User.findByPk(idTransaksi.user_id);
+        if (!user) {
+            return res.status(404).json({ message: 'User tidak ditemukan' });
+        }
+
+        const alamat = await Alamat.findOne({ where: { userId: user } });
+        if (!alamat) {
+            return res.status(404).json({ message: 'Alamat tidak ditemukan' });
+        }
+
         // Simpan data ke PaymentGateway
         await PaymentGateway.create({
             id_transaksi,
@@ -79,7 +95,8 @@ const savePaymentData = async (req, res) => {
 
         const status = 'success';
         await TransaksiProduk.update({
-            statusPembayaran : status
+            statusPembayaran: status,
+            id_alamat: alamat.id,
         }, {
             where : {id_transaksi : id_transaksi}
         })
