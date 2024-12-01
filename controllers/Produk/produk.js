@@ -1,9 +1,11 @@
 const multer = require('multer');
 const path = require('path');
+const { Sequelize } = require('sequelize');
 const Produk = require("../../models/Produk/produk");
 const Variasi = require('../../models/Produk/variasi');
 const subVariasi = require('../../models/Produk/subVariasi');
 const Ulasan = require('../../models/Ulasan/ulasan');
+const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 
 // Konfigurasi Multer untuk penyimpanan file
 const storage = multer.diskStorage({
@@ -196,7 +198,7 @@ const getProdukbyId = async (req, res) => {
             include: [{ model: subVariasi }],
           },
           {
-            model : Ulasan
+            model: Ulasan
           }
         ]
       });
@@ -270,6 +272,31 @@ const hapusProduk = async (req, res) => {
   }
 }
 
+const getProdukTerlaris = async (req, res) => {
+  try {
+    const produkTerlaris = await TransaksiProduk.findAll({
+      attributes: [
+        "id_produk",
+        [Sequelize.fn("SUM", Sequelize.col("transaksi_produk.jumlah")), "totalTerjual"]
+      ],
+      group: ["id_produk"],
+      order: [[Sequelize.literal("totalTerjual"), "DESC"]],
+      include: [
+        {
+          model: Produk,
+          attributes: ["judul_produk", "foto_produk", "harga", "kategori_produk"]
+        }
+      ],
+      limit: 10 // Batasi hasil ke 10 produk terlaris
+    });
+
+    res.status(200).json(produkTerlaris);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 module.exports = {
   createProduk,
@@ -279,4 +306,5 @@ module.exports = {
   getProdukFilter,
   upload,
   hapusProduk,
+  getProdukTerlaris
 };

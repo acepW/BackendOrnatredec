@@ -10,33 +10,22 @@ const PaymentGateway = require('../../models/Transaksi/paymentgateway');
 
 
 const createTransaksi = async (req, res) => {
-    const { produk, metode_transaksi} = req.body;
+    const { produk, metode_transaksi } = req.body;
     const userId = req.user.id;
 
     try {
         const BIAYA_LAYANAN = 2500;
-        // Temukan user dan alamat
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'User tidak ditemukan' });
         }
 
-        // const alamat = await Alamat.findOne({ where: { userId: userId } });
-        // if (!alamat) {
-        //     return res.status(404).json({ message: 'Alamat tidak ditemukan' });
-        // }
-
-        // const idAlamat = alamat.id;
-        // console.log(idAlamat);
-
-        // Buat transaksi baru
         const newTransaksi = await Transaksi.create({
             user_id: userId,
-            // id_alamat: alamat.id, // Pastikan ini 'id' dari model Alamat
             sub_total: 0,
             biaya_layanan: BIAYA_LAYANAN,
             total_pembayaran: 0,
-            metode_transaksi
+            metode_transaksi,
         });
 
         let subTotal = 0;
@@ -52,28 +41,20 @@ const createTransaksi = async (req, res) => {
                             {
                                 model: subVariasi,
                                 as: 'subvariasis',
-                                where: { id: item.id_subvariasi }
-                            }
-                        ]
-                    }
-                ]
+                                where: { id: item.id_subvariasi },
+                            },
+                        ],
+                    },
+                ],
             });
 
-            if (!produkItem || produkItem.jumlah < item.jumlah) {
-                return res.status(404).json({ message: `Produk dengan ID ${item.id_produk} tidak ditemukan atau stok tidak cukup` });
+            if (!produkItem) {
+                return res.status(404).json({ message: `Produk dengan ID ${item.id_produk} tidak ditemukan` });
             }
 
-            const subVariasiItem = produkItem.variasis[0]?.subvariasis.find(sv => sv.id === item.id_subvariasi);
-            const variasiItem = produkItem.variasis.length > 0 ? produkItem.variasis[0] : null;
-
+            const subVariasiItem = produkItem.variasis[0]?.subvariasis.find((sv) => sv.id === item.id_subvariasi);
             const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
             const itemSubTotal = hargaSubVariasi * item.jumlah;
-
-            // Update stok produk dan sub variasi
-            await Promise.all([
-                produkItem.update({ jumlah: produkItem.jumlah - item.jumlah }),
-                subVariasiItem && subVariasiItem.update({ stok: subVariasiItem.stok - item.jumlah })
-            ]);
 
             subTotal += itemSubTotal;
 
@@ -82,48 +63,30 @@ const createTransaksi = async (req, res) => {
                 nama_produk: produkItem.judul_produk,
                 harga: produkItem.harga + hargaSubVariasi,
                 jumlah: item.jumlah,
-                variasiItem: produkItem.variasis[0],
-                sub_variasi: subVariasiItem
+                sub_variasi: subVariasiItem,
             });
 
-            await TransaksiProduk.upsert({
+            await TransaksiProduk.create({
                 id_transaksi: newTransaksi.id,
                 user_id: userId,
-                // id_alamat: alamat.id,
                 id_produk: produkItem.id,
                 id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
-                id_variasi: produkItem.variasis[0]?.id,
                 jumlah: item.jumlah,
-                totalHarga: itemSubTotal
+                totalHarga: itemSubTotal,
             });
         }
 
         const totalPembayaran = subTotal + BIAYA_LAYANAN;
         await newTransaksi.update({ sub_total: subTotal, total_pembayaran: totalPembayaran });
 
-        const response = {
+        res.status(201).json({
             id: newTransaksi.id,
             user: { id: user.id, username: user.username },
             produk: produkDetails,
-            // alamat: {
-            //     id: alamat.id,
-            //     provinsi: alamat.provinsi,
-            //     kota_kabupaten: alamat.kota_kabupaten,
-            //     kecamatan: alamat.kecamatan,
-            //     kelurahan_desa: alamat.kelurahan_desa,
-            //     jalan_namagedung: alamat.jalan_namagedung,
-            //     patokan: alamat.patokan,
-            //     nama_penerima: alamat.nama_penerima,
-            //     no_hp: alamat.no_hp,
-            //     kategori_alamat: alamat.kategori_alamat,
-            //     alamat_pengiriman_utama: alamat.alamat_pengiriman_utama
-            // },
             sub_total: subTotal,
             biaya_layanan: BIAYA_LAYANAN,
-            total_pembayaran: totalPembayaran
-        };
-
-        res.status(201).json(response);
+            total_pembayaran: totalPembayaran,
+        });
     } catch (error) {
         console.error("Error:", error);
         res.status(500).json({ message: error.message });
@@ -131,7 +94,7 @@ const createTransaksi = async (req, res) => {
 };
 
 const createTransaksiKasir = async (req, res) => {
-    const { produk, metode_transaksi, metode_pembayaran} = req.body;
+    const { produk, metode_transaksi, metode_pembayaran } = req.body;
     const userId = req.user.id;
 
     try {
@@ -219,7 +182,7 @@ const createTransaksiKasir = async (req, res) => {
                 jumlah: item.jumlah,
                 totalHarga: itemSubTotal,
                 statusPembayaran: 'success',
-                status : 'selesai'
+                status: 'selesai'
             });
         }
 
@@ -432,7 +395,6 @@ const getTransaksiFilter = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
-
 
 const getTransaksiDikirimDanDikemas = async (req, res) => {
     try {

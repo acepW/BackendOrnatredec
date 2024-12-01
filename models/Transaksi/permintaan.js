@@ -1,19 +1,19 @@
 const { DataTypes } = require("sequelize")
-const sequelize = require("../../config/database");
+const sequelize = require("../../config/config");
 const User = require("../User/users");
 
 const Permintaan = sequelize.define('permintaan', {
     id: {
         primaryKey: true,
         autoIncrement: true,
-        type : DataTypes.INTEGER
+        type: DataTypes.INTEGER
     },
     userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: User,
-            key : 'id'
+            key: 'id'
         }
     },
     nama_petugas: {
@@ -26,7 +26,7 @@ const Permintaan = sequelize.define('permintaan', {
     }
 }, {
     freezeTableName: true,
-    timestamps : true
+    timestamps: true
 })
 
 User.hasMany(Permintaan, { foreignKey: 'userId' });

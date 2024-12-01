@@ -1,4 +1,4 @@
-const sequelize = require('../../config/database');
+const sequelize = require('../../config/config');
 const Transaksi = require('../../models/Transaksi/transaksi');
 const { Op } = require('sequelize');
 const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
@@ -38,8 +38,8 @@ const getYearlyStatistics = async (req, res) => {
                     raw: true,
                 });
 
-                const transaksi_produk = await TransaksiProduk.sum('jumlah', { 
-                    where: { createdAt: { [Op.between]: [startDate, endDate] } } 
+                const transaksi_produk = await TransaksiProduk.sum('jumlah', {
+                    where: { createdAt: { [Op.between]: [startDate, endDate] } }
                 });
 
                 const ProdukTanaman = await TransaksiProduk.sum('jumlah', {
@@ -96,14 +96,14 @@ const getYearlyStatistics = async (req, res) => {
                 const totalTransaksiOnline = await Transaksi.count({
                     where: {
                         createdAt: { [Op.between]: [startDate, endDate] },
-                        metode_transaksi : methodOnline 
+                        metode_transaksi: methodOnline
                     }
                 });
                 const methodOffline = "offline";
                 const totalTransaksiOffline = await Transaksi.count({
                     where: {
                         createdAt: { [Op.between]: [startDate, endDate] },
-                        metode_transaksi : methodOffline 
+                        metode_transaksi: methodOffline
                     }
                 });
 
@@ -130,11 +130,11 @@ const getYearlyStatistics = async (req, res) => {
             const perbandingan = prevMonthData
                 ? currentMonthData.totalTransactions - prevMonthData.totalTransactions
                 : 0;
-            
+
             statisticsByMonth.push({
                 month,
                 ...currentMonthData,
-                    perbandingan
+                perbandingan
             });
         }
 
