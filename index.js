@@ -4,7 +4,7 @@ const cors = require("cors");
 const socketIo = require("socket.io");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const sequelize = require("./config/config");
+const sequelize = require("./config/database");
 const routes = require("./routes/router");
 const path = require("path");
 const Comments = require("./models/Forum/comments");
@@ -24,6 +24,7 @@ const pPengeluaran = require("./models/Transaksi/petugasPengeluaran");
 const Permintaan = require("./models/Transaksi/permintaan");
 const detailPermintaan = require("./models/Transaksi/detailPermintaan");
 const Reply = require("./models/Forum/reply");
+const Notification = require("./models/Forum/notification");
 
 dotenv.config();
 const app = express();
@@ -65,7 +66,7 @@ io.on("connection", (socket) => {
 sequelize.authenticate()
 .then(async () => {
     console.log('Connection success');
-      // await sequelize.sync();
+      // await Notification.sync();
 })
 .catch(err => console.log('Error: ' + err));
 

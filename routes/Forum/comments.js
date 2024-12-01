@@ -1,5 +1,4 @@
 const express = require("express");
-<<<<<<< HEAD
 const { CreateComment, 
         GetComment,
         editComment, 

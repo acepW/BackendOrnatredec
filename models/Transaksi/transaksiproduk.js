@@ -1,6 +1,6 @@
 // models/Transaksi/transaksi_produk.js
 const { DataTypes } = require("sequelize");
-const sequelize = require("../../config/config");
+const sequelize = require("../../config/database");
 const Transaksi = require("./transaksi");
 const Produk = require("../Produk/produk");
 const Variasi = require("../Produk/variasi");

@@ -166,24 +166,25 @@ const createTransaksiKasir = async (req, res) => {
 
         for (const item of produk) {
             const produkItem = await Produk.findByPk(item.id_produk, {
+        include: [
+            {
+                model: Variasi,
+                as: 'variasis',
                 include: [
                     {
-                        model: Variasi,
-                        as: 'variasis',
-                        include: [
-                            {
-                                model: subVariasi,
-                                as: 'subvariasis',
-                                where: { id: item.id_subvariasi }
-                            }
-                        ]
+                        model: subVariasi,
+                        as: 'subvariasis',
+                        where: { id: item.id_subvariasi }
                     }
                 ]
-            });
-
-            if (!produkItem || produkItem.jumlah < item.jumlah) {
-                return res.status(404).json({ message: `Produk dengan ID ${item.id_produk} tidak ditemukan atau stok tidak cukup` });
             }
+        ]
+    });
+
+            if (!produkItem) {
+                return res.status(404).json({ message: `Produk dengan ID ${item.id_produk} tidak ditemukan` });
+            }
+
 
             const subVariasiItem = produkItem.variasis[0]?.subvariasis.find(sv => sv.id === item.id_subvariasi);
             const variasiItem = produkItem.variasis.length > 0 ? produkItem.variasis[0] : null;
@@ -193,7 +194,7 @@ const createTransaksiKasir = async (req, res) => {
 
             // Update stok produk dan sub variasi
             await Promise.all([
-                produkItem.update({ jumlah: produkItem.jumlah - item.jumlah }),
+                produkItem.update({ jumlahProduk: produkItem.jumlahProduk - item.jumlah }),
                 subVariasiItem && subVariasiItem.update({ stok: subVariasiItem.stok - item.jumlah })
             ]);
 
