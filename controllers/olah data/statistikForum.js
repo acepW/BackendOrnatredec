@@ -1,4 +1,4 @@
-const db = require("../../config/database"); // Instance database
+const db = require("../../config/config"); // Instance database
 const Post = require("../../models/Forum/posts");
 const { Op } = require("sequelize");
 
@@ -35,13 +35,13 @@ const getForumPostStatisticsForYear = async (req, res) => {
             where: {
                 [Op.and]: [
                     db.where(db.fn('YEAR', db.col('createdAt')), year)
-                ], kategori_forum : kategoriTanaman
+                ], kategori_forum: kategoriTanaman
             },
             group: ['year', 'month'],
             order: [[db.fn('YEAR', db.col('createdAt')), 'ASC'], [db.fn('MONTH', db.col('createdAt')), 'ASC']]
         });
 
-         const kategoriIkan = "ikan";
+        const kategoriIkan = "ikan";
         const postsIkan = await Post.findAll({
             attributes: [
                 [db.fn('MONTH', db.col('createdAt')), 'month'],
@@ -51,7 +51,7 @@ const getForumPostStatisticsForYear = async (req, res) => {
             where: {
                 [Op.and]: [
                     db.where(db.fn('YEAR', db.col('createdAt')), year)
-                ], kategori_forum : kategoriIkan
+                ], kategori_forum: kategoriIkan
             },
             group: ['year', 'month'],
             order: [[db.fn('YEAR', db.col('createdAt')), 'ASC'], [db.fn('MONTH', db.col('createdAt')), 'ASC']]
@@ -67,28 +67,28 @@ const getForumPostStatisticsForYear = async (req, res) => {
             where: {
                 [Op.and]: [
                     db.where(db.fn('YEAR', db.col('createdAt')), year)
-                ], kategori_forum : kategoriBurung
+                ], kategori_forum: kategoriBurung
             },
             group: ['year', 'month'],
             order: [[db.fn('YEAR', db.col('createdAt')), 'ASC'], [db.fn('MONTH', db.col('createdAt')), 'ASC']]
         });
         const dataPerBulan = [];
 
-    for (let month = 1; month <= 12; month++) {
-        const postForMonth = posts.find(post => post.get('month') === month);
-        const postTanamanPerbulan = postsTanaman.find(post => post.get('month') === month);
-        const postIkanPerbulan = postsIkan.find(post => post.get('month') === month);
-        const postBurungPerbulan = postsBurung.find(post => post.get('month') === month);
+        for (let month = 1; month <= 12; month++) {
+            const postForMonth = posts.find(post => post.get('month') === month);
+            const postTanamanPerbulan = postsTanaman.find(post => post.get('month') === month);
+            const postIkanPerbulan = postsIkan.find(post => post.get('month') === month);
+            const postBurungPerbulan = postsBurung.find(post => post.get('month') === month);
 
-        dataPerBulan.push({
-            month,
-            totalPosts: postForMonth ? parseInt(postForMonth.get('totalPosts'), 10) : null,
-            totalTanaman: postTanamanPerbulan ? parseInt(postTanamanPerbulan.get('totalPostsTanaman'), 10) : null,
-            totalIkan: postIkanPerbulan ? parseInt(postIkanPerbulan.get('totalPostsIkan'), 10) : null,
-            totalBurung: postBurungPerbulan ? parseInt(postBurungPerbulan.get('totalPostsBurung'), 10) : null,
-            perbandingan: null
-        });
-    }
+            dataPerBulan.push({
+                month,
+                totalPosts: postForMonth ? parseInt(postForMonth.get('totalPosts'), 10) : null,
+                totalTanaman: postTanamanPerbulan ? parseInt(postTanamanPerbulan.get('totalPostsTanaman'), 10) : null,
+                totalIkan: postIkanPerbulan ? parseInt(postIkanPerbulan.get('totalPostsIkan'), 10) : null,
+                totalBurung: postBurungPerbulan ? parseInt(postBurungPerbulan.get('totalPostsBurung'), 10) : null,
+                perbandingan: null
+            });
+        }
 
         for (let i = 1; i < dataPerBulan.length; i++) {
             if (

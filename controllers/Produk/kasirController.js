@@ -1,4 +1,4 @@
-const db = require('../../config/database'); // Import konfigurasi database
+const db = require('../../config/config'); // Import konfigurasi database
 const Produk = require('../../models/Produk/produk'); // Model Produk
 const Kasir = require('../../models/Produk/kasir'); // Model Kasir
 

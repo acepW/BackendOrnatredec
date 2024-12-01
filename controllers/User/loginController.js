@@ -54,7 +54,7 @@ const login = async (req, res) => {
   const { username, password } = req.body;
   
   try {
-    const user = await User.findOne({ where: { username }, include : [{model : Alamat}] });
+    const user = await User.findOne({ where: { username }});
     
     if (!user) {
       return res.status(401).json({ success: false, message: 'username tidak ditemukan' });

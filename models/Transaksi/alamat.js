@@ -8,14 +8,16 @@ const Alamat = sequelize.define("alamat", {
         autoIncrement: true,
         primaryKey: true
     },
-    userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
-    },
+    // userId: {
+    //     type: DataTypes.INTEGER,
+    //     allowNull: false,
+    //     references: {
+    //         model: User,  // Merujuk ke model User
+    //         key: 'id'     // Kolom id di model User
+    //     },
+    //     onDelete: 'CASCADE',  // Menghapus alamat jika user dihapus
+    //     onUpdate: 'CASCADE'   // Memperbarui userId jika id user diubah
+    // },
     provinsi: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -53,18 +55,18 @@ const Alamat = sequelize.define("alamat", {
         allowNull: false,
     },
     kategori_alamat: {
-        type: DataTypes.ENUM,
-        values: ["Rumah", "Kantor"]
+        type: DataTypes.ENUM('Rumah', 'Kantor'),
+        allowNull: false,
     },
     alamat_pengiriman_utama: {
-        type: DataTypes.ENUM,
-        values: ["Aktif", "Non-Aktif"]
+        type: DataTypes.ENUM('Aktif', 'Non-Aktif'),
+        allowNull: false,
     }
 }, {
     freezeTableName: true
 });
 
-User.hasMany(Alamat, { foreignKey: 'userId' });
-Alamat.belongsTo(User, { foreignKey: 'userId' });
+// User.hasMany(Alamat, { foreignKey: 'userId' });
+// Alamat.belongsTo(User, { foreignKey: 'userId' });
 
-module.exports = Alamat; 
+module.exports = Alamat;
