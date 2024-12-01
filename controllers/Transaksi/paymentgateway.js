@@ -1,6 +1,8 @@
 const PaymentGateway = require('../../models/Transaksi/paymentgateway');
 const Transaksi = require('../../models/Transaksi/transaksi');
 const Produk = require("../../models/Produk/produk");
+const Variasi = require("../../models/Produk/variasi");
+const subVariasi = require("../../models/Produk/subVariasi");
 const axios = require('axios');
 const TransaksiProduk = require('../../models/Transaksi/transaksiproduk');
 const User = require('../../models/User/users');
@@ -70,18 +72,63 @@ const savePaymentData = async (req, res) => {
     const { order_id, id_transaksi, payment_method, token } = req.body;
 
     try {
-        const idTransaksi = await Transaksi.findByPk(id_transaksi)
-        if (!idTransaksi) {
+        const transaksi = await Transaksi.findByPk(id_transaksi, {
+            include: [
+                {
+                    model: TransaksiProduk,
+                    include: [
+                        {
+                            model: Produk,
+                            as: 'produk',
+                            include: [
+                                {
+                                    model: Variasi,
+                                    as: 'variasis',
+                                    include: [
+                                        { model: subVariasi, as: 'subvariasis' },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!transaksi) {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
         }
-        const user = await User.findByPk(idTransaksi.user_id);
+
+        // Pastikan user dan alamat valid (opsional, jika alamat digunakan)
+        const user = await User.findByPk(transaksi.user_id);
         if (!user) {
             return res.status(404).json({ message: 'User tidak ditemukan' });
         }
 
-        const alamat = await Alamat.findOne({ where: { userId: user } });
-        if (!alamat) {
-            return res.status(404).json({ message: 'Alamat tidak ditemukan' });
+        // Logika pengurangan stok
+        for (const item of transaksi.TransaksiProduks) {
+            const produk = await Produk.findByPk(item.id_produk);
+            const subVariasi = await subVariasi.findByPk(item.id_subvariasi);
+
+            // Validasi stok produk
+            if (!produk || produk.jumlah < item.jumlah) {
+                return res.status(400).json({
+                    message: `Stok produk dengan ID ${item.id_produk} tidak cukup`,
+                });
+            }
+
+            // Validasi stok sub-variasi (jika ada)
+            if (subVariasi && subVariasi.stok < item.jumlah) {
+                return res.status(400).json({
+                    message: `Stok sub-variasi dengan ID ${item.id_subvariasi} tidak cukup`,
+                });
+            }
+
+            // Kurangi stok produk dan sub-variasi
+            await Promise.all([
+                produk.update({ jumlah: produk.jumlah - item.jumlah }),
+                subVariasi && subVariasi.update({ stok: subVariasi.stok - item.jumlah }),
+            ]);
         }
 
         // Simpan data ke PaymentGateway
@@ -90,23 +137,16 @@ const savePaymentData = async (req, res) => {
             order_id,
             payment_method,
             token,
-            status: 'success' // Atur status sebagai 'success'
+            status: 'success', // Set status sukses
         });
 
-        const status = 'success';
-        await TransaksiProduk.update({
-            statusPembayaran: status,
-            id_alamat: alamat.id,
-        }, {
-            where : {id_transaksi : id_transaksi}
-        })
-        
+        // Update transaksi dengan metode pembayaran
         await Transaksi.update(
             { payment_method: payment_method },
             { where: { id: id_transaksi } }
         );
 
-        res.status(200).json({ message: 'Payment data saved successfully' });
+        res.status(200).json({ message: 'Payment data saved successfully, stock updated' });
     } catch (error) {
         console.error("Error:", error);
         res.status(500).json({ message: 'Terjadi kesalahan pada server' });

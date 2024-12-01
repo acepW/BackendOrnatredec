@@ -62,12 +62,13 @@ io.on("connection", (socket) => {
   });
 });
 
- 
+
 sequelize.authenticate()
-.then(async () => {
+  .then(async () => {
     console.log('Connection success');
-      // await Notification.sync();
-})
-.catch(err => console.log('Error: ' + err));
+    // await sequelize.sync();
+  })
+  .catch(err => console.log('Error: ' + err));
+
 
 
