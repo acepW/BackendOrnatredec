@@ -1,45 +1,45 @@
 const Post = require('../../models/Forum/posts');
-const Comment = require('../../models/Forum/comments'); 
+const Comment = require('../../models/Forum/comments');
 const Reply = require('../../models/Forum/reply');
 const User = require('../../models/User/users');
 const Comments = require('../../models/Forum/comments');
-const  Notification   = require('../../models/Forum/notification');
+const Notification = require('../../models/Forum/notification');
 
-  const CreateComment = async (req, res) => {
-    const { postId, content } = req.body;
-    const userId = req.user.id; // ID pengguna yang membuat komentar
-  
-    try {
-      // Buat komentar
-      const comment = await Comment.create({
-        userId,
-        postId,
-        content,
-      });
-  
-      // Cari postingan terkait
-      const post = await Post.findByPk(postId);
-      if (!post) {
-        return res.status(404).json({ message: "Postingan tidak ditemukan." });
-      }
-  
-      // Buat notifikasi untuk pemilik postingan
-      if (post.userId !== userId) {
-        await Notification.create({
-          userId: post.userId, // Pemilik postingan
-          type: "comment", // Tipe notifikasi
-          message: `Komentar baru pada postingan Anda: "${content}"`,
-          referenceId: comment.id, // ID komentar
-          referenceType: "comment", // Tipe referensi
-        });
-      }
-  
-      res.status(201).json(comment);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+const CreateComment = async (req, res) => {
+  const { postId, content } = req.body;
+  const userId = req.user.id; // ID pengguna yang membuat komentar
+
+  try {
+    // Buat komentar
+    const comment = await Comment.create({
+      userId,
+      postId,
+      content,
+    });
+
+    // Cari postingan terkait
+    const post = await Post.findByPk(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Postingan tidak ditemukan." });
     }
-  };
-  
+
+    // Buat notifikasi untuk pemilik postingan
+    if (post.userId !== userId) {
+      await Notification.create({
+        userId: post.userId, // Pemilik postingan
+        type: "comment", // Tipe notifikasi
+        message: `Komentar baru pada postingan Anda: "${content}"`,
+        referenceId: comment.id, // ID komentar
+        referenceType: "comment", // Tipe referensi
+      });
+    }
+
+    res.status(201).json(comment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 // Fungsi untuk menghapus komentar
 const deleteComment = async (req, res) => {
@@ -61,7 +61,7 @@ const deleteComment = async (req, res) => {
     }
 
     await Comment.destroy({ where: { id: id } });
-    await Reply.destroy({where: {commentId: id} })
+    await Reply.destroy({ where: { commentId: id } })
 
     const commentCount = await Comment.count({ where: { postId: postId } });
     const replyCount = await Reply.count({ where: { postId: postId } });
@@ -94,23 +94,23 @@ const getNotifications = async (req, res) => {
 };
 
 const getOneComment = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const coment = await Comments.findByPk(id)
-        if (!coment) {
-           return res.status(400).json({ message: "komen tidak ditemukan" });
-        }
-        return res.status(200).json(coment)
-    } catch (error) {
-        res.status(500).json({ message : error.message})
+  const id = req.params.id;
+  try {
+    const coment = await Comments.findByPk(id)
+    if (!coment) {
+      return res.status(400).json({ message: "komen tidak ditemukan" });
     }
+    return res.status(200).json(coment)
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
 }
 
-    module.exports = {
-        CreateComment,
-        GetComment,
-        editComment,
-        deleteComment,
-        getOneComment
-        getNotifications
+module.exports = {
+  CreateComment,
+  // GetComment,
+  // editComment,
+  deleteComment,
+  getOneComment,
+  getNotifications
 }
