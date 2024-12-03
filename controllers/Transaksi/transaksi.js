@@ -20,6 +20,10 @@ const createTransaksi = async (req, res) => {
             return res.status(404).json({ message: 'User tidak ditemukan' });
         }
 
+        if (!Array.isArray(produk)) {
+            return res.status(400).json({ message: 'Produk harus berupa array' });
+        }
+
         const newTransaksi = await Transaksi.create({
             user_id: userId,
             sub_total: 0,
@@ -93,6 +97,95 @@ const createTransaksi = async (req, res) => {
     }
 };
 
+
+const createTransaksiSatu = async (req, res) => {
+    const { id_produk, id_subvariasi, jumlah, metode_transaksi } = req.body;
+    const userId = req.user.id;
+
+    try {
+        const BIAYA_LAYANAN = 2500;
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User tidak ditemukan' });
+        }
+
+        const newTransaksi = await Transaksi.create({
+            user_id: userId,
+            sub_total: 0,
+            biaya_layanan: BIAYA_LAYANAN,
+            total_pembayaran: 0,
+            metode_transaksi,
+        });
+
+        let subTotal = 0;
+
+        const produkItem = await Produk.findByPk(id_produk, {
+            include: [
+                {
+                    model: Variasi,
+                    as: 'variasis',
+                    include: [
+                        {
+                            model: subVariasi,
+                            as: 'subvariasis',
+                            where: { id: id_subvariasi },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!produkItem) {
+            return res.status(404).json({ message: `Produk dengan ID ${id_produk} tidak ditemukan` });
+        }
+
+        const varian = produkItem.variasis?.find((v) =>
+            v.subvariasis.some((sv) => sv.id === id_subvariasi)
+        );
+        const subVariasiItem = varian?.subvariasis?.find((sv) => sv.id === id_subvariasi);
+
+        if (!subVariasiItem) {
+            return res.status(404).json({ message: `Sub-Variasi dengan ID ${id_subvariasi} tidak ditemukan` });
+        }
+
+        const hargaSubVariasi = subVariasiItem.harga || 0;
+        const itemSubTotal = hargaSubVariasi * jumlah;
+
+        subTotal += itemSubTotal;
+
+        await TransaksiProduk.create({
+            id_transaksi: newTransaksi.id,
+            user_id: userId,
+            id_produk: produkItem.id,
+            id_subvariasi: subVariasiItem.id,
+            jumlah,
+            totalHarga: itemSubTotal,
+        });
+
+        const totalPembayaran = subTotal + BIAYA_LAYANAN;
+        await newTransaksi.update({ sub_total: subTotal, total_pembayaran: totalPembayaran });
+
+        res.status(201).json({
+            id: newTransaksi.id,
+            user: { id: user.id, username: user.username },
+            produk: {
+                id: produkItem.id,
+                nama: produkItem.judul_produk,
+                harga: hargaSubVariasi,
+                jumlah,
+                sub_variasi: subVariasiItem,
+            },
+            sub_total: subTotal,
+            biaya_layanan: BIAYA_LAYANAN,
+            total_pembayaran: totalPembayaran,
+        });
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 const createTransaksiKasir = async (req, res) => {
     const { produk, metode_transaksi, metode_pembayaran } = req.body;
     const userId = req.user.id;
@@ -105,18 +198,18 @@ const createTransaksiKasir = async (req, res) => {
             return res.status(404).json({ message: 'User tidak ditemukan' });
         }
 
-        const alamat = await Alamat.findOne({ where: { userId: userId } });
-        if (!alamat) {
-            return res.status(404).json({ message: 'Alamat tidak ditemukan' });
-        }
+        // const alamat = await Alamat.findOne({ where: { userId: userId } });
+        // if (!alamat) {
+        //     return res.status(404).json({ message: 'Alamat tidak ditemukan' });
+        // }
 
-        const idAlamat = alamat.id;
-        console.log(idAlamat);
+        // const idAlamat = alamat.id;
+        // console.log(idAlamat);
 
         // Buat transaksi baru
         const newTransaksi = await Transaksi.create({
             user_id: userId,
-            id_alamat: alamat.id, // Pastikan ini 'id' dari model Alamat
+            // id_alamat: alamat.id, // Pastikan ini 'id' dari model Alamat
             sub_total: 0,
             biaya_layanan: BIAYA_LAYANAN,
             total_pembayaran: 0,
@@ -441,6 +534,7 @@ module.exports = {
     getTransaksiById,
     getTransaksiFilter,
     getTransaksiDikirimDanDikemas,
-    createTransaksiKasir
+    createTransaksiKasir,
+    createTransaksiSatu
 };
 

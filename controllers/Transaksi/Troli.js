@@ -3,6 +3,7 @@ const subVariasi = require("../../models/Produk/subVariasi");
 const Troli = require("../../models/Transaksi/troli");
 const Alamat = require("../../models/Transaksi/alamat");
 const User = require("../../models/User/users");
+const Variasi = require("../../models/Produk/variasi");
 
 
 const troliProduk = async (req, res) => {
@@ -117,7 +118,15 @@ const getTroli = async (req, res) => {
   const id = req.user.id;
   try {
     const troli = await Troli.findAll({
-      where : {id_User : id}
+      where: { id_User: id },
+      include: [{
+        model : Produk
+        ,
+      }, {
+        model : Variasi
+        }, {
+        model : subVariasi
+      }]
     })
     res.status(200).json(troli)
   } catch (error) {
