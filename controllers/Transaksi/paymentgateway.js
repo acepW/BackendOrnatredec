@@ -72,10 +72,12 @@ const savePaymentData = async (req, res) => {
     const { order_id, id_transaksi, payment_method, token } = req.body;
 
     try {
+        // Ambil transaksi berdasarkan id_transaksi
         const transaksi = await Transaksi.findByPk(id_transaksi, {
             include: [
                 {
                     model: TransaksiProduk,
+                    as: 'TransaksiProduks',
                     include: [
                         {
                             model: Produk,
@@ -99,7 +101,7 @@ const savePaymentData = async (req, res) => {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
         }
 
-        // Pastikan user dan alamat valid (opsional, jika alamat digunakan)
+        // Pastikan user valid
         const user = await User.findByPk(transaksi.user_id);
         if (!user) {
             return res.status(404).json({ message: 'User tidak ditemukan' });
@@ -108,17 +110,22 @@ const savePaymentData = async (req, res) => {
         // Logika pengurangan stok
         for (const item of transaksi.TransaksiProduks) {
             const produk = await Produk.findByPk(item.id_produk);
-            const subVariasi = await subVariasi.findByPk(item.id_subvariasi);
+            let subvariasi = null;
+
+            // Ambil subVariasi jika ada
+            if (item.id_subvariasi) {
+                subvariasi = await subVariasi.findByPk(item.id_subvariasi);
+            }
 
             // Validasi stok produk
-            if (!produk || produk.jumlah < item.jumlah) {
+            if (!produk || produk.jumlahProduk < item.jumlah) {
                 return res.status(400).json({
                     message: `Stok produk dengan ID ${item.id_produk} tidak cukup`,
                 });
             }
 
             // Validasi stok sub-variasi (jika ada)
-            if (subVariasi && subVariasi.stok < item.jumlah) {
+            if (subvariasi && subvariasi.stok < item.jumlah) {
                 return res.status(400).json({
                     message: `Stok sub-variasi dengan ID ${item.id_subvariasi} tidak cukup`,
                 });
@@ -126,8 +133,10 @@ const savePaymentData = async (req, res) => {
 
             // Kurangi stok produk dan sub-variasi
             await Promise.all([
-                produk.update({ jumlah: produk.jumlah - item.jumlah }),
-                subVariasi && subVariasi.update({ stok: subVariasi.stok - item.jumlah }),
+                produk.update({ jumlahProduk: produk.jumlahProduk - item.jumlah }),
+                subvariasi
+                    ? subvariasi.update({ stok: subvariasi.stok - item.jumlah })
+                    : null,
             ]);
         }
 
