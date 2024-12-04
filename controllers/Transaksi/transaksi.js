@@ -58,7 +58,9 @@ const createTransaksi = async (req, res) => {
 
             const subVariasiItem = produkItem.variasis[0]?.subvariasis.find((sv) => sv.id === item.id_subvariasi);
             const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
-            const itemSubTotal = hargaSubVariasi * item.jumlah;
+
+            // Perbaikan perhitungan harga total item
+            const itemSubTotal = (produkItem.harga + hargaSubVariasi) * item.jumlah;
 
             subTotal += itemSubTotal;
 

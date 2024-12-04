@@ -19,15 +19,19 @@ const createPaymentGateway = async (req, res) => {
     const userId = req.user.id;
     try {
         const BIAYA_LAYANAN = 2500;
+
+        // Validasi user
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'User tidak ditemukan' });
         }
 
+        // Validasi produk
         if (!Array.isArray(produk)) {
             return res.status(400).json({ message: 'Produk harus berupa array' });
         }
 
+        // Membuat transaksi baru
         const newTransaksi = await Transaksi.create({
             user_id: userId,
             sub_total: 0,
@@ -39,6 +43,7 @@ const createPaymentGateway = async (req, res) => {
         let subTotal = 0;
         const produkDetails = [];
 
+        // Mengolah data produk
         for (const item of produk) {
             const produkItem = await Produk.findByPk(item.id_produk, {
                 include: [
@@ -60,12 +65,16 @@ const createPaymentGateway = async (req, res) => {
                 return res.status(404).json({ message: `Produk dengan ID ${item.id_produk} tidak ditemukan` });
             }
 
+            // Mengambil harga subvariasi
             const subVariasiItem = produkItem.variasis[0]?.subvariasis.find((sv) => sv.id === item.id_subvariasi);
             const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
-            const itemSubTotal = hargaSubVariasi * item.jumlah;
+
+            // Menghitung subtotal item
+            const itemSubTotal = (produkItem.harga + hargaSubVariasi) * item.jumlah;
 
             subTotal += itemSubTotal;
 
+            // Menyimpan detail produk
             produkDetails.push({
                 id: produkItem.id,
                 nama_produk: produkItem.judul_produk,
@@ -74,6 +83,7 @@ const createPaymentGateway = async (req, res) => {
                 sub_variasi: subVariasiItem,
             });
 
+            // Menyimpan data ke tabel TransaksiProduk
             await TransaksiProduk.create({
                 id_transaksi: newTransaksi.id,
                 user_id: userId,
@@ -81,17 +91,18 @@ const createPaymentGateway = async (req, res) => {
                 id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
                 jumlah: item.jumlah,
                 totalHarga: itemSubTotal,
-                id_variasi: subVariasiItem.id_variasi
+                id_variasi: subVariasiItem ? subVariasiItem.id_variasi : null,
             });
         }
 
+        // Menghitung total pembayaran
         const totalPembayaran = subTotal + BIAYA_LAYANAN;
         await newTransaksi.update({ sub_total: subTotal, total_pembayaran: totalPembayaran });
 
-
+        // Membuat order ID untuk Midtrans
         const generatedOrderId = `transaksi-${newTransaksi.id}-${Date.now()}`;
 
-        // Payload yang dikirim ke Midtrans untuk mendapatkan token pembayaran
+        // Payload untuk Midtrans
         const payload = {
             transaction_details: {
                 order_id: generatedOrderId,
@@ -101,12 +112,6 @@ const createPaymentGateway = async (req, res) => {
                 first_name: 'Nama',
                 email: 'email@example.com',
             },
-            // item_details: (transaksi.produk || []).map(item => ({
-            //     id: item.id.toString(),
-            //     price: item.harga,
-            //     quantity: item.jumlah,
-            //     name: item.nama_produk,
-            // })),
             enabled_payments: [payment_method],
         };
 
@@ -120,7 +125,7 @@ const createPaymentGateway = async (req, res) => {
 
         const { token, order_id } = response.data;
 
-        // Kirim token ke frontend untuk Snap Popup
+        // Mengembalikan respons ke frontend
         res.status(200).json({
             message: 'Payment created successfully',
             token: token,
@@ -143,10 +148,12 @@ const savePaymentData = async (req, res) => {
     const { order_id, id_transaksi, payment_method, token } = req.body;
 
     try {
+        // Ambil transaksi berdasarkan id_transaksi
         const transaksi = await Transaksi.findByPk(id_transaksi, {
             include: [
                 {
                     model: TransaksiProduk,
+                    as: 'TransaksiProduks',
                     include: [
                         {
                             model: Produk,
@@ -170,7 +177,7 @@ const savePaymentData = async (req, res) => {
             return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
         }
 
-        // Pastikan user dan alamat valid (opsional, jika alamat digunakan)
+        // Pastikan user valid
         const user = await User.findByPk(transaksi.user_id);
         if (!user) {
             return res.status(404).json({ message: 'User tidak ditemukan' });
@@ -179,17 +186,22 @@ const savePaymentData = async (req, res) => {
         // Logika pengurangan stok
         for (const item of transaksi.TransaksiProduks) {
             const produk = await Produk.findByPk(item.id_produk);
-            const subVariasi = await subVariasi.findByPk(item.id_subvariasi);
+            let subvariasi = null;
+
+            // Ambil subVariasi jika ada
+            if (item.id_subvariasi) {
+                subvariasi = await subVariasi.findByPk(item.id_subvariasi);
+            }
 
             // Validasi stok produk
-            if (!produk || produk.jumlah < item.jumlah) {
+            if (!produk || produk.jumlahProduk < item.jumlah) {
                 return res.status(400).json({
                     message: `Stok produk dengan ID ${item.id_produk} tidak cukup`,
                 });
             }
 
             // Validasi stok sub-variasi (jika ada)
-            if (subVariasi && subVariasi.stok < item.jumlah) {
+            if (subvariasi && subvariasi.stok < item.jumlah) {
                 return res.status(400).json({
                     message: `Stok sub-variasi dengan ID ${item.id_subvariasi} tidak cukup`,
                 });
@@ -197,8 +209,10 @@ const savePaymentData = async (req, res) => {
 
             // Kurangi stok produk dan sub-variasi
             await Promise.all([
-                produk.update({ jumlah: produk.jumlah - item.jumlah }),
-                subVariasi && subVariasi.update({ stok: subVariasi.stok - item.jumlah }),
+                produk.update({ jumlahProduk: produk.jumlahProduk - item.jumlah }),
+                subvariasi
+                    ? subvariasi.update({ stok: subvariasi.stok - item.jumlah })
+                    : null,
             ]);
         }
 
