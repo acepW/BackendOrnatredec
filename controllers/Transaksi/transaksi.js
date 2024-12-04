@@ -77,6 +77,7 @@ const createTransaksi = async (req, res) => {
                 id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
                 jumlah: item.jumlah,
                 totalHarga: itemSubTotal,
+                id_variasi: subVariasiItem.id_variasi
             });
         }
 
@@ -97,12 +98,16 @@ const createTransaksi = async (req, res) => {
     }
 };
 
-
 const createTransaksiSatu = async (req, res) => {
     const { id_produk, id_subvariasi, jumlah, metode_transaksi } = req.body;
+    console.log('Request body:', req.body);
     const userId = req.user.id;
 
     try {
+        if (!id_subvariasi) {
+            return res.status(400).json({ message: 'id_subvariasi tidak boleh kosong' });
+        }
+
         const BIAYA_LAYANAN = 2500;
         const user = await User.findByPk(userId);
         if (!user) {
@@ -136,7 +141,7 @@ const createTransaksiSatu = async (req, res) => {
         });
 
         if (!produkItem) {
-            return res.status(404).json({ message: `Produk dengan ID ${id_produk} tidak ditemukan` });
+            return res.status(409).json({ message: `Produk dengan ID ${id_produk} tidak ditemukan` });
         }
 
         const varian = produkItem.variasis?.find((v) =>
@@ -145,7 +150,7 @@ const createTransaksiSatu = async (req, res) => {
         const subVariasiItem = varian?.subvariasis?.find((sv) => sv.id === id_subvariasi);
 
         if (!subVariasiItem) {
-            return res.status(404).json({ message: `Sub-Variasi dengan ID ${id_subvariasi} tidak ditemukan` });
+            return res.status(408).json({ message: `Sub-Variasi dengan ID ${id_subvariasi} tidak ditemukan` });
         }
 
         const hargaSubVariasi = subVariasiItem.harga || 0;
@@ -160,6 +165,7 @@ const createTransaksiSatu = async (req, res) => {
             id_subvariasi: subVariasiItem.id,
             jumlah,
             totalHarga: itemSubTotal,
+            id_variasi : varian.id
         });
 
         const totalPembayaran = subTotal + BIAYA_LAYANAN;
@@ -174,16 +180,18 @@ const createTransaksiSatu = async (req, res) => {
                 harga: hargaSubVariasi,
                 jumlah,
                 sub_variasi: subVariasiItem,
+                id_variasi: varian.id
             },
             sub_total: subTotal,
             biaya_layanan: BIAYA_LAYANAN,
             total_pembayaran: totalPembayaran,
         });
     } catch (error) {
-        console.error("Error:", error);
+        console.error('Error:', error);
         res.status(500).json({ message: error.message });
     }
 };
+
 
 
 const createTransaksiKasir = async (req, res) => {
@@ -268,7 +276,7 @@ const createTransaksiKasir = async (req, res) => {
             await TransaksiProduk.upsert({
                 id_transaksi: newTransaksi.id,
                 user_id: userId,
-                id_alamat: alamat.id,
+                // id_alamat: alamat.id,
                 id_produk: produkItem.id,
                 id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
                 id_variasi: produkItem.variasis[0]?.id,

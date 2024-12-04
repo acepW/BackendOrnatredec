@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
 sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
-    // await sequelize.sync();
+    // await User.sync({alter : true});
   })
   .catch(err => console.log('Error: ' + err));
 

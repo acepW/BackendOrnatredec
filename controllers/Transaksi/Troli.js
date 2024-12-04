@@ -23,6 +23,10 @@ const troliProduk = async (req, res) => {
       return res.status(401).json({ message: 'Produk tidak ditemukan' });
     }
 
+    if (produk.jumlahProduk < 0) {
+       return res.status(401).json({ message: 'stok habis' });
+    }
+
     const subvariasi = await subVariasi.findByPk(id_subVariasi);
     if (!subvariasi) {
       return res.status(402).json({ message: 'Sub Variasi tidak ditemukan' });
