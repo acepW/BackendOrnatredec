@@ -7,6 +7,7 @@ const path = require('path');
 const { where } = require('sequelize');
 const View = require('../../models/Forum/view');
 const Report = require('../../models/Forum/report');
+const simpanPost = require('../../models/Forum/simpanPost');
 
 // Konfigurasi multer untuk menyimpan file
 const storage = multer.diskStorage({

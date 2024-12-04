@@ -15,22 +15,87 @@ const SERVER_KEY = process.env.MIDTRANS_SERVER_KEY; // Ambil dari .env
 
 // Membuat transaksi pembayaran dan mendapatkan token dari Midtrans
 const createPaymentGateway = async (req, res) => {
-    const { id_transaksi, payment_method } = req.body;
-
+    const { produk, metode_transaksi, payment_method } = req.body;
+    const userId = req.user.id;
     try {
-        const transaksi = await Transaksi.findByPk(id_transaksi)
-
-        if (!transaksi) {
-            return res.status(404).json({ message: 'Transaksi tidak ditemukan' });
+        const BIAYA_LAYANAN = 2500;
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User tidak ditemukan' });
         }
 
-        const generatedOrderId = `transaksi-${transaksi.id}-${Date.now()}`;
+        if (!Array.isArray(produk)) {
+            return res.status(400).json({ message: 'Produk harus berupa array' });
+        }
+
+        const newTransaksi = await Transaksi.create({
+            user_id: userId,
+            sub_total: 0,
+            biaya_layanan: BIAYA_LAYANAN,
+            total_pembayaran: 0,
+            metode_transaksi,
+        });
+
+        let subTotal = 0;
+        const produkDetails = [];
+
+        for (const item of produk) {
+            const produkItem = await Produk.findByPk(item.id_produk, {
+                include: [
+                    {
+                        model: Variasi,
+                        as: 'variasis',
+                        include: [
+                            {
+                                model: subVariasi,
+                                as: 'subvariasis',
+                                where: { id: item.id_subvariasi },
+                            },
+                        ],
+                    },
+                ],
+            });
+
+            if (!produkItem) {
+                return res.status(404).json({ message: `Produk dengan ID ${item.id_produk} tidak ditemukan` });
+            }
+
+            const subVariasiItem = produkItem.variasis[0]?.subvariasis.find((sv) => sv.id === item.id_subvariasi);
+            const hargaSubVariasi = subVariasiItem ? subVariasiItem.harga : 0;
+            const itemSubTotal = hargaSubVariasi * item.jumlah;
+
+            subTotal += itemSubTotal;
+
+            produkDetails.push({
+                id: produkItem.id,
+                nama_produk: produkItem.judul_produk,
+                harga: produkItem.harga + hargaSubVariasi,
+                jumlah: item.jumlah,
+                sub_variasi: subVariasiItem,
+            });
+
+            await TransaksiProduk.create({
+                id_transaksi: newTransaksi.id,
+                user_id: userId,
+                id_produk: produkItem.id,
+                id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
+                jumlah: item.jumlah,
+                totalHarga: itemSubTotal,
+                id_variasi: subVariasiItem.id_variasi
+            });
+        }
+
+        const totalPembayaran = subTotal + BIAYA_LAYANAN;
+        await newTransaksi.update({ sub_total: subTotal, total_pembayaran: totalPembayaran });
+
+
+        const generatedOrderId = `transaksi-${newTransaksi.id}-${Date.now()}`;
 
         // Payload yang dikirim ke Midtrans untuk mendapatkan token pembayaran
         const payload = {
             transaction_details: {
                 order_id: generatedOrderId,
-                gross_amount: transaksi.total_pembayaran,
+                gross_amount: newTransaksi.total_pembayaran,
             },
             customer_details: {
                 first_name: 'Nama',
@@ -60,6 +125,12 @@ const createPaymentGateway = async (req, res) => {
             message: 'Payment created successfully',
             token: token,
             order_id: order_id || generatedOrderId,
+            id: newTransaksi.id,
+            user: { id: user.id, username: user.username },
+            produk: produkDetails,
+            sub_total: subTotal,
+            biaya_layanan: BIAYA_LAYANAN,
+            total_pembayaran: totalPembayaran,
         });
     } catch (error) {
         console.error("Error:", error.response ? error.response.data : error.message);

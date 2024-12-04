@@ -3,6 +3,7 @@ const subVariasi = require("../../models/Produk/subVariasi");
 const Troli = require("../../models/Transaksi/troli");
 const Alamat = require("../../models/Transaksi/alamat");
 const User = require("../../models/User/users");
+const Variasi = require("../../models/Produk/variasi");
 
 
 const troliProduk = async (req, res) => {
@@ -20,6 +21,10 @@ const troliProduk = async (req, res) => {
     const produk = await Produk.findByPk(id_produk);
     if (!produk) {
       return res.status(401).json({ message: 'Produk tidak ditemukan' });
+    }
+
+    if (produk.jumlahProduk < 0) {
+       return res.status(401).json({ message: 'stok habis' });
     }
 
     const subvariasi = await subVariasi.findByPk(id_subVariasi);
@@ -117,7 +122,15 @@ const getTroli = async (req, res) => {
   const id = req.user.id;
   try {
     const troli = await Troli.findAll({
-      where : {id_User : id}
+      where: { id_User: id },
+      include: [{
+        model : Produk
+        ,
+      }, {
+        model : Variasi
+        }, {
+        model : subVariasi
+      }]
     })
     res.status(200).json(troli)
   } catch (error) {

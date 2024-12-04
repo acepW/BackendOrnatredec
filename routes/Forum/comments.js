@@ -1,10 +1,11 @@
 const express = require("express");
 const { CreateComment,
-        // GetComment,
-        // editComment,
+        GetComment,
+        editComment,
         deleteComment,
         getOneComment,
-        getNotifications } = require("../../controllers/Forum/comment");
+        getNotifications, 
+        CreateeComment} = require("../../controllers/Forum/comment");
 
 const protect = require('../../middlewares/authMiddleware');
 const User = require("../../models/User/users")
@@ -16,7 +17,7 @@ const router = express.Router();
 router.delete('/deleteComment/:id', protect(['super admin', 'user']), deleteComment)
 router.get('/satuKomen/:id', getOneComment)
 
-router.post('/komen', protect(['super admin', 'user']), (req, res) => CreateComment(req, res, req.io));
+router.post('/komen', protect(['super admin', 'user']), (req, res) => CreateeComment(req, res, req.io));
 router.get("/notifications", protect(['super admin', 'user']), (req, res) => getNotifications(req, res, req.io));
 router.delete('/deleteComment/:id', protect(['super admin', 'user']), deleteComment);
 

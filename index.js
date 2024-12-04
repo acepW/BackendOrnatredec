@@ -24,6 +24,7 @@ const pPengeluaran = require("./models/Transaksi/petugasPengeluaran");
 const Permintaan = require("./models/Transaksi/permintaan");
 const detailPermintaan = require("./models/Transaksi/detailPermintaan");
 const Reply = require("./models/Forum/reply");
+const Notification = require("./models/Forum/notification");
 
 dotenv.config();
 const app = express();
@@ -65,7 +66,9 @@ sequelize.authenticate()
   .then(async () => {
     console.log('Connection success');
     // await TransaksiProduk.sync({ alter: true });
+    // await User.sync({alter : true});
   })
   .catch(err => console.log('Error: ' + err));
+
 
 
