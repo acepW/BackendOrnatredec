@@ -43,8 +43,9 @@ const register = async (req, res) => {
       // photoProfile,           // Tambahkan foto profil
       // backgroundProfile       // Tambahkan background profil
     });
-
+    console.log('berhasil');
     res.status(201).json({ success: true, message: 'User registered successfully', user });
+
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -60,7 +61,7 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'username tidak ditemukan' });
     }
 
-    const isMatch = bcrypt.compare(password, user.password);
+    const isMatch = bcrypt.compareSync(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'password salah' });
     }
@@ -85,7 +86,9 @@ const token = jwt.sign(
 res.cookie('token', token, { httpOnly: true, sameSite: "None",secure: true, path: "/" }); 
 
 
-    res.status(200).json({ message: 'Login successful', user, token});
+    res.status(200).json({ message: 'Login successful', user, token });
+    console.log(token);
+    
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -142,7 +145,7 @@ const logout = async (req, res) => {
         {where : {id : id}}
       )
 
-      res.status(200).json({message: 'logout berhasil'});
+    res.status(200).json({ message: 'logout berhasil' });
   } catch (error) {
       res.status(500).json({ message: error.message });
   }
