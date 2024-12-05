@@ -31,9 +31,18 @@ const createPaymentGateway = async (req, res) => {
             return res.status(400).json({ message: 'Produk harus berupa array' });
         }
 
+        const alamat = await Alamat.findOne({ where: { userId: userId } });
+        if (!alamat) {
+            return res.status(404).json({ message: 'Alamat tidak ditemukan' });
+        }
+
+        const idAlamat = alamat.id;
+        console.log(idAlamat);
+
         // Membuat transaksi baru
         const newTransaksi = await Transaksi.create({
             user_id: userId,
+            id_alamat: alamat.id, 
             sub_total: 0,
             biaya_layanan: BIAYA_LAYANAN,
             total_pembayaran: 0,
@@ -87,6 +96,7 @@ const createPaymentGateway = async (req, res) => {
             await TransaksiProduk.create({
                 id_transaksi: newTransaksi.id,
                 user_id: userId,
+                id_alamat: alamat.id,
                 id_produk: produkItem.id,
                 id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
                 jumlah: item.jumlah,

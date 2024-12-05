@@ -208,18 +208,18 @@ const createTransaksiKasir = async (req, res) => {
             return res.status(404).json({ message: 'User tidak ditemukan' });
         }
 
-        // const alamat = await Alamat.findOne({ where: { userId: userId } });
-        // if (!alamat) {
-        //     return res.status(404).json({ message: 'Alamat tidak ditemukan' });
-        // }
+        const alamat = await Alamat.findOne({ where: { userId: userId } });
+        if (!alamat) {
+            return res.status(404).json({ message: 'Alamat tidak ditemukan' });
+        }
 
-        // const idAlamat = alamat.id;
-        // console.log(idAlamat);
+        const idAlamat = alamat.id;
+        console.log(idAlamat);
 
         // Buat transaksi baru
         const newTransaksi = await Transaksi.create({
             user_id: userId,
-            // id_alamat: alamat.id, // Pastikan ini 'id' dari model Alamat
+            id_alamat: alamat.id, // Pastikan ini 'id' dari model Alamat
             sub_total: 0,
             biaya_layanan: BIAYA_LAYANAN,
             total_pembayaran: 0,
@@ -278,7 +278,7 @@ const createTransaksiKasir = async (req, res) => {
             await TransaksiProduk.upsert({
                 id_transaksi: newTransaksi.id,
                 user_id: userId,
-                // id_alamat: alamat.id,
+                id_alamat: alamat.id,
                 id_produk: produkItem.id,
                 id_subvariasi: subVariasiItem ? subVariasiItem.id : null,
                 id_variasi: produkItem.variasis[0]?.id,
@@ -400,6 +400,7 @@ const getTransaksiById = async (req, res) => {
             include: [
                 {
                     model: TransaksiProduk,
+                    // as: 'TransaksiProduks',
                     include: [
                         {
                             model: Produk,

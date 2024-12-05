@@ -82,14 +82,14 @@ const TransaksiProduk = sequelize.define("transaksi_produk", {
 });
 
 // Relasi dengan model lainnya
-Produk.hasMany(TransaksiProduk, { foreignKey: "id_produk", as: 'TransaksiProduks' });
-Transaksi.hasMany(TransaksiProduk, { foreignKey: "id_transaksi", as: 'TransaksiProduks' });
+Produk.hasMany(TransaksiProduk, { foreignKey: "id_produk" });
+Transaksi.hasMany(TransaksiProduk, { foreignKey: "id_transaksi" });
 Variasi.hasMany(TransaksiProduk, { foreignKey: "id_variasi" });
 Subvariansi.hasMany(TransaksiProduk, { foreignKey: "id_subvariasi" });
 User.hasMany(TransaksiProduk, { foreignKey: "user_id" });
 Alamat.hasMany(TransaksiProduk, { foreignKey: "id_alamat" });
 
-TransaksiProduk.belongsTo(Produk, { foreignKey: "id_produk", as: 'produk' });
+TransaksiProduk.belongsTo(Produk, { foreignKey: "id_produk"});
 TransaksiProduk.belongsTo(Transaksi, { foreignKey: "id_transaksi" });
 TransaksiProduk.belongsTo(Variasi, { foreignKey: "id_variasi" });
 TransaksiProduk.belongsTo(Subvariansi, { foreignKey: "id_subvariasi" });
